@@ -11,6 +11,41 @@ function calculateReadingTime(text: string): number {
   const words = text.split(/\s/g).length
   return Math.ceil(words / wordsPerMinute)
 }
+
+const route = useRoute()
+const tags = ref(new Set<string>(route.query.tags ? route.query.tags.split(',') : []))
+
+function toggleTag(tag: string) {
+  if (tags.value.has(tag)) {
+    tags.value.delete(tag)
+  }
+  else {
+    tags.value.add(tag)
+  }
+}
+
+const sortedPosts = computed(() => {
+  if (tags.value.size === 0) {
+    history.replaceState(null, '', '/posts')
+    return posts.value
+  }
+  else {
+    history.replaceState(null, '', `/posts?tags=${Array.from(tags.value).join(',')}`)
+
+    return [...posts.value].sort((a, b) => {
+      const aHasTag = a.tags.some(tag => tags.value.has(tag))
+      const bHasTag = b.tags.some(tag => tags.value.has(tag))
+
+      if (aHasTag && !bHasTag) {
+        return -1
+      }
+      if (!aHasTag && bHasTag) {
+        return 1
+      }
+      return 0
+    })
+  }
+})
 </script>
 
 <template>
@@ -19,7 +54,7 @@ function calculateReadingTime(text: string): number {
 
     <ul my-8 space-y-7>
       <li
-        v-for="post in posts"
+        v-for="post in sortedPosts"
         :key="post.id"
       >
         <nuxt-link :to="`${post.path}`">
@@ -38,8 +73,10 @@ function calculateReadingTime(text: string): number {
             <span
               v-for="tag in post.tags"
               :key="tag"
-              inline-block text-xs rd-full px-1.5 py-1px
+              inline-block text-xs rd-full px-1.5 py-1px cursor-pointer
               b="~ gray dashed"
+              :class="tags.has(tag) ? 'dark:b-gray-3 dark:bg-gray-3 bg-gray-3 b-gray-3 dark:text-gray-8 text-gray-5' : ''"
+              @click="toggleTag(tag)"
             >{{ tag }}</span>
           </div>
           <div>
