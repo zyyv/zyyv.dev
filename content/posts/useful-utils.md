@@ -10,6 +10,51 @@ lang: zh-cn
 
 > 一些我在日常开发中使用的实用工具函数的集合。`PR` 欢迎补充更多实用工具函数。
 
+## Hash
+
+```ts [util.ts]
+function hash(str: string) {
+  let i
+  let l
+  let hval = 0x811C9DC5
+
+  for (i = 0, l = str.length; i < l; i++) {
+    hval ^= str.charCodeAt(i)
+    hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24)
+  }
+  return (`00000${(hval >>> 0).toString(36)}`).slice(-6)
+}
+```
+
+Or
+
+```ts [util.ts]
+import { createHash } from 'node:crypto'
+
+function getHash(input: string, length = 8) {
+  return createHash('sha256')
+    .update(input)
+    .digest('hex')
+    .slice(0, length)
+}
+```
+
+## Environment
+
+### import.meta
+
+在 `ESM` 中，您可能会发现您的老朋友 `__dirname` 和 `__filename` 不再可用。当您搜索解决方案时，您会发现您需要解析 `import.meta.url` 才能获取等效项。虽然大多数解决方案仅向您展示如何在 `ESM` 中获取它们，但如果您像我一样，使用 `TypeScript` 编写模块并使用 `tsup` 等工具同时转换为 `CJS` 和 `ESM`。这是同构解：
+
+```ts [script.ts]
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url))
+```
+
+
 ## CreateFilter
 
 创建一个过滤器，代码收集来源于 [UnoCSS](https://github.com/unocss/unocss)。
