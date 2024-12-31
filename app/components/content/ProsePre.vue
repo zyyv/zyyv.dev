@@ -34,7 +34,7 @@ const icon = computed(() => getLangIcon(props.language, props.filename))
   <div b="~ gray:20" my="1em" rd=".375rem" of-hidden class="group">
     <div v-if="icon" p="x4 y1.5" fsc gap-2 pr text-sm>
       <i :class="icon" />
-      {{ filename }}
+      {{ filename ? filename : language === 'bash' ? 'Terminal' : '' }}
       <i :class="copied ? 'i-carbon:checkmark' : 'i-carbon:copy'" pa text-xs right-4 trans op-0 group-hover:op-100 cursor-pointer @click="copy(code)" />
     </div>
     <pre :class="$props.class"><slot /></pre>
