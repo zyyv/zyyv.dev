@@ -5,7 +5,7 @@
       trans linear-text shape-bl o-unpreset-to from-unpreset-from to-unpreset-to href="https://github.com/unpreset"
       target="_blank"
     >
-      <strong>UnPreset</strong>
+      <strong>UnoCSS Community</strong>
     </a>
   </div>
 </template>
