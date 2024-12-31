@@ -56,6 +56,8 @@ const sortedPosts = computed(() => {
       <li
         v-for="post in sortedPosts"
         :key="post.id"
+        trans
+        :class="tags.size > 0 && post.tags.every(tag => !tags.has(tag)) ? 'op-50' : ''"
       >
         <nuxt-link :to="`${post.path}`">
           <strong>{{ post.title }}</strong>
