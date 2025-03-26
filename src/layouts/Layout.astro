@@ -1,0 +1,88 @@
+---
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "zyyv's personal website" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		<script>
+			// Apply theme immediately to avoid flash of wrong theme
+			const savedTheme = localStorage.getItem('theme');
+			const isDark = savedTheme 
+				? savedTheme === 'dark'
+				: window.matchMedia('(prefers-color-scheme: dark)').matches;
+			
+			if (isDark) {
+				document.documentElement.classList.add('dark');
+			}
+
+			// Check if the browser supports View Transitions API
+			if (!document.startViewTransition) {
+				// Add a polyfill or fallback if needed
+				document.startViewTransition = callback => {
+					callback();
+					return {
+						finished: Promise.resolve()
+					};
+				};
+			}
+		</script>
+		<meta name="view-transition" content="same-origin" />
+	</head>
+	<body class="bg-gray-100 dark:bg-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-500">
+		<div id="theme-background" class="fixed inset-0 -z-10 transition-colors duration-500"></div>
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	body {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDEwIDEwIj4KICA8Y2lyY2xlIGN4PSI1IiBjeT0iNSIgcj0iMSIgZmlsbD0iI2NjYyIvPgo8L3N2Zz4=');
+    background-repeat: repeat;
+	}
+
+	.dark body {
+		background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDEwIDEwIj4KICA8Y2lyY2xlIGN4PSI1IiBjeT0iNSIgcj0iMSIgZmlsbD0iIzQ0NCIvPgo8L3N2Zz4=');
+	}
+
+	/* Page content animations */
+	::view-transition-group(page) {
+		animation-duration: 0.5s;
+	}
+
+	#theme-background {
+		view-transition-name: background;
+	}
+	
+	/* Customize the page transition timing */
+	::view-transition-old(page),
+	::view-transition-new(page) {
+		animation: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	/* Customize background transition */
+	::view-transition-group(background) {
+		animation-duration: 1s;
+		animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	/* Supporting dark theme */
+	.dark ::view-transition-group(root) {
+		animation-duration: 0.5s;
+	}
+
+	main {
+		view-transition-name: page;
+	}
+</style>

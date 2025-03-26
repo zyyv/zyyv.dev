@@ -1,0 +1,62 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GreetingCard from '../components/GreetingCard.vue';
+import ThemeToggle from '../components/ThemeToggle.vue';
+---
+
+<Layout title="zyyv.dev | Home">
+	<header class="container mx-auto px-4 py-4 flex justify-end">
+		<ThemeToggle client:load />
+	</header>
+
+	<main class="container mx-auto px-4 py-8 transition-all duration-500">
+		<h1 class="text-6xl font-bold text-center mb-8 transition-transform duration-500">
+			Welcome to <span class="text-gradient">zyyv.dev</span>
+		</h1>
+		
+		<div class="max-w-2xl mx-auto mb-8 p-6 bg-white/80 dark:bg-slate-800/80 rounded-xl shadow-lg transition-all duration-300">
+			<p class="text-lg">
+				Using <strong class="text-primary-600 dark:text-primary-400">Astro + Vue + UnoCSS</strong> for development.
+				The power of islands architecture combined with the flexibility of Vue and the utility of UnoCSS.
+			</p>
+		</div>
+		
+		<div class="max-w-2xl mx-auto transition-transform duration-300">
+			<GreetingCard client:load />
+		</div>
+	</main>
+</Layout>
+
+<style>
+	.text-gradient {
+		background-image: var(--accent-gradient);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-size: 400%;
+		background-position: 0%;
+	}
+
+	:root {
+		--accent: 136, 58, 234;
+		--accent-light: 224, 204, 250;
+		--accent-dark: 49, 10, 101;
+		--accent-gradient: linear-gradient(
+			45deg,
+			rgb(var(--accent)),
+			rgb(var(--accent-light)) 30%,
+			white 60%
+		);
+	}
+
+	:root.dark {
+		--accent: 120, 80, 240;
+		--accent-light: 180, 160, 255;
+		--accent-dark: 80, 50, 180;
+		--accent-gradient: linear-gradient(
+			45deg,
+			rgb(var(--accent)),
+			rgb(var(--accent-light)) 30%,
+			rgb(60, 60, 80) 60%
+		);
+	}
+</style>

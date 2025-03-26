@@ -1,14 +1,11 @@
 {
-  "extends": "./.nuxt/tsconfig.json",
+  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "types": [
-      "node",
-      "vite/client"
-    ],
-    "strictNullChecks": true
-  },
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@layouts/*": ["src/layouts/*"],
+      "@styles/*": ["src/styles/*"]
+    }
+  }
 }
