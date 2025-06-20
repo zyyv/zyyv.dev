@@ -31,18 +31,49 @@ const { title, description = "zyyv's personal website" } = Astro.props;
 			if (!document.startViewTransition) {
 				// Add a polyfill or fallback if needed
 				document.startViewTransition = callback => {
-					callback();
-					return {
-						finished: Promise.resolve()
+					const transition: ViewTransition = {
+						finished: Promise.resolve(),
+						ready: Promise.resolve(),
+						updateCallbackDone: Promise.resolve(),
+						skipTransition: () => {},
+						types: new Set(),
 					};
+					callback();
+					return transition;
 				};
 			}
 		</script>
 		<meta name="view-transition" content="same-origin" />
 	</head>
 	<body class="bg-gray-100 dark:bg-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-500">
-		<div id="theme-background" class="fixed inset-0 -z-10 transition-colors duration-500"></div>
-		<slot />
+		<!-- Header slot -->
+		<header>
+			<slot name="header">
+				<!-- Default header content if no slot is provided -->
+			</slot>
+		</header>
+
+		<!-- Layout with sidebar and main content -->
+		<div class="flex flex-col md:flex-row">
+			<!-- Sidebar slot -->
+			<aside class="w-full md:w-64 md:min-h-screen">
+				<slot name="sidebar">
+					<!-- Default sidebar content if no slot is provided -->
+				</slot>
+			</aside>
+
+			<!-- Main content (default slot) -->
+			<main class="flex-grow">
+				<slot />
+			</main>
+		</div>
+
+		<!-- Footer slot -->
+		<footer>
+			<slot name="footer">
+				<!-- Default footer content if no slot is provided -->
+			</slot>
+		</footer>
 	</body>
 </html>
 
