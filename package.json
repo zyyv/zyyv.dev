@@ -11,13 +11,13 @@
     "taze": "taze major -wIr"
   },
   "dependencies": {
-    "@astrojs/vue": "^5.0.7",
-    "astro": "^5.5.4",
-    "vue": "^3.5.13"
+    "@astrojs/vue": "^5.1.0",
+    "astro": "^5.10.0",
+    "vue": "^3.5.17"
   },
   "devDependencies": {
-    "@unocss/astro": "^66.1.0-beta.7",
-    "unocss": "^66.1.0-beta.7"
+    "@unocss/astro": "^66.2.3",
+    "unocss": "^66.2.3"
   },
-  "packageManager": "pnpm@10.6.5"
+  "packageManager": "pnpm@10.12.1"
 }
