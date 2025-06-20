@@ -1,6 +1,6 @@
-import { defineConfig } from 'astro/config';
-import vue from '@astrojs/vue';
-import UnoCSS from '@unocss/astro';
+import vue from '@astrojs/vue'
+import UnoCSS from '@unocss/astro'
+import { defineConfig } from 'astro/config'
 
 export default defineConfig({
   site: 'https://zyyv.dev',
@@ -10,4 +10,4 @@ export default defineConfig({
     UnoCSS(),
     vue(),
   ],
-});
+})

@@ -1,78 +1,82 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue'
 
-const isDark = ref(false);
+const isDark = ref(false)
 
 // Initialize theme based on user preference or system
 onMounted(() => {
   // Check local storage first
-  const savedTheme = localStorage.getItem('theme');
+  const savedTheme = localStorage.getItem('theme')
   if (savedTheme) {
-    isDark.value = savedTheme === 'dark';
-  } else {
-    // Otherwise check system preference
-    isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    isDark.value = savedTheme === 'dark'
   }
-  applyTheme(false); // initial load, no transition
+  else {
+    // Otherwise check system preference
+    isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  applyTheme(false) // initial load, no transition
 
   // Listen for system theme changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
     if (!localStorage.getItem('theme')) {
-      isDark.value = e.matches;
-      applyTheme(true);
+      isDark.value = e.matches
+      applyTheme(true)
     }
-  });
-});
+  })
+})
 
 // Watch for theme changes and apply them
 watch(isDark, () => {
-  applyTheme(true);
-  localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
-});
+  applyTheme(true)
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+})
 
 // Apply theme to document
-const applyTheme = (withTransition = true) => {
+function applyTheme(withTransition = true) {
   if (withTransition && document.startViewTransition) {
     document.startViewTransition(() => {
       if (isDark.value) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('dark')
       }
-    });
-  } else {
+      else {
+        document.documentElement.classList.remove('dark')
+      }
+    })
+  }
+  else {
     if (isDark.value) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('dark')
+    }
+    else {
+      document.documentElement.classList.remove('dark')
     }
   }
-};
+}
 
-const toggleTheme = () => {
-  isDark.value = !isDark.value;
-};
+function toggleTheme() {
+  isDark.value = !isDark.value
+}
 </script>
 
 <template>
-  <button 
-    @click="toggleTheme" 
+  <button
     class="theme-toggle p-2 rounded-full transition-colors duration-200 hover:bg-gray-200 dark:hover:bg-gray-700 relative"
     aria-label="Toggle theme"
+    @click="toggleTheme"
   >
     <div class="w-6 h-6 flex items-center justify-center view-transition-theme-icon">
       <!-- Sun icon (for dark mode) -->
-      <svg 
-        v-if="isDark" 
-        xmlns="http://www.w3.org/2000/svg" 
-        class="text-yellow-300 transition-opacity" 
-        width="24" 
-        height="24" 
-        viewBox="0 0 24 24" 
-        stroke-width="2" 
-        stroke="currentColor" 
-        fill="none" 
-        stroke-linecap="round" 
+      <svg
+        v-if="isDark"
+        xmlns="http://www.w3.org/2000/svg"
+        class="text-yellow-300 transition-opacity"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        fill="none"
+        stroke-linecap="round"
         stroke-linejoin="round"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -80,17 +84,17 @@ const toggleTheme = () => {
         <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" />
       </svg>
       <!-- Moon icon (for light mode) -->
-      <svg 
-        v-else 
-        xmlns="http://www.w3.org/2000/svg" 
-        class="text-indigo-700 transition-opacity" 
-        width="24" 
-        height="24" 
-        viewBox="0 0 24 24" 
-        stroke-width="2" 
-        stroke="currentColor" 
-        fill="none" 
-        stroke-linecap="round" 
+      <svg
+        v-else
+        xmlns="http://www.w3.org/2000/svg"
+        class="text-indigo-700 transition-opacity"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        fill="none"
+        stroke-linecap="round"
         stroke-linejoin="round"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
