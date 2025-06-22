@@ -1,6 +1,5 @@
 import type { UsefulTheme } from 'unocss-preset-useful'
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
-import { parseColor } from '@unocss/preset-mini/utils'
 import { defineUsefulConfig } from 'unocss-preset-useful'
 
 export default defineUsefulConfig<UsefulTheme>({
@@ -48,43 +47,7 @@ export default defineUsefulConfig<UsefulTheme>({
     },
   },
   typography: true,
-  webFonts: {
-    fonts: {
-      dm: 'DM Sans',
-    },
-  },
-  compileClass: true,
 }, {
-  rules: [
-    [/^o-(.*)$/, ([, body], { theme }) => {
-      if (body) {
-        const color = parseColor(body, theme)
-        if (color?.cssColor?.type === 'rgb' && color.cssColor.components) {
-          return {
-            '--c-context': `${color.cssColor.components.join(',')}`,
-          }
-        }
-        else {
-          return {
-            '--c-context': color?.color,
-          }
-        }
-      }
-    }],
-    [/^([^:]+)::(\S+)$/, ([, n, v], { theme }) => {
-      if (n && v) {
-        const color = parseColor(v, theme)
-        if (color?.cssColor?.type === 'rgb' && color.cssColor.components) {
-          return {
-            [`--${n}`]: `${color.cssColor.components.join(',')}`,
-          }
-        }
-        return {
-          [`--${n}`]: v,
-        }
-      }
-    }],
-  ],
   shortcuts: [
     {
       'page-container': 'container mx-auto my-4',
@@ -106,6 +69,7 @@ export default defineUsefulConfig<UsefulTheme>({
   theme: {
     fontFamily: {
       dank: 'dank',
+      dm: 'DM Sans',
     },
     colors: {
       context: 'rgba(var(--c-context),%alpha)',
@@ -113,13 +77,6 @@ export default defineUsefulConfig<UsefulTheme>({
         DEFAULT: 'rgba(var(--c-text),%alpha)',
         text: 'rgba(var(--c-text),%alpha)',
         bg: 'rgba(var(--c-bg),%alpha)',
-      },
-      level: {
-        0: 'var(--gc-level-0)',
-        1: 'var(--gc-level-1)',
-        2: 'var(--gc-level-2)',
-        3: 'var(--gc-level-3)',
-        4: 'var(--gc-level-4)',
       },
       unocss: {
         DEFAULT: '#818181',
@@ -146,8 +103,4 @@ export default defineUsefulConfig<UsefulTheme>({
       bluesky: '#1185fe',
     },
   },
-  safelist: [
-    Array.from({ length: 5 }, (j, i) => `fill-level-${i}`),
-    'sm-fsc max-w-75'.split(' '),
-  ].flat(),
 })
