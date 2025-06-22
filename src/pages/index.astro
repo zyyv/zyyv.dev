@@ -5,19 +5,35 @@ import ThemeToggle from '../components/ThemeToggle.vue';
 ---
 
 <Layout title="zyyv.dev | Home">
-	<header class="container mx-auto px-4 py-4 flex justify-end">
-		<ThemeToggle client:load />
-	</header>
+	<div slot="quadrant-top-left">
+		<header class="container mx-auto px-4 py-4 flex justify-end">
+			<ThemeToggle client:load />
+		</header>
 
-	<main class="container mx-auto px-4 py-8 transition-all duration-500">
-		<h1 class="text-6xl font-bold text-center mb-8 transition-transform duration-500">
-			Welcome to <span class="text-gradient">zyyv.dev</span>
-		</h1>
-		
-		<div class="max-w-2xl mx-auto transition-transform duration-300">
-			<GreetingCard client:load />
-		</div>
-	</main>
+		<main class="container mx-auto px-4 py-8 transition-all duration-500">
+			<h1 class="text-6xl font-bold text-center mb-8 transition-transform duration-500">
+				Welcome to <span class="text-gradient">zyyv.dev</span>
+			</h1>
+			
+			<div class="max-w-2xl mx-auto transition-transform duration-300">
+				<GreetingCard client:load />
+			</div>
+			<h1 class="text-6xl font-bold text-center mb-8 transition-transform duration-500">
+				Welcome to <span class="text-gradient">zyyv.dev</span>
+			</h1>
+			
+			<div class="max-w-2xl mx-auto transition-transform duration-300">
+				<GreetingCard client:load />
+			</div>
+			<h1 class="text-6xl font-bold text-center mb-8 transition-transform duration-500">
+				Welcome to <span class="text-gradient">zyyv.dev</span>
+			</h1>
+			
+			<div class="max-w-2xl mx-auto transition-transform duration-300">
+				<GreetingCard client:load />
+			</div>
+		</main>
+	</div>
 </Layout>
 
 <style>

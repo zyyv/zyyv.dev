@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, onBeforeUnmount, watch, defineModel } from 'vue';
+import { useCenterStore } from '../stores/center';
 
-const model = defineModel({
-  type: Object as () => { x: number; y: number },
-  default: () => ({ x: 0.5, y: 0.5 }),
-});
+const centerStore = useCenterStore();
+const model = centerStore.center;
 
 const container = ref<HTMLElement | null>(null);
 let dragging = false;
@@ -53,44 +52,30 @@ onBeforeUnmount(stopDrag);
 </script>
 
 <template>
-  <div
-    class="relative w-full h-full select-none"
-    ref="container"
-  >
+  <div class="relative w-full h-full select-none" ref="container">
     <!-- 横纵坐标轴 -->
-    <div
-      class="absolute border-l-1 border-dashed border-gray-400 dark:border-gray-600"
-      :style="{
+    <div class="absolute border-l-1 border-dashed border-gray-400 dark:border-gray-600" :style="{
       left: `${model.x * 100}%`,
       top: 0,
       height: '100%',
       width: 0,
       pointerEvents: 'none',
       transform: 'translateX(-0.5px)'
-      }"
-    ></div>
-    <div
-      class="absolute border-t-1 border-dashed border-gray-400 dark:border-gray-600"
-      :style="{
+    }"></div>
+    <div class="absolute border-t-1 border-dashed border-gray-400 dark:border-gray-600" :style="{
       top: `${model.y * 100}%`,
       left: 0,
       width: '100%',
       height: 0,
       pointerEvents: 'none',
       transform: 'translateY(-0.5px)'
-      }"
-    ></div>
+    }"></div>
     <!-- 原点 -->
-    <div
-      class="absolute size-4 z-10 origin-dot rounded-full cursor-pointer pointer-events-auto!"
-      :style="{
-        left: `${model.x * 100}%`,
-        top: `${model.y * 100}%`,
-        transform: 'translate(-50%, -50%)'
-      }"
-      @mousedown.stop.prevent="startDrag"
-      @touchstart.stop.prevent="startDrag"
-    >
+    <div class="absolute size-4 z-10 origin-dot rounded-full cursor-pointer pointer-events-auto!" :style="{
+      left: `${model.x * 100}%`,
+      top: `${model.y * 100}%`,
+      transform: 'translate(-50%, -50%)'
+    }" @mousedown.stop.prevent="startDrag" @touchstart.stop.prevent="startDrag">
       <span class="ripple"></span>
     </div>
   </div>
@@ -103,6 +88,7 @@ onBeforeUnmount(stopDrag);
   position: relative;
   overflow: visible;
 }
+
 .ripple {
   position: absolute;
   left: 50%;
@@ -122,14 +108,15 @@ onBeforeUnmount(stopDrag);
     opacity: 0.7;
     transform: translate(-50%, -50%) scale(1);
   }
+
   70% {
     opacity: 0.2;
     transform: translate(-50%, -50%) scale(2.5);
   }
+
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) scale(3);
   }
 }
 </style>
-

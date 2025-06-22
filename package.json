@@ -16,6 +16,7 @@
   "dependencies": {
     "@astrojs/vue": "^5.1.0",
     "astro": "^5.10.0",
+    "pinia": "^3.0.1",
     "vue": "^3.5.17"
   },
   "devDependencies": {

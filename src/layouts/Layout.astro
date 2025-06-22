@@ -1,10 +1,12 @@
 ---
+import OriginController from '../components/OriginController.vue'
+import Quadrant from '../components/Quadrant.vue'
 interface Props {
-	title: string;
-	description?: string;
+	title: string
+	description?: string
 }
 
-const { title, description = "zyyv's personal website" } = Astro.props;
+const { title, description = "zyyv's personal website" } = Astro.props
 ---
 
 <!doctype html>
@@ -17,75 +19,77 @@ const { title, description = "zyyv's personal website" } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 		<script>
-			// Apply theme immediately to avoid flash of wrong theme
-			const savedTheme = localStorage.getItem('theme');
-			const isDark = savedTheme 
-				? savedTheme === 'dark'
-				: window.matchMedia('(prefers-color-scheme: dark)').matches;
-			
+			const savedTheme = localStorage.getItem('theme')
+			const isDark = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
+
 			if (isDark) {
-				document.documentElement.classList.add('dark');
+				document.documentElement.classList.add('dark')
 			}
 
 			// Check if the browser supports View Transitions API
 			if (!document.startViewTransition) {
 				// Add a polyfill or fallback if needed
-				document.startViewTransition = callback => {
+				document.startViewTransition = (callback) => {
 					const transition: ViewTransition = {
 						finished: Promise.resolve(),
 						ready: Promise.resolve(),
 						updateCallbackDone: Promise.resolve(),
 						skipTransition: () => {},
 						types: new Set(),
-					};
-					callback?.();
-					return transition;
-				};
+					}
+					callback?.()
+					return transition
+				}
 			}
 		</script>
 		<meta name="view-transition" content="same-origin" />
 	</head>
-	<body class="bg-gray-100 dark:bg-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-500">
-		<!-- Header slot -->
-		<header>
-			<slot name="header">
-				<!-- Default header content if no slot is provided -->
-			</slot>
-		</header>
-
-		<!-- Layout with sidebar and main content -->
-		<div class="flex flex-col md:flex-row">
-			<!-- Sidebar slot -->
-			<aside class="w-full md:w-64 md:min-h-screen">
-				<slot name="sidebar">
-					<!-- Default sidebar content if no slot is provided -->
-				</slot>
-			</aside>
-
-			<!-- Main content (default slot) -->
-			<main class="flex-grow">
-				<slot />
-			</main>
+	<body class="bg-gray-100 dark:bg-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-500 m-0 p-0">
+		<div id="quadrant-root" class="w-screen h-screen relative overflow-hidden">
+			<!-- Vue 控制器，绝对定位覆盖在四象限上 -->
+			<div class="absolute inset-0 z-20 pointer-events-none">
+				<OriginController class="w-full h-full" client:only="vue" />
+			</div>
+			<!-- 四象限布局 -->
+			<Quadrant client:only="vue">
+				<!-- 左上象限 -->
+				<section class="p-4 overflow-auto">
+					<slot name="quadrant-top-left">
+						<!-- 默认左上象限内容 -->
+					</slot>
+				</section>
+				<!-- 右上象限 -->
+				<section class="p-4 overflow-auto">
+					<slot name="quadrant-top-right">
+						<!-- 默认右上象限内容 -->
+					</slot>
+				</section>
+				<!-- 左下象限 -->
+				<section class="p-4 overflow-auto">
+					<slot name="quadrant-bottom-left">
+						<!-- 默认左下象限内容 -->
+					</slot>
+				</section>
+				<!-- 右下象限 -->
+				<section class="p-4 overflow-auto">
+					<slot name="quadrant-bottom-right">
+						<!-- 默认右下象限内容 -->
+					</slot>
+				</section>
+			</Quadrant>
 		</div>
-
-		<!-- Footer slot -->
-		<footer>
-			<slot name="footer">
-				<!-- Default footer content if no slot is provided -->
-			</slot>
-		</footer>
 	</body>
 </html>
 
 <style is:global>
-	body {
-    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDEwIDEwIj4KICA8Y2lyY2xlIGN4PSI1IiBjeT0iNSIgcj0iMSIgZmlsbD0iI2NjYyIvPgo8L3N2Zz4=');
-    background-repeat: repeat;
+	/* body {
+		background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDEwIDEwIj4KICA8Y2lyY2xlIGN4PSI1IiBjeT0iNSIgcj0iMSIgZmlsbD0iI2NjYyIvPgo8L3N2Zz4=');
+		background-repeat: repeat;
 	}
 
 	.dark body {
 		background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDEwIDEwIj4KICA8Y2lyY2xlIGN4PSI1IiBjeT0iNSIgcj0iMSIgZmlsbD0iIzQ0NCIvPgo8L3N2Zz4=');
-	}
+	} */
 
 	/* Page content animations */
 	::view-transition-group(page) {
@@ -95,7 +99,7 @@ const { title, description = "zyyv's personal website" } = Astro.props;
 	#theme-background {
 		view-transition-name: background;
 	}
-	
+
 	/* Customize the page transition timing */
 	::view-transition-old(page),
 	::view-transition-new(page) {
