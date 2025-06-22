@@ -1,29 +1,9 @@
 <script lang='ts' setup>
-import { useTitle } from '@vueuse/core'
-
-useTitle('Projects | Chris')
-useHead({
-  title: 'Projects | Chris',
-  meta: [
-    {
-      hid: 'description',
-      name: 'description',
-      content: 'List of projects that I am proud of.',
-    },
-    {
-      hid: 'keywords',
-      name: 'keywords',
-      content: 'projects, github, open source, vue, nuxt, node, javascript, typescript',
-    },
-  ],
-})
-
 const { data, status } = useFetch('/api/repos')
 </script>
 
 <template>
-  <div mxa w-65ch>
-    <PageHeader title="Projects" description="List of projects (maintained or created) that I am proud of." />
+  <div mxa max-w-65ch>
     <div my-8 space-y-8>
       <template v-if="status === 'pending'">
         <div v-for="section in 2" :key="section">

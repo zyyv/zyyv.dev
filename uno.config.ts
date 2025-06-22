@@ -1,5 +1,6 @@
 import type { UsefulTheme } from 'unocss-preset-useful'
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
+import { symbols } from '@unocss/core'
 import { defineUsefulConfig } from 'unocss-preset-useful'
 
 export default defineUsefulConfig<UsefulTheme>({
@@ -48,9 +49,23 @@ export default defineUsefulConfig<UsefulTheme>({
   },
   typography: true,
 }, {
+  rules: [
+    // 隐藏滚动条
+    ['scroll-none', [
+      {
+        'scrollbar-width': 'none',
+        '-ms-overflow-style': 'none',
+      },
+      {
+        [symbols.selector]: s => `${s}::-webkit-scrollbar`,
+        display: 'none',
+      },
+    ]],
+  ],
   shortcuts: [
     {
       'page-container': 'container mx-auto my-4',
+      'quadrant': 'overflow-auto scroll-none',
     },
     ['text', 'text-primary-text'],
     ['bg', 'bg-primary-bg'],

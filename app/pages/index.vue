@@ -2,20 +2,31 @@
 useHead({
   title: 'Chris',
 })
+definePageMeta({
+  layout: false,
+})
 </script>
 
 <template>
-  <div flex-1 fccc>
-    <PersonInfo />
-    <!-- <p>
-      I have diverse interests, including watching anime, mountain climbing, music appreciation, foreign language acquisition, gaming,
-      and recently, I have embarked on video editing with the goal of becoming a content
-      <IconsBilibili />
-      .
-    </p> -->
-
-    <!-- <div v-if="user" lt-sm-fcc>
-      <GC :username="user.login" borderable />
-    </div> -->
-  </div>
+  <NuxtLayout name="default">
+    <template #two>
+      <div fccc size-full>
+        <PersonInfo />
+      </div>
+    </template>
+    <template #one>
+      <div fccc size-full>
+        <img class="max-w-80%" src="/photos/DSC00964.jpg" alt="Description">
+        <img class="max-w-80%" src="/photos/DSC00964.jpg" alt="Description">
+      </div>
+    </template>
+    <template #three>
+      <Projects />
+    </template>
+    <template #four>
+      <div fccc>
+        1
+      </div>
+    </template>
+  </NuxtLayout>
 </template>
