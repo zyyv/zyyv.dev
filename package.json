@@ -21,6 +21,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^4.14.1",
     "@unocss/astro": "^66.2.3",
+    "lint-staged": "^16.1.2",
     "unocss": "^66.2.3",
     "unocss-preset-useful": "^1.0.1"
   }

@@ -38,7 +38,7 @@ const { title, description = "zyyv's personal website" } = Astro.props;
 						skipTransition: () => {},
 						types: new Set(),
 					};
-					callback();
+					callback?.();
 					return transition;
 				};
 			}
