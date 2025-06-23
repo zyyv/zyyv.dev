@@ -12,6 +12,7 @@ definePageMeta({
     <template #two>
       <div fccc class="@container">
         <PersonInfo />
+        <DarkToggle />
       </div>
     </template>
     <template #one>

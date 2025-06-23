@@ -11,8 +11,8 @@ function getRelativePosition(e: MouseEvent | TouchEvent) {
   const rect = container.value!.getBoundingClientRect()
   let clientX: number, clientY: number
   if (e instanceof TouchEvent) {
-    clientX = e.touches[0].clientX
-    clientY = e.touches[0].clientY
+    clientX = e.touches[0]!.clientX
+    clientY = e.touches[0]!.clientY
   }
   else {
     clientX = e.clientX
@@ -29,8 +29,8 @@ function onDrag(e: MouseEvent | TouchEvent) {
   if (!dragging)
     return
   const pos = getRelativePosition(e)
-  model.value.x = pos.x
-  model.value.y = pos.y
+  model.value!.x = pos.x
+  model.value!.y = pos.y
 }
 
 function stopDrag() {
@@ -56,8 +56,8 @@ onBeforeUnmount(stopDrag)
   <div ref="container" class="relative w-full h-full select-none">
     <!-- 横纵坐标轴 -->
     <div
-      class="absolute border-l-1 border-dashed border-gray-400 dark:border-gray-600" :style="{
-        left: `${model.x * 100}%`,
+      class="absolute border-l-1 border-dashed border-op-15 border-dark dark:border-white" :style="{
+        left: `${model!.x * 100}%`,
         top: 0,
         height: '100%',
         width: 0,
@@ -66,8 +66,8 @@ onBeforeUnmount(stopDrag)
       }"
     />
     <div
-      class="absolute border-t-1 border-dashed border-gray-400 dark:border-gray-600" :style="{
-        top: `${model.y * 100}%`,
+      class="absolute border-t-1 border-dashed border-op-15 border-dark dark:border-white" :style="{
+        top: `${model!.y * 100}%`,
         left: 0,
         width: '100%',
         height: 0,
@@ -78,8 +78,8 @@ onBeforeUnmount(stopDrag)
     <!-- 原点 -->
     <div
       class="absolute size-4 z-10 origin-dot rounded-full cursor-pointer pointer-events-auto!" :style="{
-        left: `${model.x * 100}%`,
-        top: `${model.y * 100}%`,
+        left: `${model!.x * 100}%`,
+        top: `${model!.y * 100}%`,
         transform: 'translate(-50%, -50%)',
       }"
       @mousedown.stop.prevent="startDrag"
