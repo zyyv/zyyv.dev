@@ -18,24 +18,18 @@ importers:
       '@antfu/eslint-config':
         specifier: ^4.14.1
         version: 4.15.0(@vue/compiler-sfc@3.5.17)(eslint@9.29.0(jiti@2.4.2))(typescript@5.7.2)
-      '@iconify-json/akar-icons':
-        specifier: ^1.2.2
-        version: 1.2.2
-      '@iconify-json/carbon':
-        specifier: ^1.2.10
-        version: 1.2.10
+      '@iconify-json/catppuccin':
+        specifier: ^1.2.11
+        version: 1.2.11
       '@iconify-json/fluent-emoji':
         specifier: ^1.2.3
         version: 1.2.3
+      '@iconify-json/hugeicons':
+        specifier: ^1.2.5
+        version: 1.2.5
       '@iconify-json/logos':
         specifier: ^1.2.4
         version: 1.2.4
-      '@iconify-json/ri':
-        specifier: ^1.2.5
-        version: 1.2.5
-      '@iconify-json/vscode-icons':
-        specifier: ^1.2.23
-        version: 1.2.23
       '@iconify/utils':
         specifier: ^2.3.0
         version: 2.3.0
@@ -526,23 +520,17 @@ packages:
     resolution: {integrity: sha512-xeO57FpIu4p1Ri3Jq/EXq4ClRm86dVF2z/+kvFnyqVYRavTZmaFaUBbWCOuuTh0o/g7DSsk6kc2vrS4Vl5oPOQ==}
     engines: {node: '>=18.18'}
 
-  '@iconify-json/akar-icons@1.2.2':
-    resolution: {integrity: sha512-PoUMM4FKQ6NumbSUjoM4lsulJ0GPpj979nLjZS8MGwk99MuZc80LV6AP51lfLcF4jvZFmC5G1gDIymQOi66Sqg==}
-
-  '@iconify-json/carbon@1.2.10':
-    resolution: {integrity: sha512-Z+psKjwGZ9wZu+mVOStmIqHux1OWc8AtDiJ4eHmOkbcW5SMoGVtsQ6LWGJcYguT+9q9YgGihUTvHEnQSPWKGiQ==}
+  '@iconify-json/catppuccin@1.2.11':
+    resolution: {integrity: sha512-Hc71/cfLZhb8Hetr+tBb9XRe24DNIBM4EPFoHa6mUJdXTHakPeeGLjEa3owDNcGSwZFJCXnBizDpkCL8UwMR9w==}
 
   '@iconify-json/fluent-emoji@1.2.3':
     resolution: {integrity: sha512-q9oSqx463rVTQbPbVwvpOkeVii+9BifvJcluv5lqs5ybdab4lnVnpQ/uE2zAseFGOWNygKJsXZl6HbgV9HGhZw==}
 
+  '@iconify-json/hugeicons@1.2.5':
+    resolution: {integrity: sha512-luPAFcmQU7eQFHzjtYdYbF5j2h8/6SCv+FGQP7FNJNVBjVGQOyuyum5wXDFEx13F8lGk/AGPVWGqMHp7+HdmJg==}
+
   '@iconify-json/logos@1.2.4':
     resolution: {integrity: sha512-XC4If5D/hbaZvUkTV8iaZuGlQCyG6CNOlaAaJaGa13V5QMYwYjgtKk3vPP8wz3wtTVNVEVk3LRx1fOJz+YnSMw==}
-
-  '@iconify-json/ri@1.2.5':
-    resolution: {integrity: sha512-kWGimOXMZrlYusjBKKXYOWcKhbOHusFsmrmRGmjS7rH0BpML5A9/fy8KHZqFOwZfC4M6amObQYbh8BqO5cMC3w==}
-
-  '@iconify-json/vscode-icons@1.2.23':
-    resolution: {integrity: sha512-gFTcKecKra2/b5SbGDgHGI/l8CuikHyBPmqGlK+YCmS8AK72dtDQbUekdoACsju/3TYS37QvdPoOQwnyx2LdYg==}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -2592,8 +2580,8 @@ packages:
   fast-npm-meta@0.4.3:
     resolution: {integrity: sha512-eUzR/uVx61fqlHBjG/eQx5mQs7SQObehMTTdq8FAkdCB4KuZSQ6DiZMIrAq4kcibB3WFLQ9c4dT26Vwkix1RKg==}
 
-  fast-uri@3.0.6:
-    resolution: {integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw==}
+  fast-uri@3.0.3:
+    resolution: {integrity: sha512-aLrHthzCjH5He4Z2H9YZ+v6Ujb9ocRuW6ZzkJQOrTxleEijANq4v1TsaPaVG1PZcuurEzrLcWRyYBYXD5cEiaw==}
 
   fastq@1.17.1:
     resolution: {integrity: sha512-sRVD3lWVIXWg6By68ZN7vho9a1pQcN/WBFaAAsDDFzlJjvoGx0P8z7V1t72grFJfJhu3YPZBuu25f7Kaw2jN1w==}
@@ -4426,8 +4414,8 @@ packages:
     resolution: {integrity: sha512-MDN2WZb7TgsIvtFxqsLJ4GYy9dTDG5Dea/ZfPHrG98Cy7UH1EFIOzH+zDjnoP38ImuBbxZy1Zl8AbiwOZpYMUQ==}
     hasBin: true
 
-  terser-webpack-plugin@5.3.14:
-    resolution: {integrity: sha512-vkZjpUjb6OMS7dhV+tILUW6BhpDR7P2L/aQSAv+Uwk+m8KATX9EccViHTJR2qDtACKPIYndLGCyl3FMo+r2LMw==}
+  terser-webpack-plugin@5.3.11:
+    resolution: {integrity: sha512-RVCsMfuD0+cTt3EwX8hSl2Ks56EbFHWmhluwcqoPKtBnfjiT6olaq7PRIRfhyU8nnC2MrnDrBLfrD/RGE+cVXQ==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
       '@swc/core': '*'
@@ -5476,11 +5464,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.2': {}
 
-  '@iconify-json/akar-icons@1.2.2':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/carbon@1.2.10':
+  '@iconify-json/catppuccin@1.2.11':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -5488,15 +5472,11 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
+  '@iconify-json/hugeicons@1.2.5':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/logos@1.2.4':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/ri@1.2.5':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/vscode-icons@1.2.23':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -7015,7 +6995,7 @@ snapshots:
   ajv@8.17.1:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.0.6
+      fast-uri: 3.0.3
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -8040,7 +8020,7 @@ snapshots:
 
   fast-npm-meta@0.4.3: {}
 
-  fast-uri@3.0.6: {}
+  fast-uri@3.0.3: {}
 
   fastq@1.17.1:
     dependencies:
@@ -10246,7 +10226,7 @@ snapshots:
       unconfig: 7.3.2
       yaml: 2.8.0
 
-  terser-webpack-plugin@5.3.14(webpack@5.99.9):
+  terser-webpack-plugin@5.3.11(webpack@5.99.9):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
@@ -10728,7 +10708,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.2
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.14(webpack@5.99.9)
+      terser-webpack-plugin: 5.3.11(webpack@5.99.9)
       watchpack: 2.4.2
       webpack-sources: 3.3.2
     transitivePeerDependencies:

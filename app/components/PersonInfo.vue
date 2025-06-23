@@ -3,8 +3,8 @@ const { data: user } = await useFetch('/api/user')
 </script>
 
 <template>
-  <div flex items-center md="gap-10 flex-row" py-2>
-    <h1 fsc gap-5>
+  <div class="flex items-center flex-col py-2 @3xl:(gap-10 flex-row py-0)">
+    <h1 fsc>
       <UserAvatar />
     </h1>
     <section>
@@ -55,7 +55,7 @@ const { data: user } = await useFetch('/api/user')
       <p>
         <a trans text-p-r class="group" hover-op-75 :href="`mailto:${user?.email ?? 'hizyyv@gmail.com'}`">
           Hire Me
-          <i trans group-hover="ml-2" i-ri:arrow-right-up-line bg-gradient-to-r />
+          <i trans group-hover="ml-2" class="i-hugeicons:arrow-up-right-02" bg-linear-to-r from-purple to-red />
         </a>
       </p>
     </section>

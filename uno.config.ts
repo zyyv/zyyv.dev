@@ -70,7 +70,7 @@ export default defineUsefulConfig<UsefulTheme>({
     ['text', 'text-primary-text'],
     ['bg', 'bg-primary-bg'],
 
-    ['linear-text', 'text-transparent bg-clip-text bg-gradient-to-r'],
+    ['linear-text', 'text-transparent bg-clip-text bg-linear-to-r'],
     ['text-p-r', 'linear-text from-purple to-red'], // test case
 
     ['icon', 'size-5.5 cursor-pointer select-none transition-opacity-300 ease-in-out text'],
@@ -82,7 +82,7 @@ export default defineUsefulConfig<UsefulTheme>({
     ['header-anchor', 'float-left mt-[0.125em] ml-[-0.8em] pr-[0.2em] text-[0.85em] op-0 group-hover-op-60 fw-600'],
   ],
   theme: {
-    fontFamily: {
+    font: {
       dank: 'dank',
       dm: 'DM Sans',
     },
