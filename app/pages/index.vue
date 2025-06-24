@@ -1,31 +1,49 @@
 <script lang="ts" setup>
+import { center } from '~/composables/center'
+
 useHead({
   title: 'Chris',
 })
-definePageMeta({
-  layout: false,
+
+const ready = ref(false)
+
+onMounted(() => {
+  const storage = useLocalStorage('center', center)
+  if (storage.value)
+    center.value = { ...storage.value }
+
+  watchEffect(() => {
+    storage.value = { ...center.value }
+  })
+  ready.value = true
 })
 </script>
 
 <template>
-  <NuxtLayout name="default">
-    <template #two>
-      <div fccc class="@container">
-        <PersonInfo />
-        <DarkToggle />
-      </div>
-    </template>
-    <template #one>
-      <img class="max-w-80%" src="/photos/DSC00964.jpg" alt="Description">
-      <img class="max-w-80%" src="/photos/DSC01329.jpg" alt="Description">
-    </template>
-    <template #three>
+  <div class="absolute inset-0 z-20 pointer-events-none">
+    <OriginController v-model="center" size-full />
+  </div>
+  <main
+    class="size-screen grid"
+    :style="{
+      gridTemplateColumns: `${center.x * 100}% ${100 - center.x * 100}%`,
+      gridTemplateRows: `${center.y * 100}% ${100 - center.y * 100}%`,
+    }"
+  >
+    <section class="quadrant">
+      <MeInfo />
+    </section>
+    <!-- 右上象限 -->
+    <section class="quadrant">
+      <Photos />
+    </section>
+    <!-- 左下象限 -->
+    <section class="quadrant">
       <Projects />
-    </template>
-    <template #four>
-      <div fccc>
-        1
-      </div>
-    </template>
-  </NuxtLayout>
+    </section>
+    <!-- 右下象限 -->
+    <section class="quadrant">
+      1
+    </section>
+  </main>
 </template>

@@ -8,9 +8,7 @@ export default defineNuxtConfig({
   modules: [
     '@vueuse/nuxt',
     '@unocss/nuxt',
-    // '@nuxt/content',
-    // '@nuxtjs/color-mode',
-    // '@vite-pwa/nuxt',
+    '@nuxt/image',
   ],
 
   experimental: {

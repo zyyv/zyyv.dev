@@ -20,7 +20,7 @@
     "unocss"
   ],
   "scripts": {
-    "dev": "nuxt dev -o",
+    "dev": "nuxt dev",
     "build": "nuxt build",
     "preview": "nuxt preview",
     "lint": "eslint .",
@@ -39,6 +39,8 @@
     "@iconify-json/hugeicons": "^1.2.5",
     "@iconify-json/logos": "^1.2.4",
     "@iconify/utils": "^2.3.0",
+    "@nuxt/content": "3.6.1",
+    "@nuxt/image": "1.10.0",
     "@unocss/nuxt": "^66.2.3",
     "@vueuse/nuxt": "^13.4.0",
     "eslint": "^9.29.0",

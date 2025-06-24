@@ -72,8 +72,8 @@ const icon = computed(() => {
 
 <template>
   <ClientOnly>
-    <button class="hover:animate-rubber-band" @click="toggleDark">
-      <i :class="icon" size-5.5 />
+    <button class="hover:animate-rubber-band fcc cursor-pointer" @click="toggleDark">
+      <i :class="icon" />
     </button>
   </ClientOnly>
 </template>

@@ -3,9 +3,9 @@ const { data: user } = await useFetch('/api/user')
 </script>
 
 <template>
-  <div class="flex items-center flex-col py-2 @3xl:(gap-10 flex-row py-0)">
+  <div class="flex items-center flex-col py-2 @2xl:(gap-10 flex-row py-0)">
     <h1 fsc>
-      <UserAvatar />
+      <MeAvatar />
     </h1>
     <section>
       <p>

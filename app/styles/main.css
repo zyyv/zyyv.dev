@@ -24,9 +24,9 @@ body::-webkit-scrollbar {
   --uno: min-h-screen flex flex-col font-dm;
 }
 
-::selection {
+/* ::selection {
   --uno: text-primary;
-}
+} */
 
 @keyframes animStar {
   from {
