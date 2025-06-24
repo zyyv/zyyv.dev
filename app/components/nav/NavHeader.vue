@@ -1,5 +1,5 @@
 <template>
-  <header fixed z-999 top-0 right-0 p2>
+  <header fixed z-999 top-0 left-0 p2>
     <DarkToggle />
   </header>
 </template>

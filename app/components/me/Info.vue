@@ -3,11 +3,11 @@ const { data: user } = await useFetch('/api/user')
 </script>
 
 <template>
-  <div class="flex items-center flex-col py-2 @2xl:(gap-10 flex-row py-0)">
+  <div class="fccc py-4 px-4 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full">
     <h1 fsc>
       <MeAvatar />
     </h1>
-    <section>
+    <section class="hidden @sm:block">
       <p>
         I'm <strong text-primary>{{ user?.name }}</strong>,
         <code text-p-r italic font-dank v-text="`<Front-End Developer />`" />

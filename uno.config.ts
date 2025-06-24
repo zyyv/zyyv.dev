@@ -30,6 +30,11 @@ export default defineUsefulConfig<UsefulTheme>({
       },
     },
   },
+  wind4: {
+    preflights: {
+      theme: true,
+    },
+  },
   icons: {
     extraProperties: {
       'display': 'inline-block',
@@ -65,7 +70,7 @@ export default defineUsefulConfig<UsefulTheme>({
   shortcuts: [
     {
       'page-container': 'container mx-auto my-4',
-      'quadrant': 'overflow-auto scroll-none',
+      'quadrant': 'overflow-auto scroll-none @container',
     },
     ['text', 'text-primary-text'],
     ['bg', 'bg-primary-bg'],
