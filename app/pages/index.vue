@@ -17,32 +17,40 @@ onMounted(() => {
   })
   ready.value = true
 })
+
+function onSectionClick(quadrant: string) {
+  const config = QuadrantSizeConfig.value[quadrant]
+  if (config) {
+    center.value.x = config.x
+    center.value.y = config.y
+  }
+}
+
+const dragState = ref(false)
 </script>
 
 <template>
   <div class="absolute inset-0 z-20 pointer-events-none">
-    <OriginController v-model="center" size-full />
+    <OriginController v-model="center" v-model:state="dragState" size-full />
   </div>
   <main
     class="size-screen grid"
+    :class="{ trans: !dragState }"
     :style="{
       gridTemplateColumns: `${center.x * 100}% ${100 - center.x * 100}%`,
       gridTemplateRows: `${center.y * 100}% ${100 - center.y * 100}%`,
     }"
   >
-    <section class="quadrant">
+    <section class="quadrant" @dblclick="onSectionClick('II')">
       <MeInfo />
     </section>
-    <!-- 右上象限 -->
-    <section class="quadrant">
+    <section class="quadrant" @dblclick="onSectionClick('I')">
       <Photos />
     </section>
-    <!-- 左下象限 -->
-    <section class="quadrant">
+    <section class="quadrant" @dblclick="onSectionClick('III')">
       <Projects />
     </section>
-    <!-- 右下象限 -->
-    <section class="quadrant">
+    <section class="quadrant" @dblclick="onSectionClick('IV')">
       1
     </section>
   </main>

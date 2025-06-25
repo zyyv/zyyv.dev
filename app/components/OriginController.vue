@@ -3,9 +3,13 @@ const model = defineModel<{
   x: number
   y: number
 }>()
-
+const state = defineModel('state', { type: Boolean, default: false })
 const container = ref<HTMLElement | null>(null)
-let dragging = false
+const dragging = ref(false)
+
+watchEffect(() => {
+  state.value = dragging.value
+})
 
 function getRelativePosition(e: MouseEvent | TouchEvent) {
   const rect = container.value!.getBoundingClientRect()
@@ -26,7 +30,7 @@ function getRelativePosition(e: MouseEvent | TouchEvent) {
 }
 
 function onDrag(e: MouseEvent | TouchEvent) {
-  if (!dragging)
+  if (!dragging.value)
     return
   const pos = getRelativePosition(e)
   model.value!.x = pos.x
@@ -34,7 +38,7 @@ function onDrag(e: MouseEvent | TouchEvent) {
 }
 
 function stopDrag() {
-  dragging = false
+  dragging.value = false
   window.removeEventListener('mousemove', onDrag)
   window.removeEventListener('mouseup', stopDrag)
   window.removeEventListener('touchmove', onDrag)
@@ -42,7 +46,7 @@ function stopDrag() {
 }
 
 function startDrag(e: MouseEvent | TouchEvent) {
-  dragging = true
+  dragging.value = true
   onDrag(e)
   window.addEventListener('mousemove', onDrag)
   window.addEventListener('mouseup', stopDrag)
@@ -56,6 +60,7 @@ onBeforeUnmount(stopDrag)
   <div ref="container" class="relative w-full h-full select-none">
     <!-- 横纵坐标轴 -->
     <div
+      :class="{ trans: !dragging }"
       class="absolute border-l-1 border-dashed border-op-15 border-dark dark:border-white" :style="{
         left: `${model!.x * 100}%`,
         top: 0,
@@ -66,6 +71,7 @@ onBeforeUnmount(stopDrag)
       }"
     />
     <div
+      :class="{ trans: !dragging }"
       class="absolute border-t-1 border-dashed border-op-15 border-dark dark:border-white" :style="{
         top: `${model!.y * 100}%`,
         left: 0,
@@ -77,6 +83,7 @@ onBeforeUnmount(stopDrag)
     />
     <!-- 原点 -->
     <div
+      :class="{ trans: !dragging }"
       class="absolute size-4 z-10 origin-dot rounded-full cursor-pointer pointer-events-auto!" :style="{
         left: `${model!.x * 100}%`,
         top: `${model!.y * 100}%`,
