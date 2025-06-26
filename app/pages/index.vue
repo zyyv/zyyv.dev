@@ -43,7 +43,9 @@ const dragState = ref(false)
       <Projects />
     </section>
     <section class="quadrant">
-      1
+      <div size-full fcc animate-pulse>
+        Coming soon...
+      </div>
     </section>
   </main>
 </template>
