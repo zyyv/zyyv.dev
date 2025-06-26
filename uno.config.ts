@@ -1,6 +1,6 @@
 import type { UsefulTheme } from 'unocss-preset-useful'
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
-import { parseColor } from '@unocss/preset-mini/utils'
+import { symbols } from '@unocss/core'
 import { defineUsefulConfig } from 'unocss-preset-useful'
 
 export default defineUsefulConfig<UsefulTheme>({
@@ -48,79 +48,46 @@ export default defineUsefulConfig<UsefulTheme>({
     },
   },
   typography: true,
-  webFonts: {
-    fonts: {
-      dm: 'DM Sans',
-    },
-  },
-  compileClass: true,
 }, {
   rules: [
-    [/^o-(.*)$/, ([, body], { theme }) => {
-      if (body) {
-        const color = parseColor(body, theme)
-        if (color?.cssColor?.type === 'rgb' && color.cssColor.components) {
-          return {
-            '--c-context': `${color.cssColor.components.join(',')}`,
-          }
-        }
-        else {
-          return {
-            '--c-context': color?.color,
-          }
-        }
-      }
-    }],
-    [/^([^:]+)::(\S+)$/, ([, n, v], { theme }) => {
-      if (n && v) {
-        const color = parseColor(v, theme)
-        if (color?.cssColor?.type === 'rgb' && color.cssColor.components) {
-          return {
-            [`--${n}`]: `${color.cssColor.components.join(',')}`,
-          }
-        }
-        return {
-          [`--${n}`]: v,
-        }
-      }
-    }],
+    // 隐藏滚动条
+    ['scroll-none', [
+      {
+        'scrollbar-width': 'none',
+        '-ms-overflow-style': 'none',
+      },
+      {
+        [symbols.selector]: s => `${s}::-webkit-scrollbar`,
+        display: 'none',
+      },
+    ]],
   ],
   shortcuts: [
     {
       'page-container': 'container mx-auto my-4',
+      'quadrant': 'overflow-auto scroll-none @container',
     },
-    ['text', 'text-primary-text'],
-    ['bg', 'bg-primary-bg'],
+    ['text-base', 'text-dark-800 dark:text-stone-300'],
+    ['bg-base', 'bg-light-300 dark:bg-dark-800'],
 
-    ['linear-text', 'text-transparent bg-clip-text bg-gradient-to-r'],
+    ['linear-text', 'text-transparent bg-clip-text bg-linear-to-r'],
     ['text-p-r', 'linear-text from-purple to-red'], // test case
 
     ['icon', 'size-5.5 cursor-pointer select-none transition-opacity-300 ease-in-out text'],
     ['icon-btn', 'icon color-inherit op64 hover-op100 hover-color-teal-500 dark-hover-color-inherit'],
     ['icon-link', 'icon color-inherit op64 hover:op100 hover-text-red-300 dark-hover-color-inherit'],
     ['icon-text', 'color-inherit op64 hover:op100 hover-text-purple dark-hover-color-inherit'],
-    ['linkWithIcon', 'trans c-context'],
+    ['linkWithIcon', 'trans'],
 
     ['header-anchor', 'float-left mt-[0.125em] ml-[-0.8em] pr-[0.2em] text-[0.85em] op-0 group-hover-op-60 fw-600'],
   ],
   theme: {
-    fontFamily: {
+    font: {
       dank: 'dank',
+      dm: 'DM Sans',
     },
     colors: {
       context: 'rgba(var(--c-context),%alpha)',
-      primary: {
-        DEFAULT: 'rgba(var(--c-text),%alpha)',
-        text: 'rgba(var(--c-text),%alpha)',
-        bg: 'rgba(var(--c-bg),%alpha)',
-      },
-      level: {
-        0: 'var(--gc-level-0)',
-        1: 'var(--gc-level-1)',
-        2: 'var(--gc-level-2)',
-        3: 'var(--gc-level-3)',
-        4: 'var(--gc-level-4)',
-      },
       unocss: {
         DEFAULT: '#818181',
         from: '#ccc',
@@ -140,14 +107,14 @@ export default defineUsefulConfig<UsefulTheme>({
         from: '#41d1ff',
         to: '#bd34fe',
       },
+      vitest: {
+        from: '#FCC72B',
+        to: '#729B1B',
+      },
       vue: '#64b687',
       nuxt: '#64d98a',
       bilibili: '#ed7099',
       bluesky: '#1185fe',
     },
   },
-  safelist: [
-    Array.from({ length: 5 }, (j, i) => `fill-level-${i}`),
-    'sm-fsc max-w-75'.split(' '),
-  ].flat(),
 })

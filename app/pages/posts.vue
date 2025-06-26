@@ -13,7 +13,7 @@ function calculateReadingTime(text: string): number {
 }
 
 const route = useRoute()
-const tags = ref(new Set<string>(route.query.tags ? route.query.tags.split(',') : []))
+const tags = ref(new Set<string>(route.query.tags ? (route.query.tags as string).split(',') : []))
 
 function toggleTag(tag: string) {
   if (tags.value.has(tag)) {
@@ -32,7 +32,7 @@ const sortedPosts = computed(() => {
   else {
     history.replaceState(null, '', `/posts?tags=${Array.from(tags.value).join(',')}`)
 
-    return [...posts.value].sort((a, b) => {
+    return [...posts.value!].sort((a, b) => {
       const aHasTag = a.tags.some(tag => tags.value.has(tag))
       const bHasTag = b.tags.some(tag => tags.value.has(tag))
 
@@ -88,5 +88,7 @@ const sortedPosts = computed(() => {
         </div>
       </li>
     </ul>
+
+    <NuxtPage name="posts" />
   </div>
 </template>

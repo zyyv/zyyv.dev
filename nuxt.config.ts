@@ -1,25 +1,19 @@
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   devServer: {
-    port: 1111,
+    port: 4321,
   },
 
   modules: [
     '@vueuse/nuxt',
     '@unocss/nuxt',
-    '@nuxt/content',
-    '@nuxtjs/color-mode',
-    // '@vite-pwa/nuxt',
+    '@nuxt/image',
   ],
 
   experimental: {
     viewTransition: true,
     renderJsonPayloads: true,
-  },
-
-  colorMode: {
-    preference: 'system',
-    fallback: 'dark',
-    classSuffix: '',
   },
 
   css: [
@@ -29,24 +23,6 @@ export default defineNuxtConfig({
     '~/styles/main.css',
   ],
 
-  content: {
-    build: {
-      markdown: {
-        toc: {
-          depth: 3,
-          searchDepth: 3,
-        },
-        highlight: {
-          theme: {
-            default: 'vitesse-dark',
-            light: 'vitesse-light',
-          },
-        },
-      },
-    },
-
-  },
-
   vite: {
     define: {
       'import.meta.env.__BUILD_TIME__': JSON.stringify(new Date().toISOString()),
@@ -54,19 +30,6 @@ export default defineNuxtConfig({
     },
     build: {
       target: 'esnext',
-    },
-  },
-
-  // intlify: {
-  //   localeDir: 'locales',
-  //   vueI18n: {
-  //     locale: 'zh-cn',
-  //   },
-  // },
-  nitro: {
-    prerender: {
-      crawlLinks: false,
-      routes: ['/'],
     },
   },
 

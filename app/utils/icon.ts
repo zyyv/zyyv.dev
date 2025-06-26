@@ -2,66 +2,71 @@
 
 const langIcons = {
 // package managers
-  pnpm: 'i-vscode-icons:file-type-light-pnpm',
-  npm: 'i-vscode-icons:file-type-npm',
-  yarn: 'i-vscode-icons:file-type-yarn',
-  bun: 'i-vscode-icons:file-type-bun',
-  deno: 'i-vscode-icons:file-type-light-deno',
+  pnpm: 'i-catppuccin:pnpm',
+  npm: 'i-catppuccin:npm',
+  yarn: 'i-catppuccin:yarn',
+  bun: 'i-catppuccin:bun',
+  deno: 'i-catppuccin:deno',
   // frameworks
-  vue: 'i-vscode-icons:file-type-vue',
-  svelte: 'i-vscode-icons:file-type-svelte',
-  angular: 'i-vscode-icons:file-type-angular',
-  react: 'i-vscode-icons:file-type-reactjs',
-  next: 'i-vscode-icons:file-type-light-next',
-  nuxt: 'i-vscode-icons:file-type-nuxt',
-  solid: 'logos:solidjs-icon',
-  astro: 'i-vscode-icons:file-type-light-astro',
+  vue: 'i-catppuccin:vue',
+  svelte: 'i-catppuccin:svelte',
+  angular: 'i-catppuccin:angular',
+  react: 'i-catppuccin:typescript-react',
+  next: 'i-catppuccin:next',
+  nuxt: 'i-catppuccin:nuxt',
+  solid: 'i-catppuccin:solid',
+  astro: 'i-catppuccin:astro',
   // bundlers
-  rollup: 'i-vscode-icons:file-type-rollup',
-  webpack: 'i-vscode-icons:file-type-webpack',
-  vite: 'i-vscode-icons:file-type-vite',
-  esbuild: 'i-vscode-icons:file-type-esbuild',
-  bash: 'i-carbon:terminal',
+  rollup: 'i-catppuccin:rollup',
+  webpack: 'i-catppuccin:webpack',
+  vite: 'i-catppuccin:vite',
+  esbuild: 'i-catppuccin:esbuild',
+  bash: 'i-catppuccin:bash',
+  // languages
+  javascript: 'i-catppuccin:javascript',
+  typescript: 'i-catppuccin:typescript',
+  html: 'i-catppuccin:html',
+  css: 'i-catppuccin:css',
 }
 
 const fileIcons = {
-  'package.json': 'i-vscode-icons:file-type-node',
-  'tsconfig.json': 'i-vscode-icons:file-type-tsconfig',
-  '.npmrc': 'i-vscode-icons:file-type-npm',
-  '.editorconfig': 'i-vscode-icons:file-type-editorconfig',
-  '.eslintrc': 'i-vscode-icons:file-type-eslint',
-  '.eslintignore': 'i-vscode-icons:file-type-eslint',
-  'eslint.config': 'i-vscode-icons:file-type-eslint',
-  '.gitignore': 'i-vscode-icons:file-type-git',
-  '.gitattributes': 'i-vscode-icons:file-type-git',
-  '.env': 'i-vscode-icons:file-type-dotenv',
-  '.env.example': 'i-vscode-icons:file-type-dotenv',
-  '.vscode': 'i-vscode-icons:file-type-vscode',
-  'tailwind.config': 'i-vscode-icons:file-type-tailwind',
-  'uno.config': 'i-vscode-icons:file-type-unocss',
-  'vite.config': 'i-vscode-icons:file-type-vite',
-  'webpack.config': 'i-vscode-icons:file-type-webpack',
-  'esbuild.config': 'i-vscode-icons:file-type-esbuild',
-  'rollup.config': 'i-vscode-icons:file-type-rollup',
-  'jest.config': 'i-vscode-icons:file-type-jest',
-  'babel.config': 'i-vscode-icons:file-type-babel',
+  'package.json': 'i-catppuccin:package-json',
+  'tsconfig.json': 'i-catppuccin:typescript-config',
+  '.npmrc': 'i-catppuccin:npm',
+  '.editorconfig': 'i-catppuccin:editorconfig',
+  '.eslintrc': 'i-catppuccin:eslint',
+  '.eslintignore': 'i-catppuccin:eslint',
+  'eslint.config': 'i-catppuccin:eslint',
+  '.gitignore': 'i-catppuccin:git',
+  '.gitattributes': 'i-catppuccin:git',
+  '.env': 'i-catppuccin:env',
+  '.env.example': 'i-catppuccin:env',
+  '.vscode': 'i-catppuccin:vscode',
+  'tailwind.config': 'i-catppuccin:tailwind',
+  'uno.config': 'i-catppuccin:unocss',
+  'vite.config': 'i-catppuccin:vite',
+  'webpack.config': 'i-catppuccin:webpack',
+  'esbuild.config': 'i-catppuccin:esbuild',
+  'rollup.config': 'i-catppuccin:rollup',
+  'jest.config': 'i-catppuccin:jest',
+  'babel.config': 'i-catppuccin:babel',
 }
 
 const extIcons = {
-  '.ts': 'i-vscode-icons:file-type-typescript',
-  '.tsx': 'i-vscode-icons:file-type-typescript',
-  '.mjs': 'i-vscode-icons:file-type-js',
-  '.cjs': 'i-vscode-icons:file-type-js',
-  '.json': 'i-vscode-icons:file-type-json',
-  '.js': 'i-vscode-icons:file-type-js',
-  '.jsx': 'i-vscode-icons:file-type-js',
-  '.md': 'i-vscode-icons:file-type-markdown',
-  '.py': 'i-vscode-icons:file-type-python',
-  '.ico': 'i-vscode-icons:file-type-favicon',
-  '.html': 'i-vscode-icons:file-type-html',
-  '.css': 'i-vscode-icons:file-type-css',
-  '.yml': 'i-vscode-icons:file-type-light-yaml',
-  '.yaml': 'i-vscode-icons:file-type-light-yaml',
+  '.ts': 'i-catppuccin:typescript',
+  '.tsx': 'i-catppuccin:typescript',
+  '.mjs': 'i-catppuccin:javascript',
+  '.cjs': 'i-catppuccin:javascript',
+  '.json': 'i-catppuccin:json',
+  '.js': 'i-catppuccin:javascript',
+  '.jsx': 'i-catppuccin:javascript',
+  '.md': 'i-catppuccin:markdown',
+  '.py': 'i-catppuccin:python',
+  '.ico': 'i-catppuccin:favicon',
+  '.html': 'i-catppuccin:html',
+  '.css': 'i-catppuccin:css',
+  '.yml': 'i-catppuccin:yaml',
+  '.yaml': 'i-catppuccin:yaml',
 }
 
 const iconMap = new Map<string, string>()
@@ -97,8 +102,8 @@ export function getLangIcon(lang?: string, filename?: string) {
   }
 
   if (lang) {
-    icon = langIcons[lang as keyof typeof langIcons] ?? icon
+    icon = langIcons[lang.toLowerCase() as keyof typeof langIcons] ?? icon
   }
 
-  return icon ?? 'i-vscode-icons:default-file'
+  return icon
 }

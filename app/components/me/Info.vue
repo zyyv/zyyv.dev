@@ -3,13 +3,16 @@ const { data: user } = await useFetch('/api/user')
 </script>
 
 <template>
-  <div flex items-center md="gap-10 flex-row" py-2>
-    <h1 fsc gap-5>
-      <UserAvatar />
+  <div
+    class="fccc py-4 px-6 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full select-none"
+    style="font-size: clamp(.875rem, calc(100cqw / 40), 1rem)"
+  >
+    <h1 fsc @click="setQuadrantSize('II')">
+      <MeAvatar />
     </h1>
-    <section>
+    <section class="hidden @sm:block">
       <p>
-        I'm <strong text-primary>{{ user?.name }}</strong>,
+        I'm <strong>{{ user?.name }}</strong>,
         <code text-p-r italic font-dank v-text="`<Front-End Developer />`" />
         <span text-p-r animate-count-infinite animate-duration-2000 animate-flash> | </span>
         🧑🏻‍💻 &
@@ -40,7 +43,10 @@ const { data: user } = await useFetch('/api/user')
           、
           <IconsVue />
           、
-          <IconsNuxt /> & etc.
+          <IconsNuxt />
+          、
+          <IconsVitest />
+          & etc.
         </li>
         <li>
           <i i-fluent-emoji:bubbles mr-1 />
@@ -55,7 +61,7 @@ const { data: user } = await useFetch('/api/user')
       <p>
         <a trans text-p-r class="group" hover-op-75 :href="`mailto:${user?.email ?? 'hizyyv@gmail.com'}`">
           Hire Me
-          <i trans group-hover="ml-2" i-ri:arrow-right-up-line bg-gradient-to-r />
+          <i trans group-hover="ml-2" class="i-hugeicons:arrow-up-right-02" bg-linear-to-r from-purple to-red />
         </a>
       </p>
     </section>
