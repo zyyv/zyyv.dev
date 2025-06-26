@@ -1,10 +1,25 @@
-import type { Repo } from '~/types'
+import type { BaseRepo, Repo } from '~/types'
 import { useOctokit } from '../utils/github'
 
-export default defineEventHandler(async () => {
-  const { data } = await useOctokit().request('GET /user/repos', { per_page: 100 })
+async function getRepoLanguages(repo: BaseRepo) {
+  const { data } = await useOctokit().request('GET /repos/{owner}/{repo}/languages', {
+    owner: repo.owner.login,
+    repo: repo.name,
+  })
+  return Object.keys(data)
+}
 
-  const publicRepos = data.filter(repo => !repo.fork && !repo.archived && !repo.private && repo.permissions?.admin && repo.description)
+export default defineEventHandler(async () => {
+  const { data } = await useOctokit().request('GET /user/repos', { per_page: 100 }) as unknown as { data: BaseRepo[] }
+
+  const publicRepos = await Promise.all(
+    data
+      .filter(repo => !repo.fork && !repo.archived && !repo.private && repo.permissions?.admin && repo.description)
+      .map(async repo => ({
+        ...repo,
+        languages: await getRepoLanguages(repo),
+      })),
+  )
   const publicAndNotForkRepos = publicRepos.filter(repo => !repo.fork)
 
   const repoGroups: Record<string, Repo[]> = {

@@ -3,13 +3,16 @@ const { data: user } = await useFetch('/api/user')
 </script>
 
 <template>
-  <div class="fccc py-4 px-4 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full">
-    <h1 fsc>
+  <div
+    class="fccc py-4 px-6 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full select-none"
+    style="font-size: clamp(.875rem, calc(100cqw / 40), 1rem)"
+  >
+    <h1 fsc @click="setQuadrantSize('II')">
       <MeAvatar />
     </h1>
     <section class="hidden @sm:block">
       <p>
-        I'm <strong text-primary>{{ user?.name }}</strong>,
+        I'm <strong>{{ user?.name }}</strong>,
         <code text-p-r italic font-dank v-text="`<Front-End Developer />`" />
         <span text-p-r animate-count-infinite animate-duration-2000 animate-flash> | </span>
         🧑🏻‍💻 &
@@ -40,7 +43,10 @@ const { data: user } = await useFetch('/api/user')
           、
           <IconsVue />
           、
-          <IconsNuxt /> & etc.
+          <IconsNuxt />
+          、
+          <IconsVitest />
+          & etc.
         </li>
         <li>
           <i i-fluent-emoji:bubbles mr-1 />

@@ -22,6 +22,11 @@ const langIcons = {
   vite: 'i-catppuccin:vite',
   esbuild: 'i-catppuccin:esbuild',
   bash: 'i-catppuccin:bash',
+  // languages
+  javascript: 'i-catppuccin:javascript',
+  typescript: 'i-catppuccin:typescript',
+  html: 'i-catppuccin:html',
+  css: 'i-catppuccin:css',
 }
 
 const fileIcons = {
@@ -97,8 +102,8 @@ export function getLangIcon(lang?: string, filename?: string) {
   }
 
   if (lang) {
-    icon = langIcons[lang as keyof typeof langIcons] ?? icon
+    icon = langIcons[lang.toLowerCase() as keyof typeof langIcons] ?? icon
   }
 
-  return icon ?? 'i-vscode-icons:default-file'
+  return icon
 }

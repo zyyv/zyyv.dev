@@ -5,13 +5,7 @@ interface QuadrantSize {
   y: number
 }
 
-export const QuadrantSizeConfig = ref<{
-  II: QuadrantSize
-  I: QuadrantSize
-  III: QuadrantSize
-  IV: QuadrantSize
-  center: QuadrantSize
-} | null>(null)
+export const QuadrantSizeConfig = ref<Record<string, QuadrantSize> | null>(null)
 
 export const center = ref<QuadrantSize>({
   x: 0.5,
@@ -46,4 +40,12 @@ export function initQuadrantSizeConfig() {
       },
     }
   })
+}
+
+export function setQuadrantSize(quadrant: string) {
+  const config = QuadrantSizeConfig.value![quadrant]
+  if (config) {
+    center.value.x = config.x
+    center.value.y = config.y
+  }
 }

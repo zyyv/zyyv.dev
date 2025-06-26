@@ -18,14 +18,6 @@ onMounted(() => {
   ready.value = true
 })
 
-function onSectionClick(quadrant: string) {
-  const config = QuadrantSizeConfig.value[quadrant]
-  if (config) {
-    center.value.x = config.x
-    center.value.y = config.y
-  }
-}
-
 const dragState = ref(false)
 </script>
 
@@ -41,16 +33,16 @@ const dragState = ref(false)
       gridTemplateRows: `${center.y * 100}% ${100 - center.y * 100}%`,
     }"
   >
-    <section class="quadrant" @dblclick="onSectionClick('II')">
+    <section class="quadrant">
       <MeInfo />
     </section>
-    <section class="quadrant" @dblclick="onSectionClick('I')">
+    <section class="quadrant">
       <Photos />
     </section>
-    <section class="quadrant" @dblclick="onSectionClick('III')">
+    <section class="quadrant">
       <Projects />
     </section>
-    <section class="quadrant" @dblclick="onSectionClick('IV')">
+    <section class="quadrant">
       1
     </section>
   </main>
