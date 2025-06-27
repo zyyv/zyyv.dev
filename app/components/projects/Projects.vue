@@ -16,11 +16,13 @@ const { data, status } = useFetch('/api/repos')
       </div>
     </div>
   </div>
-  <div
-    class="@sm:hidden! size-full fcc cursor-pointer"
-    text="3xl yellow op-80 hover:op-100"
-    @click="setQuadrantSize('III')"
-  >
-    <i i-hugeicons:package-search />
+  <div class="@sm:hidden! size-full fcc">
+    <div
+      class="cursor-pointer"
+      text="3xl yellow op-80 hover:op-100"
+      @click="setQuadrantSize('III')"
+    >
+      <i i-hugeicons:package-search />
+    </div>
   </div>
 </template>
