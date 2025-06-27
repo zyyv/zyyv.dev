@@ -84,11 +84,12 @@ onBeforeUnmount(stopDrag)
     <!-- 原点 -->
     <div
       :class="{ trans: !dragging }"
-      class="absolute size-4 z-10 origin-dot rounded-full cursor-pointer pointer-events-auto!" :style="{
+      class="absolute size-2 hover:size-3 z-10 origin-dot rounded-full cursor-pointer pointer-events-auto!" :style="{
         left: `${model!.x * 100}%`,
         top: `${model!.y * 100}%`,
         transform: 'translate(-50%, -50%)',
       }"
+      title="Drag to move"
       @mousedown.stop.prevent="startDrag"
       @touchstart.stop.prevent="startDrag"
     >
@@ -109,8 +110,8 @@ onBeforeUnmount(stopDrag)
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 100%;
-  height: 100%;
+  width: 150%;
+  height: 150%;
   pointer-events: none;
   border-radius: 50%;
   transform: translate(-50%, -50%);
