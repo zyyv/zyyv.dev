@@ -5,7 +5,7 @@ body,
 }
 
 body {
-  --uno: text-base bg-base scroll-none font-dm;
+  --uno: text-basecolor bg-basecolor scroll-none font-dm;
   background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDMwIDMwIj4KICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE1IiByPSIxIiBmaWxsPSIjY2NjIi8+Cjwvc3ZnPg==');
   background-repeat: repeat;
   background-size: 30px 30px;

@@ -29,6 +29,7 @@
     "taze": "taze major -wIr"
   },
   "dependencies": {
+    "@lhlyu/vue-virtual-waterfall": "^1.0.6",
     "blurhash": "^2.0.5",
     "dayjs": "^1.11.13"
   },

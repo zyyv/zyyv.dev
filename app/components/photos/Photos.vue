@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { VueVirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
+
 import ImgA from '../../../public/photos/DSC00964.JPG'
 import ImgC from '../../../public/photos/DSC01031.JPG'
 import ImgB from '../../../public/photos/DSC01329.JPG'

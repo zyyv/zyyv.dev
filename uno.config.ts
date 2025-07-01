@@ -67,8 +67,8 @@ export default defineUsefulConfig<UsefulTheme>({
       'page-container': 'container mx-auto my-4',
       'quadrant': 'overflow-auto scroll-none @container',
     },
-    ['text-base', 'text-dark-800 dark:text-stone-300'],
-    ['bg-base', 'bg-light-300 dark:bg-dark-800'],
+    ['text-basecolor', 'text-dark-800 dark:text-stone-300'],
+    ['bg-basecolor', 'bg-light-300 dark:bg-dark-800'],
 
     ['linear-text', 'text-transparent bg-clip-text bg-linear-to-r'],
     ['text-p-r', 'linear-text from-purple to-red'], // test case

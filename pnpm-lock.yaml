@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@lhlyu/vue-virtual-waterfall':
+        specifier: ^1.0.6
+        version: 1.0.6(vue@3.5.17(typescript@5.7.2))
       blurhash:
         specifier: ^2.0.5
         version: 2.0.5
@@ -592,6 +595,9 @@ packages:
 
   '@kwsites/promise-deferred@1.1.1':
     resolution: {integrity: sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==}
+
+  '@lhlyu/vue-virtual-waterfall@1.0.6':
+    resolution: {integrity: sha512-nmL0gOJ+4htCXYaGTDjo3fAqiHGu76mudrvciizkJ7ZI+VlmJ8TOHFKj94aeycapL9PLDWCPyS3BFKTVOa7tOA==}
 
   '@mapbox/node-pre-gyp@2.0.0':
     resolution: {integrity: sha512-llMXd39jtP0HpQLVI37Bf1m2ADlEb35GYSh1SDSLsBhR+5iCxiNGlT31yqbNtVHygHAtMy6dWFERpU2JgufhPg==}
@@ -1307,6 +1313,9 @@ packages:
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
 
+  '@types/web-bluetooth@0.0.20':
+    resolution: {integrity: sha512-g9gZnnXVq7gM7v3tJCWV/qw7w+KeOlSHAhgF9RytFyifW6AF61hdT2ucrYhPq9hLs5JIryeupHV3qGk95dH9ow==}
+
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
 
@@ -1593,10 +1602,16 @@ packages:
   '@vue/shared@3.5.17':
     resolution: {integrity: sha512-CabR+UN630VnsJO/jHWYBC1YVXyMq94KKp6iF5MQgZJs5I8cmjw6oVMO1oDbtBkENSHSSn/UadWlW/OAgdmKrg==}
 
+  '@vueuse/core@11.3.0':
+    resolution: {integrity: sha512-7OC4Rl1f9G8IT6rUfi9JrKiXy4bfmHhZ5x2Ceojy0jnd3mHNEvV4JaRygH362ror6/NZ+Nl+n13LPzGiPN8cKA==}
+
   '@vueuse/core@13.4.0':
     resolution: {integrity: sha512-OnK7zW3bTq/QclEk17+vDFN3tuAm8ONb9zQUIHrYQkkFesu3WeGUx/3YzpEp+ly53IfDAT9rsYXgGW6piNZC5w==}
     peerDependencies:
       vue: ^3.5.0
+
+  '@vueuse/metadata@11.3.0':
+    resolution: {integrity: sha512-pwDnDspTqtTo2HwfLw4Rp6yywuuBdYnPYDq+mO38ZYKGebCUQC/nVj/PXSiK9HX5otxLz8Fn7ECPbjiRz2CC3g==}
 
   '@vueuse/metadata@13.4.0':
     resolution: {integrity: sha512-CPDQ/IgOeWbqItg1c/pS+Ulum63MNbpJ4eecjFJqgD/JUCJ822zLfpw6M9HzSvL6wbzMieOtIAW/H8deQASKHg==}
@@ -1606,6 +1621,9 @@ packages:
     peerDependencies:
       nuxt: ^3.0.0 || ^4.0.0-0
       vue: ^3.5.0
+
+  '@vueuse/shared@11.3.0':
+    resolution: {integrity: sha512-P8gSSWQeucH5821ek2mn/ciCk+MS/zoRKqdQIM3bHq6p7GXDAJLmnRRKmF5F65sAVJIfzQlwR3aDzwCn10s8hA==}
 
   '@vueuse/shared@13.4.0':
     resolution: {integrity: sha512-+AxuKbw8R1gYy5T21V5yhadeNM7rJqb4cPaRI9DdGnnNl3uqXh+unvQ3uCaA2DjYLbNr1+l7ht/B4qEsRegX6A==}
@@ -2805,8 +2823,8 @@ packages:
   fast-npm-meta@0.4.3:
     resolution: {integrity: sha512-eUzR/uVx61fqlHBjG/eQx5mQs7SQObehMTTdq8FAkdCB4KuZSQ6DiZMIrAq4kcibB3WFLQ9c4dT26Vwkix1RKg==}
 
-  fast-uri@3.0.6:
-    resolution: {integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw==}
+  fast-uri@3.0.3:
+    resolution: {integrity: sha512-aLrHthzCjH5He4Z2H9YZ+v6Ujb9ocRuW6ZzkJQOrTxleEijANq4v1TsaPaVG1PZcuurEzrLcWRyYBYXD5cEiaw==}
 
   fastq@1.17.1:
     resolution: {integrity: sha512-sRVD3lWVIXWg6By68ZN7vho9a1pQcN/WBFaAAsDDFzlJjvoGx0P8z7V1t72grFJfJhu3YPZBuu25f7Kaw2jN1w==}
@@ -4917,8 +4935,8 @@ packages:
     resolution: {integrity: sha512-MDN2WZb7TgsIvtFxqsLJ4GYy9dTDG5Dea/ZfPHrG98Cy7UH1EFIOzH+zDjnoP38ImuBbxZy1Zl8AbiwOZpYMUQ==}
     hasBin: true
 
-  terser-webpack-plugin@5.3.14:
-    resolution: {integrity: sha512-vkZjpUjb6OMS7dhV+tILUW6BhpDR7P2L/aQSAv+Uwk+m8KATX9EccViHTJR2qDtACKPIYndLGCyl3FMo+r2LMw==}
+  terser-webpack-plugin@5.3.11:
+    resolution: {integrity: sha512-RVCsMfuD0+cTt3EwX8hSl2Ks56EbFHWmhluwcqoPKtBnfjiT6olaq7PRIRfhyU8nnC2MrnDrBLfrD/RGE+cVXQ==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
       '@swc/core': '*'
@@ -5393,6 +5411,17 @@ packages:
 
   vue-component-type-helpers@2.2.10:
     resolution: {integrity: sha512-iDUO7uQK+Sab2tYuiP9D1oLujCWlhHELHMgV/cB13cuGbG4qwkLHvtfWb6FzvxrIOPDnU0oHsz2MlQjhYDeaHA==}
+
+  vue-demi@0.14.10:
+    resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
+    engines: {node: '>=12'}
+    hasBin: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
 
   vue-devtools-stub@0.1.0:
     resolution: {integrity: sha512-RutnB7X8c5hjq39NceArgXg28WZtZpGc3+J16ljMiYnFhKvd8hITxSWQSQ5bvldxMDU6gG5mkxl1MTQLXckVSQ==}
@@ -6130,6 +6159,13 @@ snapshots:
       - supports-color
 
   '@kwsites/promise-deferred@1.1.1': {}
+
+  '@lhlyu/vue-virtual-waterfall@1.0.6(vue@3.5.17(typescript@5.7.2))':
+    dependencies:
+      '@vueuse/core': 11.3.0(vue@3.5.17(typescript@5.7.2))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
 
   '@mapbox/node-pre-gyp@2.0.0':
     dependencies:
@@ -7118,6 +7154,8 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
+  '@types/web-bluetooth@0.0.20': {}
+
   '@types/web-bluetooth@0.0.21': {}
 
   '@types/yauzl@2.10.3':
@@ -7640,12 +7678,24 @@ snapshots:
 
   '@vue/shared@3.5.17': {}
 
+  '@vueuse/core@11.3.0(vue@3.5.17(typescript@5.7.2))':
+    dependencies:
+      '@types/web-bluetooth': 0.0.20
+      '@vueuse/metadata': 11.3.0
+      '@vueuse/shared': 11.3.0(vue@3.5.17(typescript@5.7.2))
+      vue-demi: 0.14.10(vue@3.5.17(typescript@5.7.2))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+
   '@vueuse/core@13.4.0(vue@3.5.17(typescript@5.7.2))':
     dependencies:
       '@types/web-bluetooth': 0.0.21
       '@vueuse/metadata': 13.4.0
       '@vueuse/shared': 13.4.0(vue@3.5.17(typescript@5.7.2))
       vue: 3.5.17(typescript@5.7.2)
+
+  '@vueuse/metadata@11.3.0': {}
 
   '@vueuse/metadata@13.4.0': {}
 
@@ -7659,6 +7709,13 @@ snapshots:
       vue: 3.5.17(typescript@5.7.2)
     transitivePeerDependencies:
       - magicast
+
+  '@vueuse/shared@11.3.0(vue@3.5.17(typescript@5.7.2))':
+    dependencies:
+      vue-demi: 0.14.10(vue@3.5.17(typescript@5.7.2))
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
 
   '@vueuse/shared@13.4.0(vue@3.5.17(typescript@5.7.2))':
     dependencies:
@@ -7811,7 +7868,7 @@ snapshots:
   ajv@8.17.1:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.0.6
+      fast-uri: 3.0.3
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -8944,7 +9001,7 @@ snapshots:
 
   fast-npm-meta@0.4.3: {}
 
-  fast-uri@3.0.6: {}
+  fast-uri@3.0.3: {}
 
   fastq@1.17.1:
     dependencies:
@@ -11706,7 +11763,7 @@ snapshots:
       unconfig: 7.3.2
       yaml: 2.8.0
 
-  terser-webpack-plugin@5.3.14(webpack@5.99.9):
+  terser-webpack-plugin@5.3.11(webpack@5.99.9):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
@@ -12180,6 +12237,10 @@ snapshots:
 
   vue-component-type-helpers@2.2.10: {}
 
+  vue-demi@0.14.10(vue@3.5.17(typescript@5.7.2)):
+    dependencies:
+      vue: 3.5.17(typescript@5.7.2)
+
   vue-devtools-stub@0.1.0: {}
 
   vue-eslint-parser@10.1.3(eslint@9.29.0(jiti@2.4.2)):
@@ -12252,7 +12313,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.2
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.14(webpack@5.99.9)
+      terser-webpack-plugin: 5.3.11(webpack@5.99.9)
       watchpack: 2.4.2
       webpack-sources: 3.3.2
     transitivePeerDependencies:
