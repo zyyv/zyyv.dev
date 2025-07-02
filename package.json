@@ -31,7 +31,8 @@
   "dependencies": {
     "@lhlyu/vue-virtual-waterfall": "^1.0.6",
     "blurhash": "^2.0.5",
-    "dayjs": "^1.11.13"
+    "dayjs": "^1.11.13",
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.14.1",

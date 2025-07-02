@@ -62,6 +62,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <img v-if="isImgMode" v-bind="attrs" :src="url" :srcset>
+  <img v-if="isImgMode" v-bind="attrs" :src="url" :srcset object-cover>
   <div v-else v-bind="attrs" :style="{ backgroundImage: `url(${url})`, backgroundSize: 'cover' }" />
 </template>
