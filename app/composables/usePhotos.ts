@@ -20,7 +20,7 @@ export function usePhotos() {
 
     try {
       // 使用 useFetch 来确保在服务端和客户端都能正确工作
-      const response = await $fetch('/api/photos', {
+      const response = await $fetch('/api/imgs', {
         method: 'GET',
         query: {
           page,
