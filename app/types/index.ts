@@ -15,3 +15,15 @@ export interface ICursorStyle {
   cursor: Record<string, number | string>
   circle: Record<string, number | string>
 }
+
+export interface Photo {
+  id: string
+  filename: string
+  path: string
+  size: number
+  width: number
+  height: number
+  blurhash: string
+  createdAt: Date
+  modifiedAt: Date
+}
