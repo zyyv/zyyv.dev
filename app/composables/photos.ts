@@ -7,6 +7,7 @@ export function usePhotos() {
   const pageSize = ref(24)
   const allPhotos = ref<Photo[]>([]) // 存储所有已加载的照片
   const hasMore = ref(true) // 是否还有更多数据
+  const error = ref<string | null>(null) // 错误状态
 
   // 加载照片数据
   async function loadPhotos(page = 1, append = false) {
@@ -15,13 +16,19 @@ export function usePhotos() {
     }
 
     loading.value = true
+    error.value = null
 
     try {
+      // 使用 useFetch 来确保在服务端和客户端都能正确工作
       const response = await $fetch('/api/photos', {
+        method: 'GET',
         query: {
           page,
           limit: pageSize.value,
         },
+        // 添加重试机制
+        retry: 2,
+        retryDelay: 1000,
       }) as any
 
       if (response?.photos) {
@@ -47,8 +54,17 @@ export function usePhotos() {
         hasMore.value = response.pagination?.hasNext || false
       }
     }
-    catch (error) {
-      console.error('Failed to load photos:', error)
+    catch (err: any) {
+      console.error('Failed to load photos:', err)
+      error.value = err.message || '加载照片失败，请稍后重试'
+
+      // 如果是网络错误或 404，设置友好的错误信息
+      if (err.status === 404) {
+        error.value = 'API 接口未找到，请检查服务器配置'
+      }
+      else if (err.status >= 500) {
+        error.value = '服务器错误，请稍后重试'
+      }
     }
     finally {
       loading.value = false
@@ -120,6 +136,7 @@ export function usePhotos() {
   return {
     // 状态
     loading: readonly(loading),
+    error: readonly(error),
     allPhotos,
     hasMore: readonly(hasMore),
     totalPhotos: readonly(totalPhotos),

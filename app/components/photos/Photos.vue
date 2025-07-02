@@ -3,6 +3,7 @@ import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
 
 const {
   loading,
+  error,
   allPhotos,
   hasMore,
   totalPhotos,
@@ -11,6 +12,7 @@ const {
   handleScroll,
   calcItemHeight,
   initPhotos,
+  refreshPhotos,
 } = usePhotos()
 
 onMounted(() => {
@@ -20,8 +22,21 @@ onMounted(() => {
 
 <template>
   <div class="photos-container h-screen flex flex-col">
+    <!-- 错误状态 -->
+    <div v-if="error" class="flex flex-col justify-center items-center h-64 p-4">
+      <div class="text-red-500 text-lg mb-4">
+        {{ error }}
+      </div>
+      <button
+        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        @click="refreshPhotos"
+      >
+        重新加载
+      </button>
+    </div>
+
     <!-- 初始加载状态 -->
-    <div v-if="!allPhotos.length && loading" class="flex justify-center items-center h-64">
+    <div v-else-if="!allPhotos.length && loading" class="flex justify-center items-center h-64">
       <div class="text-lg">
         Loading photos...
       </div>
