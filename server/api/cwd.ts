@@ -50,7 +50,7 @@ async function analyzeDirectory(dirPath: string, maxDepth = 3, currentDepth = 0)
 
 export default defineEventHandler(async (_event) => {
   const cwd = process.cwd()
-  const path = resolve(cwd, '../')
+  const path = resolve(cwd, '../../')
 
   try {
     const files = await analyzeDirectory(path)
