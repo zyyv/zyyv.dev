@@ -20,7 +20,6 @@ const { data, status } = useFetch('/api/repos')
     <div
       class="cursor-pointer"
       text="3xl yellow op-80 hover:op-100"
-      @click="setQuadrantSize('III')"
     >
       <i i-hugeicons:package-search />
     </div>

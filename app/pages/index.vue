@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-import { center } from '~/composables/center'
-
 useHead({
   title: 'Chris',
 })
 
 const ready = ref(false)
+const { center } = useCenter()
 
 onMounted(() => {
   const storage = useLocalStorage('center', center)
@@ -33,19 +32,19 @@ const dragState = ref(false)
       gridTemplateRows: `${center.y * 100}% ${100 - center.y * 100}%`,
     }"
   >
-    <section class="quadrant">
+    <OriginQuadrant quadrant="II">
       <MeInfo />
-    </section>
-    <section class="quadrant">
+    </OriginQuadrant>
+    <OriginQuadrant quadrant="I">
       <Photos />
-    </section>
-    <section class="quadrant">
+    </OriginQuadrant>
+    <OriginQuadrant quadrant="III">
       <Projects />
-    </section>
-    <section class="quadrant">
+    </OriginQuadrant>
+    <OriginQuadrant quadrant="IV">
       <div size-full fcc animate-pulse>
         Coming soon...
       </div>
-    </section>
+    </OriginQuadrant>
   </main>
 </template>

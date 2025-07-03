@@ -7,7 +7,7 @@ const { data: user } = await useFetch('/api/user')
     class="fccc py-4 px-6 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full select-none"
     style="font-size: clamp(.875rem, calc(100cqw / 40), 1rem)"
   >
-    <h1 fsc @click="setQuadrantSize('II')">
+    <h1 fsc>
       <MeAvatar />
     </h1>
     <section class="hidden @sm:block">
