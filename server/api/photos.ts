@@ -12,7 +12,12 @@ export default defineEventHandler(async (event) => {
     const limit = Math.max(1, Math.min(50, Number(query.limit) || 12)) // 限制每页最多50张
     const offset = (page - 1) * limit
 
-    const photosDir = join(process.cwd(), 'public/photos')
+    // 根据环境确定 photos 目录路径
+    const isDev = process.env.NODE_ENV === 'development'
+    const photosDir = isDev
+      ? join(process.cwd(), 'public/photos')
+      : join(process.cwd(), '.output/public/photos')
+
     const files = await readdir(photosDir)
 
     // 过滤出图片文件
@@ -76,6 +81,11 @@ export default defineEventHandler(async (event) => {
     }
   }
   catch (error) {
+    console.error('Failed to read photos directory:', error)
+    console.error('Attempted path:', process.env.NODE_ENV === 'development'
+      ? join(process.cwd(), 'public/photos')
+      : join(process.cwd(), '.output/public/photos'))
+
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to read photos directory',
