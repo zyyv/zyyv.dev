@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     const isDev = process.env.NODE_ENV === 'development'
     const photosDir = isDev
       ? join(process.cwd(), 'public/photos')
-      : join(process.cwd(), '.output/public/photos')
+      : join(process.cwd(), '../public/photos')
 
     const files = await readdir(photosDir)
 
