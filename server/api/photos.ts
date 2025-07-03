@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     const limit = Math.max(1, Math.min(50, Number(query.limit) || 12)) // 限制每页最多50张
     const offset = (page - 1) * limit
 
-    const photosDir = join(process.cwd(), 'public/photos')
+    const photosDir = join(process.cwd(), 'photos')
     const files = await readdir(photosDir)
 
     // 过滤出图片文件
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
 
         return {
           filename,
-          path: `/photos/${filename}`,
+          path: `/api/photos/${filename}`,
           size: stats.size,
           width: originalMetadata.width,
           height: originalMetadata.height,

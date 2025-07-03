@@ -32,7 +32,7 @@ export function usePhotos() {
       }) as any
 
       if (response?.photos) {
-        const newPhotos: Photo[] = response.photos.map((photo: Photo) => ({
+        const newPhotos: Photo[] = response.photos.map((photo: any) => ({
           id: photo.filename,
           filename: photo.filename,
           path: photo.path,
