@@ -54,20 +54,19 @@ onMounted(() => {
         :calc-item-height="calcItemHeight"
         :gap="12"
         :padding="16"
-        :item-min-width="200"
+        :item-min-width="300"
         :min-column-count="1"
         :max-column-count="5"
         :virtual="true"
         row-key="id"
       >
         <template #default="{ item }">
-          <div class="bg-white">
-            <ImgBlurHash
-              :src="item.path"
-              :blurhash="item.blurhash"
-              class="w-full h-auto hover:scale-105 trans"
-            />
-          </div>
+          <ImgBlurHash
+            :src="item.path"
+            :blurhash="item.blurhash"
+            :aspect-ratio="item.width / item.height"
+            class="w-full h-auto hover:scale-105 trans"
+          />
         </template>
       </VirtualWaterfall>
 

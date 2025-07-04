@@ -73,7 +73,7 @@ export default defineUsefulConfig<UsefulTheme>({
     ['linear-text', 'text-transparent bg-clip-text bg-linear-to-r'],
     ['text-p-r', 'linear-text from-purple to-red'], // test case
 
-    ['icon', 'size-5.5 cursor-pointer select-none transition-opacity-300 ease-in-out text'],
+    ['icon', 'size-5.5 cursor-pointer select-none transition-opacity-300 ease-in-out text-basecolor'],
     ['icon-btn', 'icon color-inherit op64 hover-op100 hover-color-teal-500 dark-hover-color-inherit'],
     ['icon-link', 'icon color-inherit op64 hover:op100 hover-text-red-300 dark-hover-color-inherit'],
     ['icon-text', 'color-inherit op64 hover:op100 hover-text-purple dark-hover-color-inherit'],

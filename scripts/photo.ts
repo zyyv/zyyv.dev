@@ -32,29 +32,22 @@ async function generatePhotosData() {
 
     // 获取每个图片的详细信息
     const photos = await Promise.all(
-      imageFiles.map(async (filename, index) => {
-        console.log(`Processing ${index + 1}/${imageFiles.length}: ${filename}`)
-
+      imageFiles.map(async (filename) => {
         const filePath = join(sourcePath, filename)
-        const stats = await stat(filePath)
+        const getBlurhash = async (sharped: sharp.Sharp, aspectRatio: number) => {
+          const { data, info } = await sharped
+            .raw()
+            .ensureAlpha()
+            .resize(32, Math.round(32 / aspectRatio), { fit: 'inside' })
+            .toBuffer({ resolveWithObject: true })
 
-        // 获取图片尺寸和像素数据
-        const { data, info } = await sharp(filePath)
-          .raw()
-          .ensureAlpha()
-          .resize(32, 32, { fit: 'inside' })
-          .toBuffer({ resolveWithObject: true })
-
-        // 生成 blurhash
-        const blurhash = encode(new Uint8ClampedArray(data), info.width, info.height, 4, 4)
-
-        // 获取原始图片尺寸
-        const originalMetadata = await sharp(filePath).metadata()
-
-        // 获取 EXIF 数据
-        let exifData: any = null
-        try {
-          exifData = await exifr.parse(filePath, {
+          return encode(new Uint8ClampedArray(data), info.width, info.height, 4, 4)
+        }
+        const sharped = sharp(filePath)
+        const [stats, originalMetadata, exifData] = await Promise.all([
+          stat(filePath),
+          sharped.metadata(),
+          exifr.parse(filePath, {
             pick: [
               'Make',
               'Model',
@@ -68,19 +61,19 @@ async function generatePhotosData() {
               'GPSLatitude',
               'GPSLongitude',
             ],
-          })
-        }
-        catch (exifError) {
-          console.warn(`  ⚠️  Could not parse EXIF data for ${filename}:`, (exifError as Error).message)
-        }
+          }),
+        ])
+        const { width, height } = originalMetadata.autoOrient
+        const blurhash = await getBlurhash(sharped, width / height)
 
         const photo: Photo = {
           id: filename.replace(/\.[^/.]+$/, ''), // 移除文件扩展名作为 ID
           filename,
           path: `/photos/${filename}`,
           size: stats.size,
-          width: originalMetadata.width || 0,
-          height: originalMetadata.height || 0,
+          sizeFormatted: formatSize(stats.size),
+          width,
+          height,
           blurhash,
           createdAt: stats.birthtime.toISOString(),
           modifiedAt: stats.mtime.toISOString(),
@@ -106,17 +99,17 @@ async function generatePhotosData() {
               longitude: exifData.GPSLongitude,
             }
           }
-
-          // 打印 EXIF 信息
-          console.log(`  📸 EXIF: ${photo.exif.make} ${photo.exif.model} | f/${photo.exif.fNumber} | ${photo.exif.exposureTime}s | ISO ${photo.exif.iso}`)
         }
 
         return photo
       }),
     )
 
-    // 按修改时间降序排序
-    photos.sort((a, b) => new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime())
+    photos.sort((a, b) => {
+      const aDate = a.exif?.dateTime ? new Date(a.exif.dateTime).getTime() : new Date(a.modifiedAt).getTime()
+      const bDate = b.exif?.dateTime ? new Date(b.exif.dateTime).getTime() : new Date(b.modifiedAt).getTime()
+      return bDate - aDate
+    })
 
     return photos
   }
@@ -131,7 +124,6 @@ async function generateDataFile(photos: Photo[]) {
   if (existsSync(dataPath)) {
     try {
       await unlink(dataPath)
-      console.log('🗑️  Deleted existing data file')
     }
     catch (error) {
       console.warn('⚠️  Could not delete existing data file:', (error as Error).message)
@@ -156,7 +148,7 @@ async function lintFix() {
   const { execa } = await import('execa')
 
   try {
-    const result = await execa('eslint', [dataFile, '--fix'], {
+    const result = await execa('eslint', [dataFile, '--fix', '--no-ignore'], {
       stdio: 'pipe',
       cwd: process.cwd(),
     })
@@ -181,4 +173,12 @@ async function lintFix() {
   }
 
   process.exit(0)
+}
+
+function formatSize(size: number): string {
+  if (size < 1024)
+    return `${size} B`
+  if (size < 1024 * 1024)
+    return `${(size / 1024).toFixed(2)} KB`
+  return `${(size / (1024 * 1024)).toFixed(2)} MB`
 }

@@ -21,6 +21,7 @@ export interface Photo {
   filename: string
   path: string
   size: number
+  sizeFormatted: string
   width: number
   height: number
   blurhash: string

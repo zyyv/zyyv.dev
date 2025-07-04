@@ -24,10 +24,10 @@
     "build": "nuxt build",
     "preview": "nuxt preview",
     "lint": "eslint .",
-    "postinstall": "nuxt prepare && pnpm photos:generate",
+    "postinstall": "nuxt prepare && pnpm photos",
     "typecheck": "tsc --noEmit",
     "taze": "taze major -wIr",
-    "photos:generate": "esno scripts/photo.ts"
+    "photos": "esno scripts/photo.ts"
   },
   "dependencies": {
     "@lhlyu/vue-virtual-waterfall": "^1.0.6",
@@ -52,7 +52,7 @@
     "lint-staged": "^16.1.2",
     "nuxt": "^3.17.5",
     "octokit": "^5.0.3",
-    "sharp": "^0.33.5",
+    "sharp": "^0.34.2",
     "simple-git-hooks": "^2.13.0",
     "taze": "^19.1.0",
     "typescript": "5.7.2",

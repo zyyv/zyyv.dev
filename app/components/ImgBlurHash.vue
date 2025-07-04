@@ -7,10 +7,12 @@ interface Props {
   blurhash?: string
   src: string
   srcset?: string
+  aspectRatio?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'img',
+  aspectRatio: 1,
 })
 
 // Refs and state
@@ -41,8 +43,10 @@ function getDataUrlFromArr(arr: Uint8ClampedArray, w: number, h: number) {
 onMounted(() => {
   // Decode the blurhash if available
   if (props.blurhash) {
-    const pixels = decode(props.blurhash, 32, 32)
-    placeholderSrc.value = getDataUrlFromArr(pixels, 32, 32)
+    const width = 32
+    const height = Math.round(32 / props.aspectRatio)
+    const pixels = decode(props.blurhash, width, height)
+    placeholderSrc.value = getDataUrlFromArr(pixels, width, height)
   }
 
   // Create a temporary image to check when the image has loaded
@@ -64,4 +68,6 @@ onMounted(() => {
 <template>
   <img v-if="isImgMode" v-bind="attrs" :src="url" :srcset object-cover>
   <div v-else v-bind="attrs" :style="{ backgroundImage: `url(${url})`, backgroundSize: 'cover' }" />
+  <!-- <img v-if="isImgMode" v-bind="attrs" :src="url" :srcset object-cover>
+  <div v-else v-bind="attrs" :style="{ backgroundImage: `url(${url})`, backgroundSize: 'cover' }" /> -->
 </template>
