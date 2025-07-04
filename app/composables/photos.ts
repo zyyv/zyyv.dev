@@ -32,23 +32,11 @@ export function usePhotos() {
       }) as any
 
       if (response?.photos) {
-        const newPhotos: Photo[] = response.photos.map((photo: Photo) => ({
-          id: photo.filename,
-          filename: photo.filename,
-          path: photo.path,
-          size: photo.size,
-          width: photo.width || 300,
-          height: photo.height || 200,
-          blurhash: photo.blurhash,
-          createdAt: photo.createdAt,
-          modifiedAt: photo.modifiedAt,
-        }))
-
         if (append) {
-          allPhotos.value.push(...newPhotos)
+          allPhotos.value.push(...response.photos)
         }
         else {
-          allPhotos.value = newPhotos
+          allPhotos.value = response.photos
         }
 
         hasMore.value = response.pagination?.hasNext || false

@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
 
 const {
@@ -14,6 +15,48 @@ const {
   initPhotos,
   refreshPhotos,
 } = usePhotos()
+
+// 图片预览状态
+const showPreview = ref(false)
+const currentPhoto = ref<Photo | null>(null)
+
+// 打开图片预览
+function openPreview(photo: Photo) {
+  currentPhoto.value = photo
+  showPreview.value = true
+  // 阻止body滚动
+  document.body.style.overflow = 'hidden'
+}
+
+// 关闭图片预览
+function closePreview() {
+  showPreview.value = false
+  currentPhoto.value = null
+  // 恢复body滚动
+  document.body.style.overflow = ''
+}
+
+// 显示上一张图片
+function showPrevPhoto() {
+  if (!currentPhoto.value)
+    return
+
+  const currentIndex = allPhotos.value.findIndex(p => p.id === currentPhoto.value?.id)
+  if (currentIndex > 0) {
+    currentPhoto.value = allPhotos.value[currentIndex - 1]!
+  }
+}
+
+// 显示下一张图片
+function showNextPhoto() {
+  if (!currentPhoto.value)
+    return
+
+  const currentIndex = allPhotos.value.findIndex(p => p.id === currentPhoto.value?.id)
+  if (currentIndex < allPhotos.value.length - 1) {
+    currentPhoto.value = allPhotos.value[currentIndex + 1]!
+  }
+}
 
 onMounted(() => {
   initPhotos()
@@ -61,12 +104,14 @@ onMounted(() => {
         row-key="id"
       >
         <template #default="{ item }">
-          <ImgBlurHash
-            :src="item.path"
-            :blurhash="item.blurhash"
-            :aspect-ratio="item.width / item.height"
-            class="w-full h-auto hover:scale-105 trans"
-          />
+          <div class="cursor-pointer" @click="openPreview(item)">
+            <ImgBlurHash
+              :src="item.path"
+              :blurhash="item.blurhash"
+              :aspect-ratio="item.width / item.height"
+              class="w-full h-auto hover:scale-105 trans"
+            />
+          </div>
         </template>
       </VirtualWaterfall>
 
@@ -95,5 +140,15 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- 图片预览组件 -->
+    <PhotosPhotoDetail
+      :photo="currentPhoto"
+      :photos="allPhotos"
+      :visible="showPreview"
+      @close="closePreview"
+      @prev="showPrevPhoto"
+      @next="showNextPhoto"
+    />
   </div>
 </template>
