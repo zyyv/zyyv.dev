@@ -24,6 +24,6 @@ export interface Photo {
   width: number
   height: number
   blurhash: string
-  createdAt: Date
-  modifiedAt: Date
+  createdAt: Date | string
+  modifiedAt: Date | string
 }

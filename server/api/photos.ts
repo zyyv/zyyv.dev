@@ -1,8 +1,4 @@
-import type { Photo } from '~/types'
-import { readdir, stat } from 'node:fs/promises'
-import { join } from 'node:path'
-import { encode } from 'blurhash'
-import sharp from 'sharp'
+import { photosData } from '../utils/data'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -12,55 +8,14 @@ export default defineEventHandler(async (event) => {
     const limit = Math.max(1, Math.min(50, Number(query.limit) || 12)) // 限制每页最多50张
     const offset = (page - 1) * limit
 
-    const photosDir = join(process.cwd(), 'public/photos')
-    const files = await readdir(photosDir)
-
-    // 过滤出图片文件
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
-    const imageFiles = files.filter(file =>
-      imageExtensions.some(ext => file.toLowerCase().endsWith(ext)),
-    )
-
-    // 计算分页信息
-    const total = imageFiles.length
+    // 使用预生成的数据进行分页
+    const total = photosData.length
     const totalPages = Math.ceil(total / limit)
     const hasNext = page < totalPages
     const hasPrev = page > 1
 
-    // 获取当前页的图片文件
-    const paginatedFiles = imageFiles.slice(offset, offset + limit)
-
-    // 获取每个图片的详细信息
-    const photos = await Promise.all(
-      paginatedFiles.map(async (filename) => {
-        const filePath = join(photosDir, filename)
-        const stats = await stat(filePath)
-
-        // 获取图片尺寸和像素数据
-        const { data, info } = await sharp(filePath)
-          .raw()
-          .ensureAlpha()
-          .resize(32, 32, { fit: 'inside' })
-          .toBuffer({ resolveWithObject: true })
-
-        // 生成 blurhash
-        const blurhash = encode(new Uint8ClampedArray(data), info.width, info.height, 4, 4)
-
-        // 获取原始图片尺寸
-        const originalMetadata = await sharp(filePath).metadata()
-
-        return {
-          filename,
-          path: `/photos/${filename}`,
-          size: stats.size,
-          width: originalMetadata.width,
-          height: originalMetadata.height,
-          blurhash,
-          createdAt: stats.birthtime,
-          modifiedAt: stats.mtime,
-        } as Photo
-      }),
-    )
+    // 获取当前页的图片数据
+    const photos = photosData.slice(offset, offset + limit)
 
     return {
       photos,
@@ -78,7 +33,7 @@ export default defineEventHandler(async (event) => {
   catch (error) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to read photos directory',
+      statusMessage: 'Failed to load photos data',
       data: error,
     })
   }

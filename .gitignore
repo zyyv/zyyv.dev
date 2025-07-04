@@ -11,3 +11,4 @@ dev-dist
 .eslintcache
 .data
 .netlify
+server/utils/data.ts
