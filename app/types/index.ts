@@ -26,4 +26,18 @@ export interface Photo {
   blurhash: string
   createdAt: Date | string
   modifiedAt: Date | string
+  exif?: {
+    make?: string // 相机制造商
+    model?: string // 相机型号
+    exposureTime?: number // 快门速度 (秒)
+    fNumber?: number // 光圈值 (f/x)
+    iso?: number // ISO 感光度
+    focalLength?: number // 焦距 (mm)
+    lens?: string // 镜头信息
+    dateTime?: string // 拍摄时间
+    gps?: {
+      latitude?: number
+      longitude?: number
+    }
+  }
 }

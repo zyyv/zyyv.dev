@@ -1,7 +1,9 @@
 import type { Photo } from '~/types'
-import { readdir, stat, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { readdir, stat, unlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { encode } from 'blurhash'
+import exifr from 'exifr'
 import sharp from 'sharp'
 
 const sourcePath = join(process.cwd(), 'public/photos')
@@ -49,17 +51,67 @@ async function generatePhotosData() {
         // 获取原始图片尺寸
         const originalMetadata = await sharp(filePath).metadata()
 
-        return {
+        // 获取 EXIF 数据
+        let exifData: any = null
+        try {
+          exifData = await exifr.parse(filePath, {
+            pick: [
+              'Make',
+              'Model',
+              'ExposureTime',
+              'FNumber',
+              'ISO',
+              'FocalLength',
+              'LensModel',
+              'DateTime',
+              'DateTimeOriginal',
+              'GPSLatitude',
+              'GPSLongitude',
+            ],
+          })
+        }
+        catch (exifError) {
+          console.warn(`  ⚠️  Could not parse EXIF data for ${filename}:`, (exifError as Error).message)
+        }
+
+        const photo: Photo = {
           id: filename.replace(/\.[^/.]+$/, ''), // 移除文件扩展名作为 ID
           filename,
           path: `/photos/${filename}`,
           size: stats.size,
-          width: originalMetadata.width,
-          height: originalMetadata.height,
+          width: originalMetadata.width || 0,
+          height: originalMetadata.height || 0,
           blurhash,
           createdAt: stats.birthtime.toISOString(),
           modifiedAt: stats.mtime.toISOString(),
-        } as Photo
+        }
+
+        // 添加 EXIF 数据（如果存在）
+        if (exifData) {
+          photo.exif = {
+            make: exifData.Make,
+            model: exifData.Model,
+            exposureTime: exifData.ExposureTime,
+            fNumber: exifData.FNumber,
+            iso: exifData.ISO,
+            focalLength: exifData.FocalLength,
+            lens: exifData.LensModel,
+            dateTime: exifData.DateTimeOriginal || exifData.DateTime,
+          }
+
+          // 添加 GPS 数据（如果存在）
+          if (exifData.GPSLatitude && exifData.GPSLongitude) {
+            photo.exif.gps = {
+              latitude: exifData.GPSLatitude,
+              longitude: exifData.GPSLongitude,
+            }
+          }
+
+          // 打印 EXIF 信息
+          console.log(`  📸 EXIF: ${photo.exif.make} ${photo.exif.model} | f/${photo.exif.fNumber} | ${photo.exif.exposureTime}s | ISO ${photo.exif.iso}`)
+        }
+
+        return photo
       }),
     )
 
@@ -75,6 +127,17 @@ async function generatePhotosData() {
 }
 
 async function generateDataFile(photos: Photo[]) {
+  // 如果旧文件存在，先删除它
+  if (existsSync(dataPath)) {
+    try {
+      await unlink(dataPath)
+      console.log('🗑️  Deleted existing data file')
+    }
+    catch (error) {
+      console.warn('⚠️  Could not delete existing data file:', (error as Error).message)
+    }
+  }
+
   // 生成数据文件
   const dataContent = `// 此文件由 scripts/photo.ts 自动生成，请勿手动修改
 import type { Photo } from '~/types'
