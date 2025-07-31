@@ -19,7 +19,8 @@ export interface ICursorStyle {
 export interface Photo {
   id: string
   filename: string
-  path: string
+  path: string // 压缩后的图片路径
+  originalPath: string // 原图路径
   size: number
   sizeFormatted: string
   width: number

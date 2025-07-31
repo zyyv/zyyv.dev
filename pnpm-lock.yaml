@@ -75,6 +75,9 @@ importers:
       simple-git-hooks:
         specifier: ^2.13.0
         version: 2.13.0
+      squoosh-next:
+        specifier: ^0.1.3
+        version: 0.1.3
       taze:
         specifier: ^19.1.0
         version: 19.1.0
@@ -4971,6 +4974,9 @@ packages:
     resolution: {integrity: sha512-1POYv7uv2gXoyGFpBCmpDVSNV74IfsWlDW216UPjbWufNf+bSU6GdbDsxdcxtfwb4xlI3yxzOTKClUosxARYrQ==}
     engines: {node: '>=0.10.0'}
 
+  squoosh-next@0.1.3:
+    resolution: {integrity: sha512-W9BP+ifTCCudRXeKvDv3kOzCxOGF1s2OF/7ixDIhpdRg4TJ1HIbRvCBf3YXqZMc3RAJEEyYdr0E/2oGOm8NVcw==}
+
   stack-trace@0.0.10:
     resolution: {integrity: sha512-KGzahc7puUKkzyMt+IqAep+TVNbKP+k2Lmwhub39m1AsTSkaDutx56aDCo+HLDzf/D26BIHTJWNiTG1KAJiQCg==}
 
@@ -5624,6 +5630,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  wasm-feature-detect@1.8.0:
+    resolution: {integrity: sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ==}
 
   watchpack@2.4.2:
     resolution: {integrity: sha512-TnbFSbcOCcDgjZ4piURLCbJ3nJhznVh9kw6F6iokjiFPl8ONxe9A6nMDVXDiNbrSfLILs6vB07F7wLBrwPYzJw==}
@@ -11921,6 +11930,11 @@ snapshots:
 
   speakingurl@14.0.1: {}
 
+  squoosh-next@0.1.3:
+    dependencies:
+      wasm-feature-detect: 1.8.0
+      web-streams-polyfill: 3.3.3
+
   stack-trace@0.0.10: {}
 
   standard-as-callback@2.1.0: {}
@@ -12605,6 +12619,8 @@ snapshots:
       '@vue/shared': 3.5.17
     optionalDependencies:
       typescript: 5.7.2
+
+  wasm-feature-detect@1.8.0: {}
 
   watchpack@2.4.2:
     dependencies:

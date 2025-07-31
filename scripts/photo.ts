@@ -10,6 +10,11 @@ const sourcePath = join(process.cwd(), 'public/photos')
 const dataFile = 'server/utils/data.ts'
 const dataPath = join(process.cwd(), dataFile)
 
+function getCompressedPath(filename: string): string {
+  const compressedFilename = `${filename}_compressed.jpg`
+  return `/photos/compressed/${compressedFilename}`
+}
+
 generatePhotosData()
   .then(generateDataFile)
   .then(lintFix)
@@ -69,7 +74,8 @@ async function generatePhotosData() {
         const photo: Photo = {
           id: filename.replace(/\.[^/.]+$/, ''), // 移除文件扩展名作为 ID
           filename,
-          path: `/photos/${filename}`,
+          path: getCompressedPath(filename),
+          originalPath: `/photos/${filename}`,
           size: stats.size,
           sizeFormatted: formatSize(stats.size),
           width,
@@ -120,7 +126,6 @@ async function generatePhotosData() {
 }
 
 async function generateDataFile(photos: Photo[]) {
-  // 如果旧文件存在，先删除它
   if (existsSync(dataPath)) {
     try {
       await unlink(dataPath)
@@ -130,7 +135,6 @@ async function generateDataFile(photos: Photo[]) {
     }
   }
 
-  // 生成数据文件
   const dataContent = `// 此文件由 scripts/photo.ts 自动生成，请勿手动修改
 import type { Photo } from '~/types'
 
@@ -161,7 +165,6 @@ async function lintFix() {
     console.log('✅ ESLint check completed')
   }
   catch (eslintError) {
-    // ESLint 可能会在修复文件时返回非零退出码，这是正常的
     if (eslintError && typeof eslintError === 'object' && 'stdout' in eslintError) {
       const error = eslintError as { stdout?: string, stderr?: string }
       console.log('ESLint executed with warnings/fixes:', error.stdout || error.stderr)
