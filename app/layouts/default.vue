@@ -7,4 +7,5 @@
   <main>
     <slot />
   </main>
+  <CommandPalette />
 </template>
