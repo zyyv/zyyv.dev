@@ -13,6 +13,7 @@ function calculateReadingTime(text: string): number {
 }
 
 const route = useRoute()
+const router = useRouter()
 const tags = ref(new Set<string>(route.query.tags ? (route.query.tags as string).split(',') : []))
 
 function toggleTag(tag: string) {
@@ -24,14 +25,22 @@ function toggleTag(tag: string) {
   }
 }
 
+watch(tags, () => {
+  if (import.meta.client) {
+    if (tags.value.size === 0) {
+      router.replace('/posts')
+    }
+    else {
+      router.replace(`/posts?tags=${Array.from(tags.value).join(',')}`)
+    }
+  }
+}, { deep: true })
+
 const sortedPosts = computed(() => {
   if (tags.value.size === 0) {
-    history.replaceState(null, '', '/posts')
     return posts.value
   }
   else {
-    history.replaceState(null, '', `/posts?tags=${Array.from(tags.value).join(',')}`)
-
     return [...posts.value!].sort((a, b) => {
       const aHasTag = a.tags.some(tag => tags.value.has(tag))
       const bHasTag = b.tags.some(tag => tags.value.has(tag))
@@ -59,7 +68,7 @@ const sortedPosts = computed(() => {
         trans
         :class="tags.size > 0 && post.tags.every(tag => !tags.has(tag)) ? 'op-50' : ''"
       >
-        <nuxt-link :to="`${post.path}`">
+        <nuxt-link :to="post.path">
           <strong>{{ post.title }}</strong>
           <sub v-if="post.rawbody" bottom-0 left-1.5>
             <span text-2.75 op-72>{{ calculateReadingTime(post.rawbody) }} min</span>
@@ -88,7 +97,5 @@ const sortedPosts = computed(() => {
         </div>
       </li>
     </ul>
-
-    <NuxtPage name="posts" />
   </div>
 </template>
