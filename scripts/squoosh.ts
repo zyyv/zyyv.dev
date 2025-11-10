@@ -1,6 +1,7 @@
 import { readdir, stat, writeFile } from 'node:fs/promises'
 import { cpus } from 'node:os'
 import { basename, extname, join } from 'node:path'
+import sharp from 'sharp'
 import SquooshPool from 'squoosh-next'
 
 const imagePool = new SquooshPool.ImagePool(cpus().length)
@@ -100,9 +101,11 @@ async function compressImage(filename: string) {
 
     console.log(`🔄 Compressing ${filename}...`)
 
-    // 读取图片文件
-    const { readFile } = await import('node:fs/promises')
-    const imageBuffer = await readFile(inputPath)
+    // 使用 sharp 预处理图片：自动旋转（根据 EXIF 方向）并转换为 buffer
+    // 这样可以确保图片方向正确，避免宽高混淆
+    const imageBuffer = await sharp(inputPath)
+      .rotate() // 自动根据 EXIF Orientation 旋转
+      .toBuffer()
 
     // 创建图片实例
     const image = imagePool.ingestImage(imageBuffer)
