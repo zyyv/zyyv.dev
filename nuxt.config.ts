@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@unocss/nuxt',
     '@nuxt/image',
+    '@nuxt/content',
   ],
 
   nitro: {

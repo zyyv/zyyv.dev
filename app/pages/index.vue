@@ -48,9 +48,7 @@ const dragState = ref(false)
       <Projects />
     </OriginQuadrant>
     <OriginQuadrant quadrant="IV">
-      <div size-full fcc animate-pulse>
-        Coming soon...
-      </div>
+      <Posts />
     </OriginQuadrant>
   </main>
   <div class="absolute inset-0 z-200 pointer-events-none">
