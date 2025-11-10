@@ -42,8 +42,7 @@ const dragState = ref(false)
       <MeInfo />
     </OriginQuadrant>
     <OriginQuadrant quadrant="I">
-      <!-- <Photos /> -->
-      <div>123</div>
+      <Photos />
     </OriginQuadrant>
     <OriginQuadrant quadrant="III">
       <Projects />
