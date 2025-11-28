@@ -15,6 +15,11 @@ function getCompressedPath(filename: string): string {
   return `/photos/compressed/${compressedFilename}`
 }
 
+function getThumbnailPath(filename: string): string {
+  const thumbFilename = `${filename}_thumb.jpg`
+  return `/photos/compressed/${thumbFilename}`
+}
+
 generatePhotosData()
   .then(generateDataFile)
   .then(lintFix)
@@ -75,6 +80,7 @@ async function generatePhotosData() {
           id: filename.replace(/\.[^/.]+$/, ''), // 移除文件扩展名作为 ID
           filename,
           path: getCompressedPath(filename),
+          thumbnail: getThumbnailPath(filename),
           originalPath: `/photos/${filename}`,
           size: stats.size,
           sizeFormatted: formatSize(stats.size),

@@ -106,7 +106,7 @@ onMounted(() => {
         <template #default="{ item }">
           <div class="cursor-pointer" @click="openPreview(item)">
             <ImgBlurHash
-              :src="item.path"
+              :src="item.thumbnail || item.path"
               :blurhash="item.blurhash"
               :aspect-ratio="item.width / item.height"
               class="w-full h-auto hover:scale-105 trans"

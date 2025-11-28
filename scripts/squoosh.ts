@@ -101,62 +101,75 @@ async function compressImage(filename: string) {
 
     console.log(`🔄 Compressing ${filename}...`)
 
-    // 使用 sharp 预处理图片：自动旋转（根据 EXIF 方向）并转换为 buffer
-    // 这样可以确保图片方向正确，避免宽高混淆
-    const imageBuffer = await sharp(inputPath)
-      .rotate() // 自动根据 EXIF Orientation 旋转
+    // 使用 sharp 预处理图片：自动旋转（根据 EXIF 方向）
+    const sharpInstance = sharp(inputPath).rotate()
+
+    // 1. 生成主图 (max 2560px)
+    const mainBuffer = await sharpInstance.clone()
+      .resize({ width: 2560, withoutEnlargement: true })
+      .toBuffer()
+
+    // 2. 生成缩略图 (max 600px)
+    const thumbBuffer = await sharpInstance.clone()
+      .resize({ width: 600, withoutEnlargement: true })
       .toBuffer()
 
     // 创建图片实例
-    const image = imagePool.ingestImage(imageBuffer)
+    const mainImage = imagePool.ingestImage(mainBuffer)
+    const thumbImage = imagePool.ingestImage(thumbBuffer)
 
     // 根据原始格式选择压缩方式
     let compressedOutputPath: string
+    let thumbOutputPath: string
     let encodeOptions: any
 
     switch (ext) {
       case '.jpg':
       case '.jpeg':
         compressedOutputPath = join(outputPath, `${name}_compressed.jpg`)
+        thumbOutputPath = join(outputPath, `${name}_thumb.jpg`)
         encodeOptions = { mozjpeg: compressOptions.mozjpeg }
         break
       case '.png':
         compressedOutputPath = join(outputPath, `${name}_compressed.png`)
+        thumbOutputPath = join(outputPath, `${name}_thumb.png`)
         encodeOptions = { oxipng: compressOptions.oxipng }
         break
       case '.webp':
         compressedOutputPath = join(outputPath, `${name}_compressed.webp`)
+        thumbOutputPath = join(outputPath, `${name}_thumb.webp`)
         encodeOptions = { webp: compressOptions.webp }
         break
       default:
         // 默认转换为 WebP
         compressedOutputPath = join(outputPath, `${name}_compressed.webp`)
+        thumbOutputPath = join(outputPath, `${name}_thumb.webp`)
         encodeOptions = { webp: compressOptions.webp }
     }
 
-    // 执行压缩
-    const encodedImage = await image.encode(encodeOptions)
+    // 执行压缩 (Main)
+    const encodedMain = await mainImage.encode(encodeOptions)
+    const encodedKeyMain = Object.keys(encodedMain)[0]
+    if (!encodedKeyMain)
+      throw new Error('No encoded data found for main image')
+    const mainData = await encodedMain[encodedKeyMain].binary
+    await writeFile(compressedOutputPath, mainData)
 
-    // 获取压缩后的数据
-    const encodedKey = Object.keys(encodedImage)[0]
-    if (!encodedKey) {
-      throw new Error('No encoded data found')
-    }
-    const encodedData = encodedImage[encodedKey]
-    if (!encodedData) {
-      throw new Error('No encoded data available')
-    }
-    const compressedData = await encodedData.binary
+    // 执行压缩 (Thumb)
+    const encodedThumb = await thumbImage.encode(encodeOptions)
+    const encodedKeyThumb = Object.keys(encodedThumb)[0]
+    if (!encodedKeyThumb)
+      throw new Error('No encoded data found for thumbnail')
+    const thumbData = await encodedThumb[encodedKeyThumb].binary
+    await writeFile(thumbOutputPath, thumbData)
 
-    // 写入压缩后的文件
-    await writeFile(compressedOutputPath, compressedData)
-
-    // 计算压缩率
-    const compressedSize = compressedData.length
+    // 计算压缩率 (Main)
+    const compressedSize = mainData.length
     const compressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(2)
 
     console.log(`✅ ${filename} -> ${basename(compressedOutputPath)}`)
     console.log(`   Original: ${formatSize(originalSize)} | Compressed: ${formatSize(compressedSize)} | Saved: ${compressionRatio}%`)
+    console.log(`   Thumbnail: ${formatSize(thumbData.length)}`)
 
     return {
       filename,

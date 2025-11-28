@@ -23,10 +23,6 @@ useHead({
     { name: 'twitter:image', content: ogImage },
     { name: 'twitter:site', content: '@chris_zyyv' },
     { name: 'twitter:url', content: ogUrl },
-
-    { 'http-equiv': 'pragma', 'content': 'no-cache' },
-    { 'http-equiv': 'cache-control', 'content': 'no-cache' },
-    { 'http-equiv': 'expires', 'content': '0' },
   ],
   charset: 'utf-8',
   viewport: 'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0',
