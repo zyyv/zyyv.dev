@@ -38,7 +38,7 @@ export const DEFAULT_LABELS = {
 }
 
 export function parseISO(date: string) {
-  const [year, month, day] = date.split('-').map(Number)
+  const [year, month, day] = date.split('-').map(Number) as [number, number, number]
   return new Date(year, month - 1, day)
 }
 

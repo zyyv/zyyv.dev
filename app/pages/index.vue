@@ -29,7 +29,7 @@ const dragState = ref(false)
 </script>
 
 <template>
-  <main
+  <section
     class="size-screen grid"
     :class="{ trans: !dragState }"
     :style="{
@@ -50,7 +50,7 @@ const dragState = ref(false)
     <OriginQuadrant quadrant="IV">
       <Posts />
     </OriginQuadrant>
-  </main>
+  </section>
   <div class="absolute inset-0 z-200 pointer-events-none">
     <OriginController v-model="center" v-model:state="dragState" size-full />
   </div>

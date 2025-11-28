@@ -27,10 +27,10 @@ const postsList = computed(() => (posts.value as any) || [])
         <article
           v-for="post in postsList"
           :key="post.id"
-          class="group cursor-pointer trans hover:translate-x-2"
+          class="op-72 hover:op-100 cursor-pointer trans hover:translate-x-2"
         >
           <nuxt-link :to="post.path" class="block">
-            <h3 class="text-lg font-semibold mb-2 group-hover:text-blue-500 trans">
+            <h3 class="text-lg font-semibold mb-2 trans">
               {{ post.title }}
             </h3>
 
@@ -71,7 +71,7 @@ const postsList = computed(() => (posts.value as any) || [])
       <!-- 空状态 -->
       <div v-else class="flex flex-col items-center justify-center py-16 op-64">
         <div class="text-4xl mb-4">
-          📝
+          <i i-hugeicons:camera-ai />
         </div>
         <div class="text-sm">
           No posts yet

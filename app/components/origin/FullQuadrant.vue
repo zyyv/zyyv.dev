@@ -12,19 +12,22 @@ function handleClick(quadrant: string) {
 
 <template>
   <div
-    class="op-0 trans group-hover:op-80 pa z-100 cursor-pointer text-xs text-basecolor hover:op-100! pointer-events-auto"
+    class="op-0 trans group-hover:op-80 pa z-100 cursor-pointer text-sm text-red hover:op-100! pointer-events-auto"
     :class="{
-      'bottom-2 left-2': quadrant === 'I',
-      'bottom-2 right-2': quadrant === 'II',
-      'top-2 right-2': quadrant === 'III',
-      'top-2 left-2': quadrant === 'IV',
+      'bottom-1.3 left-1.3': quadrant === 'I',
+      'bottom-1.3 right-1.3': quadrant === 'II',
+      'top-1.3 right-1.3': quadrant === 'III',
+      'top-1.3 left-1.3': quadrant === 'IV',
     }"
     @click.stop="handleClick(quadrant)"
   >
     <i
+      i-hugeicons:arrow-up-01
       :class="{
-        'i-hugeicons:arrow-expand-02': quadrant === 'II' || quadrant === 'IV',
-        'i-hugeicons:arrow-expand-01': quadrant === 'I' || quadrant === 'III',
+        'rotate-45': quadrant === 'I',
+        'rotate--45': quadrant === 'II',
+        'rotate--135': quadrant === 'III',
+        'rotate-135': quadrant === 'IV',
       }"
     />
   </div>

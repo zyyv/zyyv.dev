@@ -64,7 +64,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="photos-container h-screen flex flex-col">
+  <div class="size-full of-auto scroll-none flex flex-col hidden @sm:block">
     <!-- 错误状态 -->
     <div v-if="error" class="flex flex-col justify-center items-center h-64 p-4">
       <div class="text-red-500 text-lg mb-4">
@@ -74,7 +74,7 @@ onMounted(() => {
         class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
         @click="refreshPhotos"
       >
-        重新加载
+        Reload
       </button>
     </div>
 
@@ -119,14 +119,14 @@ onMounted(() => {
       <div v-if="loading" class="flex justify-center items-center py-8">
         <div class="flex items-center gap-2 text-gray-500">
           <div class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-          <span>加载更多照片...</span>
+          <span>Loading...</span>
         </div>
       </div>
 
       <!-- 没有更多数据提示 -->
       <div v-else-if="!hasMore && totalPhotos > 0" class="flex justify-center items-center py-8">
         <div class="text-gray-500 text-sm">
-          已显示所有 {{ totalPhotos }} 张照片
+          All {{ totalPhotos }} photos are displayed
         </div>
       </div>
 
@@ -134,9 +134,9 @@ onMounted(() => {
       <div v-else-if="isEmpty" class="flex justify-center items-center py-16">
         <div class="text-gray-500 text-center">
           <div class="text-2xl mb-2">
-            📷
+            <i i-hugeicons:file-edit />
           </div>
-          <div>暂无照片</div>
+          <div>No photos available</div>
         </div>
       </div>
     </div>
@@ -150,5 +150,14 @@ onMounted(() => {
       @prev="showPrevPhoto"
       @next="showNextPhoto"
     />
+  </div>
+  <div class="@sm:hidden! size-full fcc">
+    <nuxt-link
+      to="/photos"
+      class="cursor-pointer"
+      text="3xl orange op-80 hover:op-100"
+    >
+      <i i-hugeicons:image-03 />
+    </nuxt-link>
   </div>
 </template>
