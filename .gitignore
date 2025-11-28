@@ -13,3 +13,4 @@ dev-dist
 .netlify
 server/utils/data.ts
 public/photos/compressed
+scripts/compression-report.md

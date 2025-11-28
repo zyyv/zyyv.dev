@@ -24,7 +24,7 @@
     "build": "nuxt build",
     "preview": "nuxt preview",
     "lint": "eslint .",
-    "postinstall": "nuxt prepare && pnpm photos",
+    "postinstall": "nuxt prepare && pnpm compress && pnpm photos",
     "typecheck": "tsc --noEmit",
     "taze": "taze major -wIr",
     "photos": "esno scripts/photo.ts",
