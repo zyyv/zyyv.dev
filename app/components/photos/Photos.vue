@@ -125,7 +125,7 @@ onMounted(() => {
 
       <!-- 没有更多数据提示 -->
       <div v-else-if="!hasMore && totalPhotos > 0" class="flex justify-center items-center py-8">
-        <div class="text-gray-500 text-sm">
+        <div class="text-basecolor text-op-50 text-sm">
           All {{ totalPhotos }} photos are displayed
         </div>
       </div>

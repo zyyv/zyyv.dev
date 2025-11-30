@@ -70,7 +70,7 @@ function formatExposureTime(time?: number): string {
   <Teleport to="body">
     <div
       v-if="visible && photo"
-      class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center"
+      class="fixed inset-0 z-200 bg-black/50 backdrop-blur-sm flex items-center justify-center"
       @click.self="emit('close')"
     >
       <!-- 关闭按钮 -->
@@ -78,31 +78,25 @@ function formatExposureTime(time?: number): string {
         class="absolute top-4 right-4 z-10 p-2 text-white/80 hover:text-white transition-colors"
         @click="emit('close')"
       >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <i i-hugeicons:cancel-01 />
       </button>
 
       <!-- 上一张按钮 -->
       <button
         v-if="hasPrev"
-        class="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/80 hover:text-white transition-colors"
+        class="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 text-2xl cursor-pointer text-white/80 hover:text-white transition-colors"
         @click="emit('prev')"
       >
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
+        <i i-hugeicons:arrow-left-01 />
       </button>
 
       <!-- 下一张按钮 -->
       <button
         v-if="hasNext"
-        class="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/80 hover:text-white transition-colors"
+        class="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 text-2xl cursor-pointer text-white/80 hover:text-white transition-colors"
         @click="emit('next')"
       >
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
+        <i i-hugeicons:arrow-right-01 />
       </button>
 
       <!-- 主要内容区域 -->
@@ -118,7 +112,7 @@ function formatExposureTime(time?: number): string {
         </div>
 
         <!-- 图片信息面板 -->
-        <div class="w-full lg:w-80 bg-black/50 backdrop-blur-sm rounded-lg p-6 mt-4 lg:mt-0 lg:ml-4 text-white overflow-y-auto">
+        <div class="w-full lg:w-80 bg-dark/50 backdrop-blur-sm rounded-lg p-6 mt-4 lg:mt-0 lg:ml-4 text-basecolor overflow-y-auto">
           <div class="space-y-4">
             <!-- 基本信息 -->
             <div>
@@ -132,7 +126,7 @@ function formatExposureTime(time?: number): string {
                 </div>
                 <div class="flex justify-between">
                   <span class="text-white/70">尺寸</span>
-                  <span>{{ photo.width }} × {{ photo.height }}</span>
+                  <span>{{ photo.width }} x {{ photo.height }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-white/70">文件大小</span>
