@@ -174,7 +174,7 @@ defineExpose({
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+        class="fixed inset-0 z-500 bg-black/50 backdrop-blur-sm"
         @click="closePanel"
       />
     </Transition>
@@ -190,7 +190,7 @@ defineExpose({
     >
       <div
         v-if="isOpen"
-        class="fixed left-1/2 top-1/4 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/4"
+        class="fixed left-1/2 top-1/4 z-501 w-full max-w-lg -translate-x-1/2 -translate-y-1/4"
         @keydown="handleKeydown"
       >
         <div class="mx-4 overflow-hidden rounded-xl border bg-basecolor shadow-2xl border-gray-200 dark:border-gray-700">
