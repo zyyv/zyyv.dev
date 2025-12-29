@@ -90,9 +90,9 @@ importers:
       unocss:
         specifier: ^66.5.9
         version: 66.5.9(@unocss/webpack@66.5.9(webpack@5.102.1))(postcss@8.5.6)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      unocss-preset-useful:
-        specifier: ^1.0.1
-        version: 1.0.1(unocss@66.5.9(@unocss/webpack@66.5.9(webpack@5.102.1))(postcss@8.5.6)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)))
+      unocss-preset-zyyv:
+        specifier: ^2.0.0
+        version: 2.0.0(unocss@66.5.9(@unocss/webpack@66.5.9(webpack@5.102.1))(postcss@8.5.6)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)))
 
 packages:
 
@@ -1748,8 +1748,8 @@ packages:
     resolution: {integrity: sha512-M8O0Z+6iCXuQOz/quaKueSb2cmN7cP9JGWdAH2E+qFD8txljaY88tNL4OwFZtO9GjhT2f/pEsLoEOAtAo1xT6g==}
     engines: {node: '>=14'}
 
-  '@unocss/core@66.5.5':
-    resolution: {integrity: sha512-BL+TdQMJCuu3fOGnF8wugGVpqrgBUEFzWp3yI9VJe/+p6H6NXuqlzwgSKcbpJD0XQMnxhRYYtC5Gh1coNXiBIQ==}
+  '@unocss/core@66.5.11':
+    resolution: {integrity: sha512-Wavk2l7vjyd8SlQ8MmMQSSCPdiJEv+cF1l42fsiGSteoOFkbF6uNgmO2CqF5VlXbBjh1ovvQQkLc/0CGOZZXIA==}
 
   '@unocss/core@66.5.9':
     resolution: {integrity: sha512-0ch1dN1AJFX+QCxaQR6WLfWqr8PHt7U/wqSTm5vdLXTsm96R7ggCGMs360TiDMimDUvXak6gka+y/6wdQBf8/A==}
@@ -2267,10 +2267,6 @@ packages:
   callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
-
-  camelcase-css@2.0.1:
-    resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
-    engines: {node: '>= 6'}
 
   caniuse-api@3.0.0:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
@@ -4245,9 +4241,9 @@ packages:
     peerDependencies:
       postcss: ^8.4.32
 
-  postcss-js@4.1.0:
-    resolution: {integrity: sha512-oIAOTqgIo7q2EOwbhb8UalYePMvYoIeRY2YKntdpFQXNosSu3vLrniGgmH9OKs/qAkfoj5oB3le/7mINW1LCfw==}
-    engines: {node: ^12 || ^14 || >= 16}
+  postcss-js@5.0.3:
+    resolution: {integrity: sha512-yqxfMZ2NKo8MH0xcj6Yb1sos9Vk2aNzVi0i6k0nWH0LaLQQ1lke9DGWDMa80+tzHk+tLzfKa3pepOFcPSM6Yow==}
+    engines: {node: ^20 || ^22 || >= 24}
     peerDependencies:
       postcss: ^8.4.21
 
@@ -5116,8 +5112,8 @@ packages:
       unocss:
         optional: true
 
-  unocss-preset-useful@1.0.1:
-    resolution: {integrity: sha512-dj7ENjcp5VAm6qA8kV87uJ6MGIGHPe+9wzjqOoYxQwRyCKxEdBMUJal+6lzmrz1xMIHdVLDNZFPif01GXn4rdg==}
+  unocss-preset-zyyv@2.0.0:
+    resolution: {integrity: sha512-hZUAa99LruGIiCKjKsZgzTY13lOZn8MZHINfPwUKoGSAsdNuvhd3fGvjPXBn9InrACLuRelVFFZbx0/4GsqY6Q==}
     peerDependencies:
       unocss: ^0.65.0 || >=65.4.0
     peerDependenciesMeta:
@@ -7451,7 +7447,7 @@ snapshots:
       '@unocss/core': 66.5.9
       unconfig: 7.4.1
 
-  '@unocss/core@66.5.5': {}
+  '@unocss/core@66.5.11': {}
 
   '@unocss/core@66.5.9': {}
 
@@ -8167,8 +8163,6 @@ snapshots:
   cac@6.7.14: {}
 
   callsites@3.1.0: {}
-
-  camelcase-css@2.0.1: {}
 
   caniuse-api@3.0.0:
     dependencies:
@@ -10687,9 +10681,8 @@ snapshots:
     dependencies:
       postcss: 8.5.6
 
-  postcss-js@4.1.0(postcss@8.5.6):
+  postcss-js@5.0.3(postcss@8.5.6):
     dependencies:
-      camelcase-css: 2.0.1
       postcss: 8.5.6
 
   postcss-merge-longhand@7.0.5(postcss@8.5.6):
@@ -11716,11 +11709,11 @@ snapshots:
     optionalDependencies:
       unocss: 66.5.9(@unocss/webpack@66.5.9(webpack@5.102.1))(postcss@8.5.6)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
 
-  unocss-preset-useful@1.0.1(unocss@66.5.9(@unocss/webpack@66.5.9(webpack@5.102.1))(postcss@8.5.6)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))):
+  unocss-preset-zyyv@2.0.0(unocss@66.5.9(@unocss/webpack@66.5.9(webpack@5.102.1))(postcss@8.5.6)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))):
     dependencies:
-      '@unocss/core': 66.5.5
+      '@unocss/core': 66.5.11
       postcss: 8.5.6
-      postcss-js: 4.1.0(postcss@8.5.6)
+      postcss-js: 5.0.3(postcss@8.5.6)
       unocss-preset-magicss: 1.0.1(unocss@66.5.9(@unocss/webpack@66.5.9(webpack@5.102.1))(postcss@8.5.6)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)))
     optionalDependencies:
       unocss: 66.5.9(@unocss/webpack@66.5.9(webpack@5.102.1))(postcss@8.5.6)(vite@7.2.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))

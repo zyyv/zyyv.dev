@@ -72,7 +72,7 @@ const uno = await createGenerator({
 }
 ```
 
-你可以在使用时按需使用你使用到的预设，参考社区预设[unocss-preset-useful](https://github.com/unpreset/unocss-preset-useful/blob/6cf6a41a222b223e9f5f708cf99c00cf026bf8a4/packages/core/src/resolve.ts#L53-L63)
+你可以在使用时按需使用你使用到的预设，参考社区预设[unocss-preset-zyyv](https://github.com/unpreset/unocss-preset-zyyv/blob/6cf6a41a222b223e9f5f708cf99c00cf026bf8a4/packages/core/src/resolve.ts#L53-L63)
 
 ### mutiple result variant
 

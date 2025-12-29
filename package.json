@@ -60,7 +60,7 @@
     "taze": "^19.9.2",
     "typescript": "5.7.2",
     "unocss": "^66.5.9",
-    "unocss-preset-useful": "^1.0.1"
+    "unocss-preset-zyyv": "^2.0.0"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

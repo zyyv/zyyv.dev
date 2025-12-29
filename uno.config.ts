@@ -1,9 +1,9 @@
-import type { UsefulTheme } from 'unocss-preset-useful'
+import type { ZyyvTheme } from 'unocss-preset-zyyv'
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
 import { symbols } from '@unocss/core'
-import { defineUsefulConfig } from 'unocss-preset-useful'
+import { defineZyyvConfig } from 'unocss-preset-zyyv'
 
-export default defineUsefulConfig<UsefulTheme>({
+export default defineZyyvConfig<ZyyvTheme>({
   theme: {
     extend: {
       animation: {

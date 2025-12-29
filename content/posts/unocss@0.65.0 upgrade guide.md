@@ -62,7 +62,7 @@ If you want to integrate an all-in-one preset, this asynchronous preset will be 
 }
 ```
 
-You can use the presets you need on demand, refer to the community preset [unocss-preset-useful](https://github.com/unocss-community/unocss-preset-useful/blob/6cf6a41a222b223e9f5f708cf99c00cf026bf8a4/packages/core/src/resolve.ts#L53-L63)
+You can use the presets you need on demand, refer to the community preset [unocss-preset-zyyv](https://github.com/unocss-community/unocss-preset-zyyv/blob/6cf6a41a222b223e9f5f708cf99c00cf026bf8a4/packages/core/src/resolve.ts#L53-L63)
 
 ### Multiple Result Variant
 
