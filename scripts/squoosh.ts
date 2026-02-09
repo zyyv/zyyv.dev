@@ -7,7 +7,8 @@ import SquooshPool from 'squoosh-next'
 const imagePool = new SquooshPool.ImagePool(cpus().length)
 
 const sourcePath = join(process.cwd(), 'public/photos')
-const outputPath = join(process.cwd(), 'public/photos/compressed')
+const compressedDir = join(process.cwd(), 'public/photos/compressed')
+const thumbDir = join(process.cwd(), 'public/photos/thumb')
 
 // 支持的图片格式
 const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp']
@@ -50,7 +51,10 @@ async function compressImages() {
     console.log(`📁 Found ${imageFiles.length} images to compress`)
 
     // 确保输出目录存在
-    await ensureDir(outputPath)
+    await Promise.all([
+      ensureDir(compressedDir),
+      ensureDir(thumbDir),
+    ])
 
     // 并行压缩所有图片
     const results = await Promise.allSettled(
@@ -126,24 +130,24 @@ async function compressImage(filename: string) {
     switch (ext) {
       case '.jpg':
       case '.jpeg':
-        compressedOutputPath = join(outputPath, `${name}_compressed.jpg`)
-        thumbOutputPath = join(outputPath, `${name}_thumb.jpg`)
+        compressedOutputPath = join(compressedDir, filename)
+        thumbOutputPath = join(thumbDir, filename)
         encodeOptions = { mozjpeg: compressOptions.mozjpeg }
         break
       case '.png':
-        compressedOutputPath = join(outputPath, `${name}_compressed.png`)
-        thumbOutputPath = join(outputPath, `${name}_thumb.png`)
+        compressedOutputPath = join(compressedDir, filename)
+        thumbOutputPath = join(thumbDir, filename)
         encodeOptions = { oxipng: compressOptions.oxipng }
         break
       case '.webp':
-        compressedOutputPath = join(outputPath, `${name}_compressed.webp`)
-        thumbOutputPath = join(outputPath, `${name}_thumb.webp`)
+        compressedOutputPath = join(compressedDir, filename)
+        thumbOutputPath = join(thumbDir, filename)
         encodeOptions = { webp: compressOptions.webp }
         break
       default:
         // 默认转换为 WebP
-        compressedOutputPath = join(outputPath, `${name}_compressed.webp`)
-        thumbOutputPath = join(outputPath, `${name}_thumb.webp`)
+        compressedOutputPath = join(compressedDir, `${name}.webp`)
+        thumbOutputPath = join(thumbDir, `${name}.webp`)
         encodeOptions = { webp: compressOptions.webp }
     }
 

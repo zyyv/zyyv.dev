@@ -11,13 +11,11 @@ const dataFile = 'server/utils/data.ts'
 const dataPath = join(process.cwd(), dataFile)
 
 function getCompressedPath(filename: string): string {
-  const compressedFilename = `${filename}_compressed.jpg`
-  return `/photos/compressed/${compressedFilename}`
+  return `/photos/compressed/${filename}`
 }
 
 function getThumbnailPath(filename: string): string {
-  const thumbFilename = `${filename}_thumb.jpg`
-  return `/photos/compressed/${thumbFilename}`
+  return `/photos/thumb/${filename}`
 }
 
 generatePhotosData()

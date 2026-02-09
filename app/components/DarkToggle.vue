@@ -49,6 +49,7 @@ async function toggleDark(event: MouseEvent) {
     {
       duration: 300,
       easing: 'ease-in',
+      fill: 'forwards',
       pseudoElement: state.value === 'dark'
         ? '::view-transition-old(root)'
         : '::view-transition-new(root)',
