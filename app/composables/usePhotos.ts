@@ -19,17 +19,16 @@ export function usePhotos() {
     error.value = null
 
     try {
-      // 使用 useFetch 来确保在服务端和客户端都能正确工作
-      const response = await $fetch('/api/photos', {
-        method: 'GET',
-        query: {
-          page,
-          limit: pageSize.value,
-        },
-        // 添加重试机制
-        retry: 2,
-        retryDelay: 1000,
-      }) as any
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(pageSize.value),
+      })
+      const response = await fetch(`/api/photos?${params}`)
+        .then((res) => {
+          if (!res.ok)
+            throw new Error(`Failed to load photos: ${res.status}`)
+          return res.json()
+        }) as any
 
       if (response?.photos) {
         if (append) {

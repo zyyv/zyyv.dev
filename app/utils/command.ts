@@ -1,4 +1,4 @@
-import type { Router } from 'vue-router'
+import { useColorMode } from '@vueuse/core'
 
 export interface CommandItem {
   id: string
@@ -10,7 +10,6 @@ export interface CommandItem {
 }
 
 export interface CommandDeps {
-  router: Router
   closePanel: () => void
 }
 
@@ -49,8 +48,8 @@ export function createNavigationCommand(
     description: options.description,
     icon: options.icon,
     category: '导航',
-    action: ({ router, closePanel }) => {
-      router.push(path)
+    action: ({ closePanel }) => {
+      window.location.href = path
       closePanel()
     },
   })

@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.24.0",
-  "description": "Chris' blog build with Nuxt3.",
+  "description": "Chris' blog built with Astro.",
   "author": "Chris <https://github.com/zyyv>",
   "homepage": "https://github.com/zyyv/zyyv.dev#readme",
   "repository": {
@@ -15,44 +15,44 @@
   },
   "keywords": [
     "blog",
-    "vue3",
-    "nuxt3",
+    "vue",
+    "astro",
     "unocss"
   ],
   "scripts": {
-    "dev": "nuxt dev",
-    "build": "nuxt build",
-    "preview": "nuxt preview",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro dev",
     "lint": "eslint .",
-    "postinstall": "nuxt prepare && pnpm compress && pnpm photos",
-    "typecheck": "tsc --noEmit",
+    "prepare:photos": "pnpm compress && pnpm photos",
+    "typecheck": "astro check && tsc --noEmit",
     "taze": "taze major -wIr",
     "photos": "esno scripts/photo.ts",
     "compress": "esno scripts/squoosh.ts"
   },
   "dependencies": {
+    "@astrojs/vue": "^5.0.0",
     "@lhlyu/vue-virtual-waterfall": "^1.0.8",
-    "better-sqlite3": "^12.4.6",
     "blurhash": "^2.0.5",
-    "dayjs": "^1.11.19"
+    "dayjs": "^1.11.19",
+    "vue": "^3.5.13"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.2.0",
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/netlify": "^6.5.0",
     "@iconify-json/catppuccin": "^1.2.17",
     "@iconify-json/fluent-emoji": "^1.2.7",
     "@iconify-json/hugeicons": "^1.2.18",
     "@iconify-json/logos": "^1.2.10",
     "@iconify/utils": "^3.1.0",
-    "@nuxt/content": "^3.8.2",
-    "@nuxt/image": "^2.0.0",
-    "@unocss/nuxt": "^66.5.9",
-    "@vueuse/nuxt": "^14.1.0",
+    "@vueuse/core": "^14.1.0",
+    "astro": "^5.15.0",
     "eslint": "^9.39.1",
     "esno": "^4.8.0",
     "execa": "^9.6.0",
     "exifr": "^7.1.3",
     "lint-staged": "^16.2.7",
-    "nuxt": "^4.2.1",
     "octokit": "^5.0.5",
     "sharp": "^0.34.5",
     "simple-git-hooks": "^2.13.1",
@@ -60,7 +60,9 @@
     "taze": "^19.9.2",
     "typescript": "5.7.2",
     "unocss": "^66.5.9",
-    "unocss-preset-zyyv": "^2.0.0"
+    "unocss-preset-zyyv": "^2.0.0",
+    "unplugin-auto-import": "^20.2.0",
+    "unplugin-vue-components": "^30.0.0"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

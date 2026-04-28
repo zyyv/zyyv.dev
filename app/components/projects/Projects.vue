@@ -1,5 +1,20 @@
-<script lang='ts' setup>
-const { data, status } = useFetch('/api/repos')
+<script lang="ts" setup>
+const data = ref<Record<string, any[]> | null>(null)
+const status = ref<'pending' | 'success' | 'error'>('pending')
+
+onMounted(async () => {
+  try {
+    const response = await fetch('/api/repos')
+    if (!response.ok)
+      throw new Error(`Failed to load repos: ${response.status}`)
+    data.value = await response.json()
+    status.value = 'success'
+  }
+  catch (error) {
+    console.error(error)
+    status.value = 'error'
+  }
+})
 </script>
 
 <template>

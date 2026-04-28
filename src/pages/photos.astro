@@ -1,0 +1,10 @@
+---
+import PhotosGallery from '../../app/components/photos/Photos.vue'
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title="Photos - Chris" description="Chris的摄影作品集">
+  <div class="h-screen">
+    <PhotosGallery client:load />
+  </div>
+</Layout>

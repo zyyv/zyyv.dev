@@ -57,9 +57,9 @@ export default defineZyyvConfig<ZyyvTheme>({
         '-ms-overflow-style': 'none',
       },
       {
-        [symbols.selector]: s => `${s}::-webkit-scrollbar`,
+        [symbols.selector]: (s: string) => `${s}::-webkit-scrollbar`,
         display: 'none',
-      },
+      } as any,
     ]],
   ],
   shortcuts: [

@@ -36,6 +36,10 @@ function closePreview() {
   document.body.style.overflow = ''
 }
 
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+})
+
 // 显示上一张图片
 function showPrevPhoto() {
   if (!currentPhoto.value)
@@ -152,12 +156,12 @@ onMounted(() => {
     />
   </div>
   <div class="@sm:hidden! size-full fcc">
-    <nuxt-link
-      to="/photos"
+    <a
+      href="/photos"
       class="cursor-pointer"
       text="3xl orange op-80 hover:op-100"
     >
       <i i-hugeicons:image-03 />
-    </nuxt-link>
+    </a>
   </div>
 </template>

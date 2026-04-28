@@ -6,9 +6,10 @@ export default antfu(
     ignores: [
       'dist',
       'node_modules',
+      '.astro',
       '.output',
       '.nuxt',
-      'content/posts',
+      'src/content/posts',
       'data',
     ],
   },

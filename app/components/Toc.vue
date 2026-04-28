@@ -1,6 +1,12 @@
 <script lang="ts" setup>
-import type { TocLink } from '@nuxt/content'
 import { proseHeadingClick } from '~/utils'
+
+interface TocLink {
+  id: string
+  text: string
+  depth: number
+  children?: TocLink[]
+}
 
 defineProps<{
   links: TocLink[]

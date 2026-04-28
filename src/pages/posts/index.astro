@@ -1,0 +1,12 @@
+---
+import { getCollection } from 'astro:content'
+import PostsIndex from '../../../app/components/posts/PostsIndex.vue'
+import Layout from '../../layouts/Layout.astro'
+import { sortPosts, toPostPreview } from '../../lib/posts'
+
+const posts = sortPosts(await getCollection('posts')).map(toPostPreview)
+---
+
+<Layout title="Posts - Chris" description="In the flow of time, seeking resonance with the soul.">
+  <PostsIndex client:load posts={posts} />
+</Layout>

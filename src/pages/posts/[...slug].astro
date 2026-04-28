@@ -1,0 +1,43 @@
+---
+import { getCollection, render } from 'astro:content'
+import Back from '../../../app/components/Back.vue'
+import Toc from '../../../app/components/Toc.vue'
+import Layout from '../../layouts/Layout.astro'
+
+export const prerender = true
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts')
+  return posts.map(post => ({
+    params: { slug: post.id.replace(/\.md$/, '') },
+    props: { post },
+  }))
+}
+
+const { post } = Astro.props
+const { Content, headings } = await render(post)
+const tocLinks = headings
+  .filter(heading => heading.depth > 1 && heading.depth < 4)
+  .map(heading => ({
+    id: heading.slug,
+    text: heading.text,
+    depth: heading.depth,
+  }))
+---
+
+<Layout title={`${post.data.title} - Chris`} description={post.data.description}>
+  <div>
+    <div class="prose mxa peer text-3.75">
+      <h1>{post.data.title}</h1>
+      <Content />
+      <Back client:load mt-8 />
+    </div>
+
+    <Toc
+      client:load
+      class="pf right-10 top-40 op-36 trans"
+      links={tocLinks}
+      highlights={[]}
+    />
+  </div>
+</Layout>

@@ -1,0 +1,56 @@
+---
+import NavHeader from '../../app/components/nav/NavHeader.vue'
+import CommandPalette from '../../app/components/command/CommandPalette.vue'
+import 'uno.css'
+import '../../app/styles/vars.css'
+import '../../app/styles/fonts.css'
+import '../../app/styles/prose.css'
+import '../../app/styles/main.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = 'Chris',
+  description = 'Regardless of the past, do not ask the future.',
+} = Astro.props
+
+const ogUrl = 'https://zyyv.dev/'
+const ogImage = `${ogUrl}og.png#1`
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="author" content="Chris" />
+    <meta name="description" content={description} />
+    <meta name="keywords" content="Chris, Blog, Portfolio" />
+    <meta property="og:type" content="website" />
+    <meta name="og:title" content={title} />
+    <meta name="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:site" content="@chris_zyyv" />
+    <meta name="twitter:url" content={ogUrl} />
+    <link rel="icon" type="image/x-icon" href="/avatar.png" />
+    <title>{title}</title>
+    <script is:inline>
+      const mode = localStorage.getItem('vueuse-color-scheme') || 'auto'
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      document.documentElement.classList.toggle('dark', mode === 'dark' || (mode === 'auto' && prefersDark))
+    </script>
+  </head>
+  <body>
+    <NavHeader client:load />
+    <main>
+      <slot />
+    </main>
+    <CommandPalette client:load />
+  </body>
+</html>

@@ -1,6 +1,5 @@
 html,
-body,
-#__nuxt {
+body {
   min-height: 100%;
 }
 
@@ -16,7 +15,7 @@ body {
   background-size: 30px 30px;
 }
 
-#__nuxt{
+main {
   --uno: min-h-screen flex flex-col font-dm;
 }
 
@@ -37,4 +36,3 @@ body {
 @view-transition {
   navigation: auto; /* enabled! */
 }
-

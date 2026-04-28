@@ -4,14 +4,13 @@ const mode = useColorMode({
 })
 const { state, next } = useCycleList(['light', 'dark', 'auto'] as const, { initialValue: mode })
 
-watchEffect(() => mode.value = state.value)
-
-useHead({
-  meta: [{
-    id: 'theme-color',
-    name: 'theme-color',
-    content: () => state.value === 'dark' ? '#222222' : '#3c3c43',
-  }],
+watchEffect(() => {
+  mode.value = state.value
+  if (typeof document !== 'undefined') {
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', state.value === 'dark' ? '#222222' : '#3c3c43')
+  }
 })
 
 function enableTransitions() {
@@ -21,6 +20,7 @@ function enableTransitions() {
 
 async function toggleDark(event: MouseEvent) {
   if (!enableTransitions()) {
+    next()
     return
   }
 
