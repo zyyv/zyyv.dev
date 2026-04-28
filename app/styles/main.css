@@ -19,6 +19,20 @@ main {
   --uno: min-h-screen flex flex-col font-dm;
 }
 
+@container (min-width: 24rem) and (min-height: 24rem) {
+  .quadrant-desktop-block {
+    display: block;
+  }
+
+  .quadrant-desktop-flex {
+    display: flex;
+  }
+
+  .quadrant-mobile {
+    display: none !important;
+  }
+}
+
 @keyframes animStar {
   from {
     transform: translateY(0);

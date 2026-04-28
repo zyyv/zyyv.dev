@@ -27,7 +27,7 @@ onMounted(async () => {
     <h1 fsc>
       <MeAvatar />
     </h1>
-    <section class="hidden @sm:block">
+    <section class="quadrant-desktop-block hidden">
       <p>
         I'm <strong>{{ user?.name }}</strong>,
         <code text-p-r italic font-dank v-text="`<Front-End Developer />`" />

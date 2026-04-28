@@ -10,7 +10,7 @@ const postsList = computed(() => props.posts || [])
 </script>
 
 <template>
-  <div mxa max-w-65ch px-6 class="hidden @sm:block">
+  <div mxa max-w-65ch px-6 class="quadrant-desktop-block hidden">
     <div py-8 space-y-6>
       <!-- 加载状态 -->
       <div v-if="status === 'pending'" class="space-y-4">
@@ -80,7 +80,7 @@ const postsList = computed(() => props.posts || [])
   </div>
 
   <!-- 移动端视图 -->
-  <div class="@sm:hidden! size-full fcc">
+  <div class="quadrant-mobile size-full fcc">
     <a
       href="/posts"
       class="cursor-pointer"
