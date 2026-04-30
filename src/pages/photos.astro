@@ -1,10 +1,13 @@
 ---
 import PhotosGallery from '../../app/components/photos/Photos.vue'
+import { photosData } from '../../server/utils/data'
 import Layout from '../layouts/Layout.astro'
+
+export const prerender = true
 ---
 
 <Layout title="Photos - Chris" description="Chris的摄影作品集">
   <div class="h-screen">
-    <PhotosGallery client:load />
+    <PhotosGallery client:load photos={photosData} />
   </div>
 </Layout>

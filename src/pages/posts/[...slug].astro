@@ -23,7 +23,14 @@ const tocLinks = headings
   }))
 ---
 
-<Layout title={`${post.data.title} - Chris`} description={post.data.description}>
+<Layout
+  title={`${post.data.title} - Chris`}
+  description={post.data.description}
+  type="article"
+  publishedTime={post.data.date.toISOString()}
+  tags={post.data.tags}
+  lang={post.data.lang}
+>
   <div>
     <div class="prose mxa peer text-3.75 py-20">
       <h1>{post.data.title}</h1>

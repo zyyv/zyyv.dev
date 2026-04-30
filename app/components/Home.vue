@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import type { PostPreview } from '~/types'
+import type { Photo, PostPreview } from '~/types'
 
 defineProps<{
   posts: PostPreview[]
+  photos: Photo[]
 }>()
 
 const {
@@ -111,7 +112,7 @@ onBeforeUnmount(() => {
       <MeInfo />
     </OriginQuadrant>
     <OriginQuadrant quadrant="I">
-      <Photos />
+      <Photos :photos="photos" />
     </OriginQuadrant>
     <OriginQuadrant quadrant="III">
       <Projects />

@@ -8,21 +8,6 @@ let reposCache: {
   payload: Record<string, Repo[]>
 } | undefined
 
-async function getRepoLanguages(repo: BaseRepo, authenticated: boolean) {
-  const octokit = authenticated ? useOctokit() : usePublicOctokit()
-  try {
-    const { data } = await octokit.request('GET /repos/{owner}/{repo}/languages', {
-      owner: repo.owner.login,
-      repo: repo.name,
-    })
-    return Object.keys(data)
-  }
-  catch (error) {
-    console.warn(`Failed to fetch languages for ${repo.full_name}, falling back to primary language.`, error)
-    return repo.language ? [repo.language] : []
-  }
-}
-
 type RepoWithTopics = Repo & {
   topics?: string[]
 }
@@ -33,7 +18,7 @@ function filterRepos(repos: RepoWithTopics[], key: string) {
   })
 }
 
-function toRepo(repo: BaseRepo & { languages: string[] }): RepoWithTopics {
+function toRepo(repo: BaseRepo): RepoWithTopics {
   return {
     id: repo.id,
     name: repo.name,
@@ -44,23 +29,27 @@ function toRepo(repo: BaseRepo & { languages: string[] }): RepoWithTopics {
     language: repo.language ?? null,
     stargazers_count: repo.stargazers_count ?? 0,
     forks_count: repo.forks_count ?? 0,
-    languages: repo.languages,
+    languages: repo.language ? [repo.language] : [],
     topics: repo.topics,
   }
 }
 
-export const GET: APIRoute = async () => {
-  if (reposCache && reposCache.expiresAt > Date.now())
-    return Response.json(reposCache.payload)
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(`GitHub repos request timed out after ${ms}ms`)), ms)
+    }),
+  ])
+}
 
+async function fetchReposFromGitHub() {
   let data: BaseRepo[] | undefined
-  let authenticatedRepos = false
 
   if (hasGitHubToken()) {
     try {
       const response = await useOctokit().request('GET /user/repos', { per_page: 100 }) as unknown as { data: BaseRepo[] }
       data = response.data
-      authenticatedRepos = true
     }
     catch (error) {
       console.warn('Failed to fetch authenticated GitHub repos, falling back to public repos.', error)
@@ -76,14 +65,9 @@ export const GET: APIRoute = async () => {
     data = response.data
   }
 
-  const publicRepos: RepoWithTopics[] = await Promise.all(
-    data
-      .filter(repo => !repo.fork && !repo.archived && !repo.private && (repo.permissions?.admin || !authenticatedRepos) && repo.description)
-      .map(async repo => toRepo({
-        ...repo,
-        languages: await getRepoLanguages(repo, authenticatedRepos),
-      })),
-  )
+  const publicRepos: RepoWithTopics[] = data
+    .filter(repo => !repo.fork && !repo.archived && !repo.private && repo.description)
+    .map(toRepo)
 
   const repoGroups: Record<string, RepoWithTopics[]> = {
     'UI': filterRepos(publicRepos, 'ui'),
@@ -99,16 +83,32 @@ export const GET: APIRoute = async () => {
     'Me': filterRepos(publicRepos, 'me'),
   }
 
-  const payload: Record<string, Repo[]> = Object.fromEntries(
+  return Object.fromEntries(
     Object.entries(repoGroups)
       .filter(([_, repos]) => repos.length > 0)
       .map(([group, repos]) => [group, repos.map(({ topics: _topics, ...repo }) => repo)]),
   )
+}
 
-  reposCache = {
-    expiresAt: Date.now() + CACHE_TTL,
-    payload,
+export const GET: APIRoute = async () => {
+  if (reposCache && reposCache.expiresAt > Date.now())
+    return Response.json(reposCache.payload)
+
+  try {
+    const payload = await withTimeout(fetchReposFromGitHub(), 15000)
+
+    reposCache = {
+      expiresAt: Date.now() + CACHE_TTL,
+      payload,
+    }
+
+    return Response.json(payload)
   }
-
-  return Response.json(payload)
+  catch (error) {
+    console.warn('Failed to fetch GitHub repos.', error)
+    return Response.json(
+      { message: 'Failed to load repositories.' },
+      { status: 502 },
+    )
+  }
 }

@@ -1,13 +1,58 @@
 import type { Photo } from '~/types'
 
-export function usePhotos() {
+interface PhotosPayload {
+  photos: Photo[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+    count: number
+  }
+}
+
+function createPhotosPayload(photos: Photo[], page: number, limit: number): PhotosPayload {
+  const offset = (page - 1) * limit
+  const total = photos.length
+  const totalPages = Math.ceil(total / limit)
+  const pagePhotos = photos.slice(offset, offset + limit)
+
+  return {
+    photos: pagePhotos,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+      count: pagePhotos.length,
+    },
+  }
+}
+
+export function usePhotos(initialPhotos: Photo[] = []) {
   // 加载状态
   const loading = ref(false)
   const currentPage = ref(1)
   const pageSize = ref(24)
   const allPhotos = ref<Photo[]>([]) // 存储所有已加载的照片
+  const sourcePhotos = ref<Photo[]>(initialPhotos)
   const hasMore = ref(true) // 是否还有更多数据
   const error = ref<string | null>(null) // 错误状态
+
+  async function getPhotosPayload(page: number): Promise<PhotosPayload> {
+    if (!sourcePhotos.value.length) {
+      const response = await fetch('/api/photos-data.json')
+      if (!response.ok)
+        throw new Error(`Failed to load photos: ${response.status}`)
+      sourcePhotos.value = await response.json() as Photo[]
+    }
+
+    return createPhotosPayload(sourcePhotos.value, page, pageSize.value)
+  }
 
   // 加载照片数据
   async function loadPhotos(page = 1, append = false) {
@@ -19,16 +64,7 @@ export function usePhotos() {
     error.value = null
 
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(pageSize.value),
-      })
-      const response = await fetch(`/api/photos?${params}`)
-        .then((res) => {
-          if (!res.ok)
-            throw new Error(`Failed to load photos: ${res.status}`)
-          return res.json()
-        }) as any
+      const response = await getPhotosPayload(page)
 
       if (response?.photos) {
         if (append) {
@@ -99,7 +135,9 @@ export function usePhotos() {
   function resetPhotos() {
     allPhotos.value = []
     currentPage.value = 1
-    hasMore.value = true
+    hasMore.value = sourcePhotos.value.length
+      ? sourcePhotos.value.length > pageSize.value
+      : true
     loading.value = false
   }
 

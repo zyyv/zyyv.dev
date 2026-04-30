@@ -2,6 +2,12 @@
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
 
+const props = withDefaults(defineProps<{
+  photos?: Photo[]
+}>(), {
+  photos: () => [],
+})
+
 const {
   loading,
   error,
@@ -14,7 +20,7 @@ const {
   calcItemHeight,
   initPhotos,
   refreshPhotos,
-} = usePhotos()
+} = usePhotos(props.photos)
 
 // 图片预览状态
 const showPreview = ref(false)
