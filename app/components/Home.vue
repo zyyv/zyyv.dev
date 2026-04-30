@@ -35,7 +35,44 @@ const scrollProgress = ref(0)
 const scrollSensitivity = 0.0005
 let wheelStateTimer: ReturnType<typeof setTimeout> | null = null
 
+function canElementScroll(element: HTMLElement, deltaY: number) {
+  const style = window.getComputedStyle(element)
+  const canOverflow = ['auto', 'scroll', 'overlay'].includes(style.overflowY)
+
+  if (!canOverflow || element.scrollHeight <= element.clientHeight)
+    return false
+
+  if (deltaY > 0)
+    return element.scrollTop + element.clientHeight < element.scrollHeight - 1
+
+  if (deltaY < 0)
+    return element.scrollTop > 1
+
+  return false
+}
+
+function canScrollInsideQuadrant(event: WheelEvent) {
+  let element = event.target instanceof HTMLElement
+    ? event.target
+    : null
+  const boundary = event.currentTarget instanceof HTMLElement
+    ? event.currentTarget
+    : null
+
+  while (element && element !== boundary) {
+    if (canElementScroll(element, event.deltaY))
+      return true
+
+    element = element.parentElement
+  }
+
+  return false
+}
+
 function handleWheel(event: WheelEvent) {
+  if (canScrollInsideQuadrant(event))
+    return
+
   event.preventDefault()
 
   if (dragState.value)
