@@ -68,6 +68,10 @@ function showNextPhoto() {
   }
 }
 
+function selectPhoto(photo: Photo) {
+  currentPhoto.value = photo
+}
+
 onMounted(() => {
   initPhotos()
 })
@@ -159,6 +163,7 @@ onMounted(() => {
       @close="closePreview"
       @prev="showPrevPhoto"
       @next="showNextPhoto"
+      @select="selectPhoto"
     />
   </div>
   <div class="quadrant-mobile size-full fcc">
