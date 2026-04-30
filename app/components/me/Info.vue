@@ -1,5 +1,22 @@
-<script lang='ts' setup>
-const { data: user } = await useFetch('/api/user')
+<script lang="ts" setup>
+import type { User } from '~/types'
+
+const user = ref<Partial<User>>({
+  name: 'Chris',
+  bio: 'Regardless of the past, do not ask the future.',
+  email: 'hizyyv@gmail.com',
+})
+
+onMounted(async () => {
+  try {
+    const response = await fetch('/api/user')
+    if (response.ok)
+      user.value = await response.json()
+  }
+  catch (error) {
+    console.error(error)
+  }
+})
 </script>
 
 <template>
@@ -10,7 +27,7 @@ const { data: user } = await useFetch('/api/user')
     <h1 fsc>
       <MeAvatar />
     </h1>
-    <section class="hidden @sm:block">
+    <section class="quadrant-desktop-block hidden">
       <p>
         I'm <strong>{{ user?.name }}</strong>,
         <code text-p-r italic font-dank v-text="`<Front-End Developer />`" />

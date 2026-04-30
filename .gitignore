@@ -1,8 +1,10 @@
 node_modules
+.DS_Store
 *.log
 dist
 .output
 .nuxt
+.astro
 .env
 .vscode
 *.zip
@@ -11,6 +13,5 @@ dev-dist
 .eslintcache
 .data
 .netlify
-server/utils/data.ts
-public/photos/compressed
+photos/originals
 scripts/compression-report.md

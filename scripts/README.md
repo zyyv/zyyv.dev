@@ -2,7 +2,7 @@
 
 ## 功能简介
 
-`squoosh.ts` 是一个用于压缩 `public/photos` 目录下图片的脚本，使用 [squoosh-next](https://github.com/google/squoosh) 进行高效的图片压缩。
+`squoosh.ts` 是一个用于压缩 `photos/originals` 目录下原图的脚本，使用 [squoosh-next](https://github.com/google/squoosh) 进行高效的图片压缩。
 
 ## 支持的格式
 
@@ -17,7 +17,7 @@
 
 ### 1. 直接运行脚本
 ```bash
-pnpm compress
+pnpm run prepare:photos
 ```
 
 ### 2. 手动运行脚本
@@ -43,14 +43,22 @@ esno scripts/squoosh.ts
 
 ## 输出目录
 
-压缩后的文件会保存在 `public/photos/compressed/` 目录下，文件名格式为 `原文件名_compressed.扩展名`。
+压缩后的主图会保存在 `public/photos/compressed/` 目录下，缩略图会保存在 `public/photos/thumb/` 目录下，文件名保持和原图一致。
+
+## 目录约定
+
+- `photos/originals/`: 原图目录，会被 `.gitignore` 忽略，不会部署到线上
+- `public/photos/compressed/`: 前端展示用主图
+- `public/photos/thumb/`: 缩略图
+- `server/utils/data.ts`: 照片元数据，由 `scripts/photo.ts` 生成
+
+部署环境不会包含 `photos/originals/`，所以新增或修改照片后，请在本地运行 `pnpm run prepare:photos`，然后提交生成的 `server/utils/data.ts`、`public/photos/compressed/` 和 `public/photos/thumb/`。
 
 ## 📊 自动生成报告
 
-脚本运行完成后会自动生成两个对比报告：
+压缩脚本运行完成后会自动生成对比报告：
 
-1. **`compression-report.md`** - 详细的压缩分析报告
-2. **`size-comparison.md`** - 简洁的大小对比表格
+- **`compression-report.md`** - 详细的压缩分析报告
 
 报告包含以下内容：
 - 📊 总体压缩统计
@@ -78,7 +86,8 @@ esno scripts/squoosh.ts
 - 确保有足够的磁盘空间存储压缩后的图片
 - 压缩过程会占用较多 CPU 资源
 - 大文件压缩可能需要较长时间
-- 压缩后的文件不会覆盖原文件
+- 原图不应放在 `public/photos` 根目录，否则会被构建进 `dist`
+- 压缩后的文件不会覆盖原图
 
 ## 自定义配置
 

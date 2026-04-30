@@ -1,0 +1,87 @@
+---
+import { getCollection, render } from 'astro:content'
+import Layout from '../../layouts/Layout.astro'
+
+export const prerender = true
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts')
+  return posts.map(post => ({
+    params: { slug: post.id.replace(/\.md$/, '') },
+    props: { post },
+  }))
+}
+
+const { post } = Astro.props
+const { Content, headings } = await render(post)
+const tocLinks = headings
+  .filter(heading => heading.depth > 1 && heading.depth < 4)
+  .map(heading => ({
+    id: heading.slug,
+    text: heading.text,
+    depth: heading.depth,
+  }))
+---
+
+<Layout
+  title={`${post.data.title} - Chris`}
+  description={post.data.description}
+  type="article"
+  publishedTime={post.data.date.toISOString()}
+  tags={post.data.tags}
+  lang={post.data.lang}
+>
+  <div>
+    <div class="prose mxa peer text-3.75 py-20">
+      <h1>{post.data.title}</h1>
+      <Content />
+      <div class="mt-8">
+        <button
+          type="button"
+          class="group op-70 hover:op-100 text-[#7D7D7D] dark:text-[#acbac6] bg-transparent"
+          data-back-button
+        >
+          <i class="i-carbon-arrow-left group-hover:mr-2 trans"></i> cd ··
+        </button>
+      </div>
+    </div>
+
+    {tocLinks.length > 0 && (
+      <ul class="pf right-10 top-40 op-36 trans space-y-1 text-3.25">
+        {tocLinks.map(link => (
+          <li style={`padding-left: ${link.depth}rem`}>
+            <a
+              href={`#${link.id}`}
+              class="text op-50 trans hover:underline hover:op-100"
+              data-toc-link={link.id}
+            >
+              {link.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+
+  <script>
+    document.querySelector('[data-back-button]')?.addEventListener('click', () => {
+      history.back()
+    })
+
+    document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const id = link.dataset.tocLink
+        const element = id ? document.getElementById(id) : null
+        if (!id || !element)
+          return
+
+        event.preventDefault()
+        window.history.replaceState(null, '', `#${id}`)
+        window.scrollTo({
+          top: element.offsetTop - 86,
+          behavior: 'smooth',
+        })
+      })
+    })
+  </script>
+</Layout>

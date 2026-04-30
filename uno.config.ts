@@ -57,15 +57,15 @@ export default defineZyyvConfig<ZyyvTheme>({
         '-ms-overflow-style': 'none',
       },
       {
-        [symbols.selector]: s => `${s}::-webkit-scrollbar`,
+        [symbols.selector]: (s: string) => `${s}::-webkit-scrollbar`,
         display: 'none',
-      },
+      } as any,
     ]],
   ],
   shortcuts: [
     {
       'page-container': 'container mx-auto my-4',
-      'quadrant': 'overflow-auto scroll-none @container',
+      'quadrant': 'overflow-auto scroll-none [container-type:size]',
     },
     ['text-basecolor', 'text-dark-800 dark:text-stone-300'],
     ['bg-basecolor', 'bg-light-300 dark:bg-dark-800'],

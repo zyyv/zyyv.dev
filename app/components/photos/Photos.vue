@@ -2,6 +2,12 @@
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
 
+const props = withDefaults(defineProps<{
+  photos?: Photo[]
+}>(), {
+  photos: () => [],
+})
+
 const {
   loading,
   error,
@@ -14,7 +20,7 @@ const {
   calcItemHeight,
   initPhotos,
   refreshPhotos,
-} = usePhotos()
+} = usePhotos(props.photos)
 
 // 图片预览状态
 const showPreview = ref(false)
@@ -35,6 +41,10 @@ function closePreview() {
   // 恢复body滚动
   document.body.style.overflow = ''
 }
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+})
 
 // 显示上一张图片
 function showPrevPhoto() {
@@ -64,7 +74,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="size-full of-auto scroll-none flex flex-col hidden @sm:block">
+  <div class="quadrant-desktop-flex hidden size-full of-auto scroll-none flex-col">
     <!-- 错误状态 -->
     <div v-if="error" class="flex flex-col justify-center items-center h-64 p-4">
       <div class="text-red-500 text-lg mb-4">
@@ -151,13 +161,13 @@ onMounted(() => {
       @next="showNextPhoto"
     />
   </div>
-  <div class="@sm:hidden! size-full fcc">
-    <nuxt-link
-      to="/photos"
+  <div class="quadrant-mobile size-full fcc">
+    <a
+      href="/photos"
       class="cursor-pointer"
       text="3xl orange op-80 hover:op-100"
     >
       <i i-hugeicons:image-03 />
-    </nuxt-link>
+    </a>
   </div>
 </template>

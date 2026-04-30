@@ -1,27 +1,40 @@
 import type { Endpoints } from '@octokit/types'
 
 export * from './article'
-export * from './gc'
 
-export type BaseRepo = Endpoints['GET /repos/{owner}/{repo}']['response']['data']
+export interface PostPreview {
+  id: string
+  title: string
+  description: string
+  path: string
+  date: string
+  tags: string[]
+  lang: string
+  rawbody?: string
+}
+
+export type BaseRepo = Endpoints['GET /users/{username}/repos']['response']['data'][number]
 export type RepoLanguages = Endpoints['GET /repos/{owner}/{repo}/languages']['response']['data']
-export type Repo = BaseRepo & {
+export interface Repo {
+  id: number
+  name: string
+  full_name: string
+  html_url: string
+  homepage: string | null
+  description: string | null
+  language: string | null
+  stargazers_count: number
+  forks_count: number
   languages: string[]
 }
 export type User = Endpoints['GET /user']['response']['data']
-
-export interface ICursorStyle {
-  dot: Record<string, number | string>
-  cursor: Record<string, number | string>
-  circle: Record<string, number | string>
-}
 
 export interface Photo {
   id: string
   filename: string
   path: string // 压缩后的图片路径
   thumbnail?: string // 缩略图路径
-  originalPath: string // 原图路径
+  originalPath?: string // 原图路径
   size: number
   sizeFormatted: string
   width: number

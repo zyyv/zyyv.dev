@@ -3,6 +3,7 @@ interface QuadrantSize {
   y: number
 }
 
+const quadrantScrollOrder = ['II', 'I', 'IV', 'III']
 const QuadrantSizeConfig = ref<Record<string, QuadrantSize> | null>(null)
 const center = ref<QuadrantSize>({
   x: 0.5,
@@ -66,11 +67,70 @@ function initQuadrantSizeConfig() {
         y: 0.5,
       },
     }
+
+    center.value = { ...QuadrantSizeConfig.value.II }
   })
 }
 
+function getQuadrantSize(quadrant: string) {
+  return QuadrantSizeConfig.value?.[quadrant]
+}
+
+function getQuadrantScrollProgress() {
+  const points = quadrantScrollOrder
+    .map(quadrant => QuadrantSizeConfig.value?.[quadrant])
+    .filter(Boolean) as QuadrantSize[]
+
+  if (points.length < 2)
+    return 0
+
+  let closestProgress = 0
+  let closestDistance = Number.POSITIVE_INFINITY
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const start = points[i]!
+    const end = points[i + 1]!
+    const dx = end.x - start.x
+    const dy = end.y - start.y
+    const lengthSquared = dx * dx + dy * dy
+    const rawT = lengthSquared === 0
+      ? 0
+      : ((center.value.x - start.x) * dx + (center.value.y - start.y) * dy) / lengthSquared
+    const t = Math.max(0, Math.min(1, rawT))
+    const projectedX = start.x + dx * t
+    const projectedY = start.y + dy * t
+    const distance = (center.value.x - projectedX) ** 2 + (center.value.y - projectedY) ** 2
+
+    if (distance < closestDistance) {
+      closestDistance = distance
+      closestProgress = i + t
+    }
+  }
+
+  return closestProgress
+}
+
+function setQuadrantScrollProgress(progress: number) {
+  const points = quadrantScrollOrder
+    .map(quadrant => QuadrantSizeConfig.value?.[quadrant])
+    .filter(Boolean) as QuadrantSize[]
+
+  if (points.length < 2)
+    return
+
+  const maxProgress = points.length - 1
+  const clampedProgress = Math.max(0, Math.min(maxProgress, progress))
+  const index = Math.min(Math.floor(clampedProgress), points.length - 2)
+  const t = clampedProgress - index
+  const start = points[index]!
+  const end = points[index + 1]!
+
+  center.value.x = start.x + (end.x - start.x) * t
+  center.value.y = start.y + (end.y - start.y) * t
+}
+
 function setQuadrantSize(quadrant: string) {
-  const config = QuadrantSizeConfig.value?.[quadrant]
+  const config = getQuadrantSize(quadrant)
   if (!config)
     return
 
@@ -115,6 +175,9 @@ export function useCenter() {
     maxx: readonly(maxx),
     maxy: readonly(maxy),
     initQuadrantSizeConfig,
+    quadrantScrollOrder,
+    getQuadrantScrollProgress,
+    setQuadrantScrollProgress,
     setQuadrantSize,
     setCenter: (x: number, y: number) => {
       center.value.x = x

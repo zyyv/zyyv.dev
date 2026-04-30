@@ -6,7 +6,7 @@ import { encode } from 'blurhash'
 import exifr from 'exifr'
 import sharp from 'sharp'
 
-const sourcePath = join(process.cwd(), 'public/photos')
+const sourcePath = join(process.cwd(), 'photos/originals')
 const dataFile = 'server/utils/data.ts'
 const dataPath = join(process.cwd(), dataFile)
 
@@ -79,7 +79,6 @@ async function generatePhotosData() {
           filename,
           path: getCompressedPath(filename),
           thumbnail: getThumbnailPath(filename),
-          originalPath: `/photos/${filename}`,
           size: stats.size,
           sizeFormatted: formatSize(stats.size),
           width,

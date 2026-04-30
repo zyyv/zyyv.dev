@@ -6,7 +6,7 @@ import SquooshPool from 'squoosh-next'
 
 const imagePool = new SquooshPool.ImagePool(cpus().length)
 
-const sourcePath = join(process.cwd(), 'public/photos')
+const sourcePath = join(process.cwd(), 'photos/originals')
 const compressedDir = join(process.cwd(), 'public/photos/compressed')
 const thumbDir = join(process.cwd(), 'public/photos/thumb')
 
@@ -156,7 +156,7 @@ async function compressImage(filename: string) {
     const encodedKeyMain = Object.keys(encodedMain)[0]
     if (!encodedKeyMain)
       throw new Error('No encoded data found for main image')
-    const mainData = await encodedMain[encodedKeyMain].binary
+    const mainData = encodedMain[encodedKeyMain].binary
     await writeFile(compressedOutputPath, mainData)
 
     // 执行压缩 (Thumb)
@@ -164,7 +164,7 @@ async function compressImage(filename: string) {
     const encodedKeyThumb = Object.keys(encodedThumb)[0]
     if (!encodedKeyThumb)
       throw new Error('No encoded data found for thumbnail')
-    const thumbData = await encodedThumb[encodedKeyThumb].binary
+    const thumbData = encodedThumb[encodedKeyThumb].binary
     await writeFile(thumbOutputPath, thumbData)
 
     // 计算压缩率 (Main)

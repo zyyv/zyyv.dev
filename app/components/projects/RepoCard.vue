@@ -1,5 +1,6 @@
 <script lang='ts' setup>
 import type { Repo } from '~/types'
+import { getLangIcon } from '~/utils/icon'
 
 defineProps<{
   repo: Repo

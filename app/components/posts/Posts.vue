@@ -1,17 +1,16 @@
-<script lang='ts' setup>
-const { data: posts, status } = await useAsyncData('posts-preview', () => {
-  return queryCollection('posts')
-    .select('title', 'description', 'path', 'id', 'date', 'tags', 'lang')
-    .order('date', 'DESC')
-    .limit(10)
-    .all()
-})
+<script lang="ts" setup>
+import type { PostPreview } from '~/types'
 
-const postsList = computed(() => (posts.value as any) || [])
+const props = defineProps<{
+  posts: PostPreview[]
+}>()
+
+const status = computed(() => 'success')
+const postsList = computed(() => props.posts || [])
 </script>
 
 <template>
-  <div mxa max-w-65ch px-6 class="hidden @sm:block">
+  <div mxa max-w-65ch px-6 class="quadrant-desktop-block hidden">
     <div py-8 space-y-6>
       <!-- 加载状态 -->
       <div v-if="status === 'pending'" class="space-y-4">
@@ -29,7 +28,7 @@ const postsList = computed(() => (posts.value as any) || [])
           :key="post.id"
           class="op-72 hover:op-100 cursor-pointer trans hover:translate-x-2"
         >
-          <nuxt-link :to="post.path" class="block">
+          <a :href="post.path" class="block">
             <h3 class="text-lg font-semibold mb-2 trans">
               {{ post.title }}
             </h3>
@@ -53,18 +52,18 @@ const postsList = computed(() => (posts.value as any) || [])
                 <span>{{ useTimeAgo(post.date) }}</span>
               </div>
             </div>
-          </nuxt-link>
+          </a>
         </article>
 
         <!-- 查看更多链接 -->
         <div class="pt-4 text-center">
-          <nuxt-link
-            to="/posts"
+          <a
+            href="/posts"
             class="inline-flex items-center gap-2 text-sm op-64 hover:op-100 trans"
           >
             <span>View all posts</span>
             <i class="i-hugeicons:arrow-right-01" />
-          </nuxt-link>
+          </a>
         </div>
       </div>
 
@@ -81,13 +80,13 @@ const postsList = computed(() => (posts.value as any) || [])
   </div>
 
   <!-- 移动端视图 -->
-  <div class="@sm:hidden! size-full fcc">
-    <nuxt-link
-      to="/posts"
+  <div class="quadrant-mobile size-full fcc">
+    <a
+      href="/posts"
       class="cursor-pointer"
       text="3xl blue op-80 hover:op-100"
     >
       <i i-hugeicons:note-edit />
-    </nuxt-link>
+    </a>
   </div>
 </template>

@@ -1,7 +1,3 @@
-export async function sleep(time: number) {
-  return new Promise(resolve => setTimeout(resolve, time))
-}
-
 export async function proseHeadingClick(event: MouseEvent, id: string) {
   event.preventDefault()
   window.history.replaceState(null, '', `#${id}`)

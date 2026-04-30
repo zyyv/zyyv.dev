@@ -1,4 +1,7 @@
 <script setup lang="ts">
+defineProps<{
+  transitionDisabled?: boolean
+}>()
 const model = defineModel<{
   x: number
   y: number
@@ -60,7 +63,7 @@ onBeforeUnmount(stopDrag)
   <div ref="container" class="relative w-full h-full select-none">
     <!-- 横纵坐标轴 -->
     <div
-      :class="{ trans: !dragging }"
+      :class="{ trans: !dragging && !transitionDisabled }"
       class="absolute border-l-1 border-dashed border-op-15 border-dark dark:border-white" :style="{
         left: `${model!.x * 100}%`,
         top: 0,
@@ -71,7 +74,7 @@ onBeforeUnmount(stopDrag)
       }"
     />
     <div
-      :class="{ trans: !dragging }"
+      :class="{ trans: !dragging && !transitionDisabled }"
       class="absolute border-t-1 border-dashed border-op-15 border-dark dark:border-white" :style="{
         top: `${model!.y * 100}%`,
         left: 0,
@@ -83,7 +86,7 @@ onBeforeUnmount(stopDrag)
     />
     <!-- 原点 -->
     <div
-      :class="{ trans: !dragging }"
+      :class="{ trans: !dragging && !transitionDisabled }"
       class="absolute size-2 hover:size-3 z-10 origin-dot rounded-full pointer-events-auto!"
       :style="{
         left: `${model!.x * 100}%`,

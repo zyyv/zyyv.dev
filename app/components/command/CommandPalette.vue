@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { CommandItem } from '~/utils/command'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { createDefaultCommands, filterCommands, groupCommandsByCategory } from '~/utils/command'
 
 const isOpen = ref(false)
@@ -10,7 +9,6 @@ const selectedIndex = ref(0)
 const inputRef = ref<HTMLInputElement>()
 const commandListRef = ref<HTMLDivElement>()
 const isKeyboardNavigation = ref(false)
-const router = useRouter()
 
 // 关闭面板的函数
 function closePanel() {
@@ -23,7 +21,6 @@ function closePanel() {
 // 使用新的命令系统
 const commands = computed(() => {
   return createDefaultCommands({
-    router,
     closePanel,
   })
 })

@@ -1,0 +1,17 @@
+---
+import { getCollection } from 'astro:content'
+import Home from '../../app/components/Home.vue'
+import { photosData } from '../../server/utils/data'
+import Layout from '../layouts/Layout.astro'
+import { sortPosts, toPostPreview } from '../lib/posts'
+
+export const prerender = true
+
+const posts = sortPosts(await getCollection('posts'))
+  .slice(0, 10)
+  .map(toPostPreview)
+---
+
+<Layout title="Chris">
+  <Home client:load posts={posts} photos={photosData} />
+</Layout>

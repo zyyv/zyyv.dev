@@ -1,0 +1,117 @@
+---
+import { getCollection } from 'astro:content'
+import Layout from '../../layouts/Layout.astro'
+import {
+  calculateReadingTime,
+  formatPostDate,
+  sortPosts,
+  toPostPreview,
+} from '../../lib/posts'
+
+export const prerender = true
+
+const posts = sortPosts(await getCollection('posts')).map(toPostPreview)
+---
+
+<Layout title="Posts - Chris" description="In the flow of time, seeking resonance with the soul.">
+  <div class="mxa w-65ch px-6">
+    <h2 class="text-2xl fw-bold md-text-3xl mb4 mt-12">
+      Posts
+    </h2>
+    <p class="font-dank text-xs md-text-sm italic">
+      In the flow of time, seeking resonance with the soul.
+    </p>
+
+    <ul class="my-8 space-y-7" data-posts-list>
+      {posts.map(post => (
+        <li class="trans" data-post-item data-tags={post.tags.join(',')}>
+          <a href={post.path}>
+            <strong>{post.title}</strong>
+            {post.rawbody && (
+              <sub class="bottom-0 left-1.5">
+                <span class="text-2.75 op-72">{calculateReadingTime(post.rawbody)} min</span>
+              </sub>
+            )}
+          </a>
+
+          <p class="italic font-dank my-2 line-clamp-2 text-sm op-72">
+            {post.description}
+          </p>
+
+          <div class="fbc op-64">
+            <div class="flex flex-wrap gap-2">
+              {post.tags.map(tag => (
+                <button
+                  type="button"
+                  data-post-tag={tag}
+                  class="inline-block text-xs rd-full px-1.5 py-1px cursor-pointer bg-transparent text-inherit b b-gray b-dashed"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+            <div>
+              <span class="text-2.75">{formatPostDate(post.date)}</span>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <script>
+    const selectedTags = new Set<string>()
+    const tagButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-post-tag]')]
+    const postItems = [...document.querySelectorAll<HTMLElement>('[data-post-item]')]
+
+    function syncSelectedTags() {
+      const query = new URLSearchParams(window.location.search)
+      selectedTags.clear()
+      query.get('tags')?.split(',').filter(Boolean).forEach(tag => selectedTags.add(tag))
+    }
+
+    function syncUrl() {
+      const nextUrl = selectedTags.size === 0
+        ? '/posts'
+        : `/posts?tags=${Array.from(selectedTags).join(',')}`
+      history.replaceState(null, '', nextUrl)
+    }
+
+    function renderTagState() {
+      tagButtons.forEach((button) => {
+        const tag = button.dataset.postTag
+        button.classList.toggle('dark:b-gray-3', !!tag && selectedTags.has(tag))
+        button.classList.toggle('dark:bg-gray-3', !!tag && selectedTags.has(tag))
+        button.classList.toggle('bg-gray-3', !!tag && selectedTags.has(tag))
+        button.classList.toggle('b-gray-3', !!tag && selectedTags.has(tag))
+        button.classList.toggle('dark:text-gray-8', !!tag && selectedTags.has(tag))
+        button.classList.toggle('text-gray-5', !!tag && selectedTags.has(tag))
+      })
+
+      postItems.forEach((item) => {
+        const tags = item.dataset.tags?.split(',') ?? []
+        const hasSelectedTag = tags.some(tag => selectedTags.has(tag))
+        item.classList.toggle('op-50', selectedTags.size > 0 && !hasSelectedTag)
+      })
+    }
+
+    tagButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const tag = button.dataset.postTag
+        if (!tag)
+          return
+
+        if (selectedTags.has(tag))
+          selectedTags.delete(tag)
+        else
+          selectedTags.add(tag)
+
+        syncUrl()
+        renderTagState()
+      })
+    })
+
+    syncSelectedTags()
+    renderTagState()
+  </script>
+</Layout>
