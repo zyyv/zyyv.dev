@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import type { User } from '~/types'
 
+defineProps<{
+  expanded?: boolean
+}>()
+
 const user = ref<Partial<User>>({
   name: 'Chris',
   bio: 'Regardless of the past, do not ask the future.',
@@ -21,13 +25,14 @@ onMounted(async () => {
 
 <template>
   <div
-    class="fccc py-4 px-6 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full select-none"
+    class="me-info fccc py-4 px-6 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full select-none"
+    :class="{ 'me-info-mobile': expanded }"
     style="font-size: clamp(.875rem, calc(100cqw / 40), 1rem)"
   >
     <h1 fsc>
-      <MeAvatar />
+      <MeAvatar :mobile="expanded" />
     </h1>
-    <section class="quadrant-desktop-block hidden">
+    <section class="me-info-content" :class="expanded ? 'block' : 'quadrant-desktop-block hidden'">
       <p>
         I'm <strong>{{ user?.name }}</strong>,
         <code text-p-r italic font-dank v-text="`<Front-End Developer />`" />
@@ -84,3 +89,81 @@ onMounted(async () => {
     </section>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 767px) {
+  .me-info-mobile {
+    align-items: stretch;
+    gap: 1.85rem;
+    width: 100%;
+    padding-block: 0;
+    font-size: clamp(0.95rem, 3.7vw, 1.02rem) !important;
+    line-height: 1.78;
+  }
+
+  .me-info-mobile h1 {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.15rem;
+  }
+
+  .me-info-mobile .me-info-content {
+    width: min(100%, 25rem);
+    margin-inline: auto;
+  }
+
+  .me-info-mobile p:first-child {
+    max-width: 18rem;
+    font-size: 1.16rem;
+    line-height: 1.5;
+  }
+
+  .me-info-mobile p:first-child strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    font-size: clamp(2.5rem, 13vw, 4rem);
+    line-height: 0.92;
+    letter-spacing: -0.08em;
+  }
+
+  .me-info-mobile p:nth-child(2) {
+    max-width: 19rem;
+    margin-top: 0.85rem;
+    opacity: 0.72;
+  }
+
+  .me-info-mobile code {
+    white-space: nowrap;
+  }
+
+  .me-info-mobile ul {
+    display: grid;
+    gap: 0.85rem;
+    margin-block: 1.75rem 1.45rem;
+  }
+
+  .me-info-mobile li {
+    position: relative;
+    padding-left: 1rem;
+  }
+
+  .me-info-mobile li::before {
+    position: absolute;
+    left: 0;
+    top: 0.72em;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #a78bfa, #f87171);
+    content: '';
+  }
+
+  .me-info-mobile li > i:first-child {
+    margin-left: -0.1rem;
+  }
+
+  .me-info-mobile p:last-child {
+    margin-top: 0.2rem;
+  }
+}
+</style>

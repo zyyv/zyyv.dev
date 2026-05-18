@@ -1,6 +1,7 @@
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - better-sqlite3
-  - esbuild
-  - sharp
-  - simple-git-hooks
+shellEmulator: true
+trustPolicy: no-downgrade
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  sharp: true
+  simple-git-hooks: true

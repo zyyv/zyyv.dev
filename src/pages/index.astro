@@ -12,6 +12,6 @@ const posts = sortPosts(await getCollection('posts'))
   .map(toPostPreview)
 ---
 
-<Layout title="Chris">
+<Layout title="Chris" bodyClass="home-page">
   <Home client:load posts={posts} photos={photosData} />
 </Layout>
