@@ -36,7 +36,8 @@
     "@lhlyu/vue-virtual-waterfall": "^1.0.9",
     "blurhash": "^2.0.5",
     "dayjs": "^1.11.21",
-    "vue": "^3.5.35"
+    "vue": "^3.5.35",
+    "wrangler": "^4.98.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

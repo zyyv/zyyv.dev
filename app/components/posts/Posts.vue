@@ -67,7 +67,7 @@ const postsList = computed(() => props.posts || [])
       <!-- 空状态 -->
       <div v-else class="flex flex-col items-center justify-center py-16 op-64">
         <div class="text-4xl mb-4">
-          <i i-hugeicons:camera-ai />
+          <i i-hugeicons:note-edit />
         </div>
         <div class="text-sm">No posts yet</div>
       </div>
