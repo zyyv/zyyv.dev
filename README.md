@@ -29,4 +29,4 @@ pnpm run build
 
 ## Activity
 
-![Alt](https://repobeats.axiom.co/api/embed/97840bd668db10f4af44102c3bff2b93b2917fca.svg "Repobeats analytics image")
+![Alt](https://repobeats.axiom.co/api/embed/97840bd668db10f4af44102c3bff2b93b2917fca.svg 'Repobeats analytics image')

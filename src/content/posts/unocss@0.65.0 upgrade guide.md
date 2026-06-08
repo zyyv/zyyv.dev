@@ -39,7 +39,7 @@ For example:
 const uno = await createGenerator({
   presets: [
     async () => {
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise((r) => setTimeout(r, 100))
       return {
         name: 'foo',
         rules: [
@@ -102,8 +102,12 @@ This will generate:
 
 ```css [__uno.css]
 /* uno.generate('v-text-red') */
-.v-text-red{color:red;}
-.v-text-red{color:green;}
+.v-text-red {
+  color: red;
+}
+.v-text-red {
+  color: green;
+}
 ```
 
 In general, utilities come with multiple variants, but for multiple result variants, their parsing grows exponentially, which is very performance-consuming.
@@ -114,10 +118,12 @@ Surprisingly, we found that it additionally supports a long-standing UnoCSS issu
 
 ```html [index.html]
 <!-- Before 0.65.0 -->
-<div border="red:10" /> ❌
+<div border="red:10" />
+❌
 
 <!-- After 0.65.0 -->
-<div border="red:10" /> ✅
+<div border="red:10" />
+✅
 ```
 
 Previously, in attribute mode, just like supporting `text="hover:blue"` being parsed as `hover:text-blue`, when parsing variants, `border="red:10"` would be parsed as `red:border-10` because we were unsure of the variant's carrier.
@@ -154,6 +160,7 @@ During the years of UnoCSS, we heard user feedback and confusion about what this
   /* ... */
 }
 ```
+
 </details>
 
 This is due to the rules in `preset-uno`, which rely on these CSS variables. To correctly apply your styles, we need to generate these CSS variables in advance.
@@ -163,10 +170,10 @@ But now!
 In version 0.65.0, we support on-demand preflights. We have added dependencies on preflights to the rules in advance, and it will only generate the preflights that are needed.
 
 ```ts [uno.config.ts]
-[
+;[
   presetUno({
     preflights: 'on-demand', // enable on-demand preflights
-  })
+  }),
 ]
 ```
 

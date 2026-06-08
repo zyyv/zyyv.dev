@@ -83,7 +83,7 @@ OK, now your patch is committed, and you can continue using your project. The de
     "patchedDependencies": {
       "pkg-foo@1.0.0": "patches/pkg-foo@1.0.0.patch"
     }
-  },
+  }
 }
 ```
 

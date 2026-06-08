@@ -115,8 +115,7 @@ export function createDefaultCommands(deps: CommandDeps): CommandItem[] {
       async () => {
         try {
           await navigator.clipboard.writeText(window.location.href)
-        }
-        catch (err) {
+        } catch (err) {
           console.error('复制失败:', err)
         }
       },
@@ -187,8 +186,7 @@ export function createDefaultCommands(deps: CommandDeps): CommandItem[] {
       () => {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen()
-        }
-        else {
+        } else {
           document.exitFullscreen()
         }
       },
@@ -199,7 +197,7 @@ export function createDefaultCommands(deps: CommandDeps): CommandItem[] {
     ),
   ]
 
-  return commands.map(commandFactory => commandFactory(deps))
+  return commands.map((commandFactory) => commandFactory(deps))
 }
 
 // 辅助函数：合并多个命令源
@@ -224,13 +222,13 @@ export function groupCommandsByCategory(commands: CommandItem[]): Record<string,
 
 // 辅助函数：过滤命令
 export function filterCommands(commands: CommandItem[], query: string): CommandItem[] {
-  if (!query)
-    return commands
+  if (!query) return commands
 
   const lowerQuery = query.toLowerCase()
-  return commands.filter(command =>
-    command.title.toLowerCase().includes(lowerQuery)
-    || command.description?.toLowerCase().includes(lowerQuery)
-    || command.category?.toLowerCase().includes(lowerQuery),
+  return commands.filter(
+    (command) =>
+      command.title.toLowerCase().includes(lowerQuery) ||
+      command.description?.toLowerCase().includes(lowerQuery) ||
+      command.category?.toLowerCase().includes(lowerQuery),
   )
 }

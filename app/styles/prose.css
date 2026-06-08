@@ -1,9 +1,9 @@
-:is([prose=""], .prose) {
+:is([prose=''], .prose) {
   a {
     text-decoration: none !important;
   }
 
-  :not(h1, h2, h3, h4, h5)>a {
+  :not(h1, h2, h3, h4, h5) > a {
     display: inline-block;
     line-height: 1.5;
     border-bottom: 1px dashed rgba(var(--c-text), 0.5);
@@ -11,7 +11,7 @@
     transition: border-bottom 0.3s ease-in-out;
   }
 
-  :not(h1, h2, h3, h4, h5)>a:hover {
+  :not(h1, h2, h3, h4, h5) > a:hover {
     border-bottom: 1px solid rgba(var(--c-text), 0.72);
   }
 
@@ -19,7 +19,8 @@
     font-family: dank !important;
     font-size: 13px;
 
-    &::after, &::before {
+    &::after,
+    &::before {
       content: '';
     }
   }
@@ -41,4 +42,3 @@
     border-left: 0.1em solid rgba(var(--c-text), 0.5);
   }
 }
-

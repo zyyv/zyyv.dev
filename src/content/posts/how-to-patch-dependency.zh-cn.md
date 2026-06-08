@@ -67,7 +67,7 @@ your_project_name/
 
 A long time later...
 
- ٩(•̤̀ᵕ•̤́๑)ᵒᵏᵎᵎᵎᵎ
+٩(•̤̀ᵕ•̤́๑)ᵒᵏᵎᵎᵎᵎ
 
 你解决了`pkg-foo`的问题，现在你需要提交你的补丁。
 
@@ -83,7 +83,7 @@ OK，现在你的补丁已经提交了，您可以继续使用您的项目了。
     "patchedDependencies": {
       "pkg-foo@1.0.0": "patches/pkg-foo@1.0.0.patch"
     }
-  },
+  }
 }
 ```
 
@@ -139,7 +139,7 @@ jobs:
 这样便设置成功啦！现在您可以在您的拉取/请求中看到即时预览版本。
 
 例如，你可能会看到这样的输出：
-  
+
 ```bash [Terminal]
 pnpm add https://pkg.pr.new/pkg-foo@d051732
 ```

@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    ".astro",
+    ".output",
+    ".nuxt",
+    "src/content/posts",
+    "data",
+    "auto-imports.d.ts",
+    "components.d.ts"
+  ],
+  "rules": {}
+}

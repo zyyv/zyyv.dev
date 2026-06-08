@@ -11,7 +11,7 @@ const myCommand = createCommand('my-id', '我的命令', {
     // 执行你的操作
     console.log('执行自定义命令')
     closePanel()
-  }
+  },
 })
 ```
 
@@ -22,7 +22,7 @@ import { createNavigationCommand } from '~/utils/command'
 
 const aboutCommand = createNavigationCommand('go-about', '关于页面', '/about', {
   description: '查看关于页面',
-  icon: 'i-hugeicons-info-circle'
+  icon: 'i-hugeicons-info-circle',
 })
 ```
 
@@ -42,8 +42,8 @@ const downloadCommand = createUtilityCommand(
   {
     description: '下载当前数据',
     icon: 'i-hugeicons-download',
-    closeAfter: true // 执行后自动关闭面板
-  }
+    closeAfter: true, // 执行后自动关闭面板
+  },
 )
 ```
 
@@ -59,10 +59,10 @@ export function createDefaultCommands(deps: CommandDeps): CommandItem[] {
     // 添加你的自定义命令
     createNavigationCommand('go-about', '关于', '/about', {
       description: '查看关于页面',
-      icon: 'i-hugeicons-info-circle'
+      icon: 'i-hugeicons-info-circle',
     }),
   ]
 
-  return commands.map(commandFactory => commandFactory(deps))
+  return commands.map((commandFactory) => commandFactory(deps))
 }
 ```

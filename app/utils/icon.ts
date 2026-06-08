@@ -1,7 +1,7 @@
 // @unocss-include
 
 const langIcons = {
-// package managers
+  // package managers
   pnpm: 'i-catppuccin:pnpm',
   npm: 'i-catppuccin:npm',
   yarn: 'i-catppuccin:yarn',

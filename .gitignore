@@ -14,5 +14,7 @@ dev-dist
 .eslintcache
 .data
 .netlify
+.wrangler
+.cloudflare
 photos/originals
 scripts/compression-report.md

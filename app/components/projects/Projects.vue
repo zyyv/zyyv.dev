@@ -11,12 +11,10 @@ async function fetchRepos(url: string, timeout = 15000) {
 
   try {
     const response = await fetch(url, { signal: controller.signal })
-    if (!response.ok)
-      throw new Error('Failed to load repositories.')
+    if (!response.ok) throw new Error('Failed to load repositories.')
 
-    return await response.json() as Record<string, Repo[]>
-  }
-  finally {
+    return (await response.json()) as Record<string, Repo[]>
+  } finally {
     window.clearTimeout(timer)
   }
 }
@@ -24,15 +22,13 @@ async function fetchRepos(url: string, timeout = 15000) {
 onMounted(async () => {
   try {
     data.value = await fetchRepos('/api/repos')
-    status.value = Object.values(data.value).some(repos => repos.length > 0)
-      ? 'success'
-      : 'error'
-  }
-  catch (error) {
+    status.value = Object.values(data.value).some((repos) => repos.length > 0) ? 'success' : 'error'
+  } catch (error) {
     console.error(error)
-    errorMessage.value = error instanceof DOMException && error.name === 'AbortError'
-      ? 'Loading repositories timed out.'
-      : 'Failed to load repositories.'
+    errorMessage.value =
+      error instanceof DOMException && error.name === 'AbortError'
+        ? 'Loading repositories timed out.'
+        : 'Failed to load repositories.'
     status.value = 'error'
   }
 })
@@ -56,10 +52,7 @@ onMounted(async () => {
     </div>
   </div>
   <div class="quadrant-mobile size-full fcc">
-    <div
-      class="cursor-pointer"
-      text="3xl yellow op-80 hover:op-100"
-    >
+    <div class="cursor-pointer" text="3xl yellow op-80 hover:op-100">
       <i i-hugeicons:package-search />
     </div>
   </div>

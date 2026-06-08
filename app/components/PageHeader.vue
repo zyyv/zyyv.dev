@@ -1,4 +1,4 @@
-<script lang='ts' setup>
+<script lang="ts" setup>
 defineProps<{
   title: string
   description: string
@@ -6,13 +6,7 @@ defineProps<{
 </script>
 
 <template>
-  <h2
-    text-2xl
-    fw-bold
-    md-text-3xl
-    mb4
-    mt-12
-  >
+  <h2 text-2xl fw-bold md-text-3xl mb4 mt-12>
     {{ title }}
   </h2>
   <p font-dank text-xs md-text-sm italic>

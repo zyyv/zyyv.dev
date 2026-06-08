@@ -3,10 +3,13 @@
     <h4 class="h-6 w-32 bg-stone-300 dark:bg-stone-700 rounded mb-3" animate="pulse" />
     <div grid="~ cols-1 @3xl:cols-2 gap-4">
       <div
-        v-for="n in 4" :key="n"
+        v-for="n in 4"
+        :key="n"
         class="rounded-lg p-4"
-        dark:bg-dark-500 bg-gray-200
-        flex="~ col" gap-3
+        dark:bg-dark-500
+        bg-gray-200
+        flex="~ col"
+        gap-3
         animate="pulse"
       >
         <div fsc gap-2 w-full>

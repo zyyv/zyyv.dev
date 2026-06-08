@@ -32,8 +32,8 @@ async function generatePhotosData() {
 
     // 过滤出图片文件
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
-    const imageFiles = files.filter(file =>
-      imageExtensions.some(ext => file.toLowerCase().endsWith(ext)),
+    const imageFiles = files.filter((file) =>
+      imageExtensions.some((ext) => file.toLowerCase().endsWith(ext)),
     )
 
     console.log(`Found ${imageFiles.length} image files`)
@@ -115,14 +115,17 @@ async function generatePhotosData() {
     )
 
     photos.sort((a, b) => {
-      const aDate = a.exif?.dateTime ? new Date(a.exif.dateTime).getTime() : new Date(a.modifiedAt).getTime()
-      const bDate = b.exif?.dateTime ? new Date(b.exif.dateTime).getTime() : new Date(b.modifiedAt).getTime()
+      const aDate = a.exif?.dateTime
+        ? new Date(a.exif.dateTime).getTime()
+        : new Date(a.modifiedAt).getTime()
+      const bDate = b.exif?.dateTime
+        ? new Date(b.exif.dateTime).getTime()
+        : new Date(b.modifiedAt).getTime()
       return bDate - aDate
     })
 
     return photos
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ Error generating photos data:', error)
     throw error
   }
@@ -132,8 +135,7 @@ async function generateDataFile(photos: Photo[]) {
   if (existsSync(dataPath)) {
     try {
       await unlink(dataPath)
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('⚠️  Could not delete existing data file:', (error as Error).message)
     }
   }
@@ -155,36 +157,30 @@ async function lintFix() {
   const { execa } = await import('execa')
 
   try {
-    const result = await execa('eslint', [dataFile, '--fix', '--no-ignore'], {
+    const result = await execa('oxfmt', [dataFile], {
       stdio: 'pipe',
       cwd: process.cwd(),
     })
 
-    if (result.stdout)
-      console.log('ESLint output:', result.stdout)
-    if (result.stderr)
-      console.log('ESLint stderr:', result.stderr)
+    if (result.stdout) console.log('oxfmt output:', result.stdout)
+    if (result.stderr) console.log('oxfmt stderr:', result.stderr)
 
-    console.log('✅ ESLint check completed')
-  }
-  catch (eslintError) {
-    if (eslintError && typeof eslintError === 'object' && 'stdout' in eslintError) {
-      const error = eslintError as { stdout?: string, stderr?: string }
-      console.log('ESLint executed with warnings/fixes:', error.stdout || error.stderr)
+    console.log('✅ Format completed')
+  } catch (fmtError) {
+    if (fmtError && typeof fmtError === 'object' && 'stdout' in fmtError) {
+      const error = fmtError as { stdout?: string; stderr?: string }
+      console.log('oxfmt executed with warnings:', error.stdout || error.stderr)
+    } else {
+      console.log('oxfmt executed with some output')
     }
-    else {
-      console.log('ESLint executed with some output')
-    }
-    console.log('✅ ESLint check completed')
+    console.log('✅ Format completed')
   }
 
   process.exit(0)
 }
 
 function formatSize(size: number): string {
-  if (size < 1024)
-    return `${size} B`
-  if (size < 1024 * 1024)
-    return `${(size / 1024).toFixed(2)} KB`
+  if (size < 1024) return `${size} B`
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`
   return `${(size / (1024 * 1024)).toFixed(2)} MB`
 }

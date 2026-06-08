@@ -20,8 +20,7 @@ function getRelativePosition(e: MouseEvent | TouchEvent) {
   if (e instanceof TouchEvent) {
     clientX = e.touches[0]!.clientX
     clientY = e.touches[0]!.clientY
-  }
-  else {
+  } else {
     clientX = e.clientX
     clientY = e.clientY
   }
@@ -33,8 +32,7 @@ function getRelativePosition(e: MouseEvent | TouchEvent) {
 }
 
 function onDrag(e: MouseEvent | TouchEvent) {
-  if (!dragging.value)
-    return
+  if (!dragging.value) return
   const pos = getRelativePosition(e)
   model.value!.x = pos.x
   model.value!.y = pos.y
@@ -64,7 +62,8 @@ onBeforeUnmount(stopDrag)
     <!-- 横纵坐标轴 -->
     <div
       :class="{ trans: !dragging && !transitionDisabled }"
-      class="absolute border-l-1 border-dashed border-op-15 border-dark dark:border-white" :style="{
+      class="absolute border-l-1 border-dashed border-op-15 border-dark dark:border-white"
+      :style="{
         left: `${model!.x * 100}%`,
         top: 0,
         height: '100%',
@@ -75,7 +74,8 @@ onBeforeUnmount(stopDrag)
     />
     <div
       :class="{ trans: !dragging && !transitionDisabled }"
-      class="absolute border-t-1 border-dashed border-op-15 border-dark dark:border-white" :style="{
+      class="absolute border-t-1 border-dashed border-op-15 border-dark dark:border-white"
+      :style="{
         top: `${model!.y * 100}%`,
         left: 0,
         width: '100%',

@@ -14,8 +14,10 @@ watchEffect(() => {
 })
 
 function enableTransitions() {
-  return typeof document.startViewTransition === 'function'
-    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return (
+    typeof document.startViewTransition === 'function' &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
 }
 
 async function toggleDark(event: MouseEvent) {
@@ -26,14 +28,8 @@ async function toggleDark(event: MouseEvent) {
 
   const x = event.clientX
   const y = event.clientY
-  const endRadius = Math.hypot(
-    Math.max(x, innerWidth - x),
-    Math.max(y, innerHeight - y),
-  )
-  const clipPath = [
-    `circle(0px at ${x}px ${y}px)`,
-    `circle(${endRadius}px at ${x}px ${y}px)`,
-  ]
+  const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+  const clipPath = [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`]
 
   await document.startViewTransition(async () => {
     next()
@@ -42,17 +38,14 @@ async function toggleDark(event: MouseEvent) {
 
   document.documentElement.animate(
     {
-      clipPath: state.value === 'dark'
-        ? [...clipPath].reverse()
-        : clipPath,
+      clipPath: state.value === 'dark' ? [...clipPath].reverse() : clipPath,
     },
     {
       duration: 300,
       easing: 'ease-in',
       fill: 'forwards',
-      pseudoElement: state.value === 'dark'
-        ? '::view-transition-old(root)'
-        : '::view-transition-new(root)',
+      pseudoElement:
+        state.value === 'dark' ? '::view-transition-old(root)' : '::view-transition-new(root)',
     },
   )
 }

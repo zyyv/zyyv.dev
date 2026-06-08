@@ -6,12 +6,8 @@ defineProps<{
   photos: Photo[]
 }>()
 
-const {
-  center,
-  getQuadrantScrollProgress,
-  initQuadrantSizeConfig,
-  setQuadrantScrollProgress,
-} = useCenter()
+const { center, getQuadrantScrollProgress, initQuadrantSizeConfig, setQuadrantScrollProgress } =
+  useCenter()
 
 initQuadrantSizeConfig()
 
@@ -20,8 +16,7 @@ onMounted(() => {
 
   let timeoutId: ReturnType<typeof setTimeout> | null = null
   watchEffect(() => {
-    if (timeoutId)
-      clearTimeout(timeoutId)
+    if (timeoutId) clearTimeout(timeoutId)
 
     const currentCenter = { ...center.value }
     timeoutId = setTimeout(() => {
@@ -40,29 +35,21 @@ function canElementScroll(element: HTMLElement, deltaY: number) {
   const style = window.getComputedStyle(element)
   const canOverflow = ['auto', 'scroll', 'overlay'].includes(style.overflowY)
 
-  if (!canOverflow || element.scrollHeight <= element.clientHeight)
-    return false
+  if (!canOverflow || element.scrollHeight <= element.clientHeight) return false
 
-  if (deltaY > 0)
-    return element.scrollTop + element.clientHeight < element.scrollHeight - 1
+  if (deltaY > 0) return element.scrollTop + element.clientHeight < element.scrollHeight - 1
 
-  if (deltaY < 0)
-    return element.scrollTop > 1
+  if (deltaY < 0) return element.scrollTop > 1
 
   return false
 }
 
 function canScrollInsideQuadrant(event: WheelEvent) {
-  let element = event.target instanceof HTMLElement
-    ? event.target
-    : null
-  const boundary = event.currentTarget instanceof HTMLElement
-    ? event.currentTarget
-    : null
+  let element = event.target instanceof HTMLElement ? event.target : null
+  const boundary = event.currentTarget instanceof HTMLElement ? event.currentTarget : null
 
   while (element && element !== boundary) {
-    if (canElementScroll(element, event.deltaY))
-      return true
+    if (canElementScroll(element, event.deltaY)) return true
 
     element = element.parentElement
   }
@@ -71,17 +58,14 @@ function canScrollInsideQuadrant(event: WheelEvent) {
 }
 
 function handleWheel(event: WheelEvent) {
-  if (canScrollInsideQuadrant(event))
-    return
+  if (canScrollInsideQuadrant(event)) return
 
   event.preventDefault()
 
-  if (dragState.value)
-    return
+  if (dragState.value) return
 
   wheelState.value = true
-  if (wheelStateTimer)
-    clearTimeout(wheelStateTimer)
+  if (wheelStateTimer) clearTimeout(wheelStateTimer)
   wheelStateTimer = setTimeout(() => {
     wheelState.value = false
   }, 120)
@@ -92,8 +76,7 @@ function handleWheel(event: WheelEvent) {
 }
 
 onBeforeUnmount(() => {
-  if (wheelStateTimer)
-    clearTimeout(wheelStateTimer)
+  if (wheelStateTimer) clearTimeout(wheelStateTimer)
 })
 
 const mobileLinks = [
@@ -227,7 +210,10 @@ const mobileLinks = [
     border-radius: 999px;
     font-size: 1.45rem;
     opacity: 0.78;
-    transition: opacity 180ms ease, transform 180ms ease, border-color 180ms ease;
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease,
+      border-color 180ms ease;
   }
 
   .home-mobile-icon:active {

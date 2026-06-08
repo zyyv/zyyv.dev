@@ -16,13 +16,13 @@ lang: zh-cn
 function hash(str: string) {
   let i
   let l
-  let hval = 0x811C9DC5
+  let hval = 0x811c9dc5
 
   for (i = 0, l = str.length; i < l; i++) {
     hval ^= str.charCodeAt(i)
     hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24)
   }
-  return (`00000${(hval >>> 0).toString(36)}`).slice(-6)
+  return `00000${(hval >>> 0).toString(36)}`.slice(-6)
 }
 ```
 
@@ -32,10 +32,7 @@ Or
 import { createHash } from 'node:crypto'
 
 function getHash(input: string, length = 8) {
-  return createHash('sha256')
-    .update(input)
-    .digest('hex')
-    .slice(0, length)
+  return createHash('sha256').update(input).digest('hex').slice(0, length)
 }
 ```
 
@@ -49,11 +46,9 @@ function getHash(input: string, length = 8) {
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const _dirname = typeof __dirname !== 'undefined'
-  ? __dirname
-  : dirname(fileURLToPath(import.meta.url))
+const _dirname =
+  typeof __dirname !== 'undefined' ? __dirname : dirname(fileURLToPath(import.meta.url))
 ```
-
 
 ## CreateFilter
 
@@ -64,23 +59,19 @@ export type FilterPattern = Array<string | RegExp> | string | RegExp | null
 ```
 
 ```ts [util.ts]
-function createFilter(
-  include: FilterPattern,
-  exclude: FilterPattern,
-): (id: string) => boolean {
+function createFilter(include: FilterPattern, exclude: FilterPattern): (id: string) => boolean {
   const includePattern = toArray(include || [])
   const excludePattern = toArray(exclude || [])
   return (id: string) => {
-    if (excludePattern.some(p => id.match(p)))
-      return false
-    return includePattern.some(p => id.match(p))
+    if (excludePattern.some((p) => id.match(p))) return false
+    return includePattern.some((p) => id.match(p))
   }
 }
 ```
 
 ## Events
 
-```ts [type.ts]
+````ts [type.ts]
 type EventsMap = Record<string, any>
 
 interface DefaultEvents extends EventsMap {
@@ -131,25 +122,21 @@ export declare class Emitter<Events extends EventsMap = DefaultEvents> {
    * @param event The event name.
    * @param args The arguments for listeners.
    */
-  emit<K extends keyof Events>(
-    this: this,
-    event: K,
-    ...args: Parameters<Events[K]>
-  ): void
+  emit<K extends keyof Events>(this: this, event: K, ...args: Parameters<Events[K]>): void
 }
-```
+````
 
 ```ts [util.ts]
 export function createNanoEvents<Events extends EventsMap = DefaultEvents>(): Emitter<Events> {
   return {
     events: {},
     emit(event, ...args) {
-      (this.events[event] || [] as any).forEach((i: any) => i(...args))
+      ;(this.events[event] || ([] as any)).forEach((i: any) => i(...args))
     },
     on(event, cb) {
-      (this.events[event] = this.events[event] || [] as any).push(cb)
+      ;(this.events[event] = this.events[event] || ([] as any)).push(cb)
       return () =>
-        (this.events[event] = (this.events[event] || [] as any).filter((i: any) => i !== cb))
+        (this.events[event] = (this.events[event] || ([] as any)).filter((i: any) => i !== cb))
     },
   }
 }
@@ -163,13 +150,10 @@ export function createNanoEvents<Events extends EventsMap = DefaultEvents>(): Em
 
 ```ts [util.ts]
 export function deepClone(origin: unknown): unknown {
-  if (isArray(origin))
-    return origin.map(child => deepClone(child))
+  if (isArray(origin)) return origin.map((child) => deepClone(child))
 
   if (isObject(origin)) {
-    return Object.fromEntries(
-      Object.entries(origin).map(([k, v]) => [k, deepClone(v)]),
-    )
+    return Object.fromEntries(Object.entries(origin).map(([k, v]) => [k, deepClone(v)]))
   }
 
   return origin
@@ -181,19 +165,15 @@ export function deepClone(origin: unknown): unknown {
 ```ts [util.ts]
 export function deepClone(origin: any, map: WeakMap<WeakKey, any> = new WeakMap()): any {
   if (isObject(origin)) {
-    if (map.has(origin))
-      return map.get(origin)
+    if (map.has(origin)) return map.get(origin)
 
     const target: any = isArray(origin) ? [] : {}
     map.set(origin, target)
 
     Object.entries(origin).forEach(([k, v]: [string, any]) => {
-      if (isRegExp(v))
-        target[k] = new RegExp(v)
-      else if (isDate(v))
-        target[k] = new Date(v)
-      else
-        target[k] = deepClone(v, map)
+      if (isRegExp(v)) target[k] = new RegExp(v)
+      else if (isDate(v)) target[k] = new Date(v)
+      else target[k] = deepClone(v, map)
     })
     return target
   }
@@ -208,22 +188,17 @@ export function deepMerge<T>(original: T, patch: DeepPartial<T>): T {
   const o = original as any
   const p = patch as any
 
-  if (isArray(o) && isArray(p))
-    return [...o, ...p] as any
+  if (isArray(o) && isArray(p)) return [...o, ...p] as any
 
-  if (isArray(o))
-    return [...o] as any
+  if (isArray(o)) return [...o] as any
 
   const output = { ...o }
   if (isObject(o) && isObject(p)) {
     Object.keys(p).forEach((key) => {
       if (isObject(p[key])) {
-        if (!(key in o))
-          Object.assign(output, { [key]: p[key] })
-        else
-          output[key] = deepMerge(o[key], p[key])
-      }
-      else {
+        if (!(key in o)) Object.assign(output, { [key]: p[key] })
+        else output[key] = deepMerge(o[key], p[key])
+      } else {
         Object.assign(output, { [key]: p[key] })
       }
     })
@@ -241,8 +216,7 @@ export function deepMerge<T>(original: T, patch: DeepPartial<T>): T {
 ```ts [util.ts]
 export function chunk<T>(arr: T[], size: number): T[][] {
   const result: T[][] = []
-  for (let i = 0; i < arr.length; i += size)
-    result.push(arr.slice(i, i + size))
+  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size))
 
   return result
 }
@@ -254,8 +228,7 @@ export function chunk<T>(arr: T[], size: number): T[][] {
 export function uniqueBy<T>(array: readonly T[], equalFn: (a: T, b: T) => boolean): T[] {
   return array.reduce((acc: T[], cur: T) => {
     const index = acc.findIndex((item: T) => equalFn(cur, item))
-    if (index === -1)
-      acc.push(cur)
+    if (index === -1) acc.push(cur)
     return acc
   }, [])
 }

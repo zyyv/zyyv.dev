@@ -10,7 +10,7 @@ lang: en
 
 Special thanks to [@userquin](https://github.com/userquin) for his help and his [PR](https://github.com/unocss/unocss/pull/4322) inspired me to write this article.
 
-> Concise and to the point. If there are any inaccuracies, please correct me. Also, refer to the official documentation [arethetypeswrong](https://github.com/arethetypeswrong/arethetypeswrong.github.io)  
+> Concise and to the point. If there are any inaccuracies, please correct me. Also, refer to the official documentation [arethetypeswrong](https://github.com/arethetypeswrong/arethetypeswrong.github.io)
 
 ## What is `arethetypeswrong`?
 

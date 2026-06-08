@@ -49,7 +49,7 @@ const uno = await createGenerator(userConfig) // ✅
 const uno = await createGenerator({
   presets: [
     async () => {
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise((r) => setTimeout(r, 100))
       return {
         name: 'foo',
         rules: [
@@ -112,8 +112,12 @@ const uno = await createGenerator({
 
 ```css [__uno.css]
 /* uno.generate('v-text-red') */
-.v-text-red{color:red;}
-.v-text-red{color:green;}
+.v-text-red {
+  color: red;
+}
+.v-text-red {
+  color: green;
+}
 ```
 
 一般情况下，utilities 伴随着多个 variant, 但对于多结果的 variant，它的解析是成指数级增长的，这非常耗费性能。
@@ -124,10 +128,12 @@ const uno = await createGenerator({
 
 ```html [index.html]
 <!-- 在 0.65.0 之前 -->
-<div border="red:10" /> ❌
+<div border="red:10" />
+❌
 
 <!-- 在 0.65.0 之后 -->
-<div border="red:10" /> ✅
+<div border="red:10" />
+✅
 ```
 
 之前我们在属性模式下，就像支持 `text="hover:blue"` 会被解析为 `hover:text-blue` 一样 解析变体时，`border="red:10"` 会被解析为 `red:border-10`，因为我们不确定 variant 的载体是什么。
@@ -164,6 +170,7 @@ const uno = await createGenerator({
   /* ... */
 }
 ```
+
 </details>
 
 这是由于在 `preset-uno` 中的规则，它们依赖这些 css 变量，为了能够正确的应用你的样式，我们需要提前生成这些 css 变量。
@@ -173,10 +180,10 @@ const uno = await createGenerator({
 在 0.65.0 版本中，我们支持了 on-demand preflights，我们在规则上提前添加了对 preflights 的依赖，它只会按需生成有所依赖的 preflights。
 
 ```ts [uno.config.ts]
-[
+;[
   presetUno({
     preflights: 'on-demand', // enable on-demand preflights
-  })
+  }),
 ]
 ```
 

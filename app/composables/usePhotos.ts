@@ -46,9 +46,8 @@ export function usePhotos(initialPhotos: Photo[] = []) {
   async function getPhotosPayload(page: number): Promise<PhotosPayload> {
     if (!sourcePhotos.value.length) {
       const response = await fetch('/api/photos-data.json')
-      if (!response.ok)
-        throw new Error(`Failed to load photos: ${response.status}`)
-      sourcePhotos.value = await response.json() as Photo[]
+      if (!response.ok) throw new Error(`Failed to load photos: ${response.status}`)
+      sourcePhotos.value = (await response.json()) as Photo[]
     }
 
     return createPhotosPayload(sourcePhotos.value, page, pageSize.value)
@@ -69,27 +68,23 @@ export function usePhotos(initialPhotos: Photo[] = []) {
       if (response?.photos) {
         if (append) {
           allPhotos.value.push(...response.photos)
-        }
-        else {
+        } else {
           allPhotos.value = response.photos
         }
 
         hasMore.value = response.pagination?.hasNext || false
       }
-    }
-    catch (err: any) {
+    } catch (err: any) {
       console.error('Failed to load photos:', err)
       error.value = err.message || '加载照片失败，请稍后重试'
 
       // 如果是网络错误或 404，设置友好的错误信息
       if (err.status === 404) {
         error.value = 'API 接口未找到，请检查服务器配置'
-      }
-      else if (err.status >= 500) {
+      } else if (err.status >= 500) {
         error.value = '服务器错误，请稍后重试'
       }
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -135,9 +130,7 @@ export function usePhotos(initialPhotos: Photo[] = []) {
   function resetPhotos() {
     allPhotos.value = []
     currentPage.value = 1
-    hasMore.value = sourcePhotos.value.length
-      ? sourcePhotos.value.length > pageSize.value
-      : true
+    hasMore.value = sourcePhotos.value.length ? sourcePhotos.value.length > pageSize.value : true
     loading.value = false
   }
 

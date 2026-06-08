@@ -2,11 +2,14 @@
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
 
-const props = withDefaults(defineProps<{
-  photos?: Photo[]
-}>(), {
-  photos: () => [],
-})
+const props = withDefaults(
+  defineProps<{
+    photos?: Photo[]
+  }>(),
+  {
+    photos: () => [],
+  },
+)
 
 const {
   loading,
@@ -48,10 +51,9 @@ onBeforeUnmount(() => {
 
 // 显示上一张图片
 function showPrevPhoto() {
-  if (!currentPhoto.value)
-    return
+  if (!currentPhoto.value) return
 
-  const currentIndex = allPhotos.value.findIndex(p => p.id === currentPhoto.value?.id)
+  const currentIndex = allPhotos.value.findIndex((p) => p.id === currentPhoto.value?.id)
   if (currentIndex > 0) {
     currentPhoto.value = allPhotos.value[currentIndex - 1]!
   }
@@ -59,10 +61,9 @@ function showPrevPhoto() {
 
 // 显示下一张图片
 function showNextPhoto() {
-  if (!currentPhoto.value)
-    return
+  if (!currentPhoto.value) return
 
-  const currentIndex = allPhotos.value.findIndex(p => p.id === currentPhoto.value?.id)
+  const currentIndex = allPhotos.value.findIndex((p) => p.id === currentPhoto.value?.id)
   if (currentIndex < allPhotos.value.length - 1) {
     currentPhoto.value = allPhotos.value[currentIndex + 1]!
   }
@@ -94,18 +95,11 @@ onMounted(() => {
 
     <!-- 初始加载状态 -->
     <div v-else-if="!allPhotos.length && loading" class="flex justify-center items-center h-64">
-      <div class="text-lg">
-        Loading photos...
-      </div>
+      <div class="text-lg">Loading photos...</div>
     </div>
 
     <!-- 瀑布流容器 -->
-    <div
-      v-else
-      ref="scrollContainer"
-      class="flex-1 overflow-auto"
-      @scroll="handleScroll"
-    >
+    <div v-else ref="scrollContainer" class="flex-1 overflow-auto" @scroll="handleScroll">
       <VirtualWaterfall
         :items="allPhotos"
         :calc-item-height="calcItemHeight"
@@ -132,7 +126,9 @@ onMounted(() => {
       <!-- 加载更多指示器 -->
       <div v-if="loading" class="flex justify-center items-center py-8">
         <div class="flex items-center gap-2 text-gray-500">
-          <div class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+          <div
+            class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"
+          />
           <span>Loading...</span>
         </div>
       </div>
@@ -167,11 +163,7 @@ onMounted(() => {
     />
   </div>
   <div class="quadrant-mobile size-full fcc">
-    <a
-      href="/photos"
-      class="cursor-pointer"
-      text="3xl orange op-80 hover:op-100"
-    >
+    <a href="/photos" class="cursor-pointer" text="3xl orange op-80 hover:op-100">
       <i i-hugeicons:image-03 />
     </a>
   </div>

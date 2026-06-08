@@ -27,8 +27,7 @@ export function useOctokit() {
 }
 
 export function usePublicOctokit() {
-  if (!_publicOctokit)
-    _publicOctokit = new Octokit()
+  if (!_publicOctokit) _publicOctokit = new Octokit()
 
   return _publicOctokit
 }

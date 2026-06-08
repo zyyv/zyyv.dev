@@ -16,11 +16,13 @@
 ## 使用方法
 
 ### 1. 直接运行脚本
+
 ```bash
 pnpm run prepare:photos
 ```
 
 ### 2. 手动运行脚本
+
 ```bash
 esno scripts/squoosh.ts
 ```
@@ -61,6 +63,7 @@ esno scripts/squoosh.ts
 - **`compression-report.md`** - 详细的压缩分析报告
 
 报告包含以下内容：
+
 - 📊 总体压缩统计
 - 📋 详细的文件对比表
 - 🎯 压缩效果分析
@@ -69,6 +72,7 @@ esno scripts/squoosh.ts
 ## 压缩效果
 
 根据测试结果，脚本可以实现：
+
 - **平均压缩率**: 80-95%
 - **文件大小**: 从 10-20MB 压缩到 1-4MB
 - **保持良好的图片质量**

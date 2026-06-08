@@ -20,9 +20,8 @@ const emit = defineEmits<Emits>()
 const thumbnailRefs = ref<HTMLElement[]>([])
 
 const currentIndex = computed(() => {
-  if (!props.photo || !props.photos.length)
-    return -1
-  return props.photos.findIndex(p => p.id === props.photo?.id)
+  if (!props.photo || !props.photos.length) return -1
+  return props.photos.findIndex((p) => p.id === props.photo?.id)
 })
 const hasPrev = computed(() => currentIndex.value > 0)
 const hasNext = computed(() => currentIndex.value < props.photos.length - 1)
@@ -30,8 +29,7 @@ const hasNext = computed(() => currentIndex.value < props.photos.length - 1)
 watch(
   [currentIndex, () => props.visible],
   async ([index, visible]) => {
-    if (!visible || index < 0)
-      return
+    if (!visible || index < 0) return
 
     await nextTick()
     thumbnailRefs.value[index]?.scrollIntoView({
@@ -44,20 +42,17 @@ watch(
 )
 
 function handleKeydown(e: KeyboardEvent) {
-  if (!props.visible)
-    return
+  if (!props.visible) return
 
   switch (e.key) {
     case 'Escape':
       emit('close')
       break
     case 'ArrowLeft':
-      if (hasPrev.value)
-        emit('prev')
+      if (hasPrev.value) emit('prev')
       break
     case 'ArrowRight':
-      if (hasNext.value)
-        emit('next')
+      if (hasNext.value) emit('next')
       break
   }
 }
@@ -75,10 +70,8 @@ function formatDate(dateString: string): string {
 }
 
 function formatExposureTime(time?: number): string {
-  if (!time)
-    return ''
-  if (time >= 1)
-    return `${time}s`
+  if (!time) return ''
+  if (time >= 1) return `${time}s`
   const fraction = Math.round(1 / time)
   return `1/${fraction}s`
 }
@@ -88,8 +81,7 @@ function photoPreviewSrc(item: Photo): string {
 }
 
 function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: number) {
-  if (el instanceof HTMLElement)
-    thumbnailRefs.value[index] = el
+  if (el instanceof HTMLElement) thumbnailRefs.value[index] = el
 }
 </script>
 
@@ -128,7 +120,7 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
               :alt="photo.filename"
               class="max-w-full max-h-full object-contain rounded-md shadow-2xl shadow-black/30"
               @click.stop
-            >
+            />
 
             <button
               v-if="hasNext"
@@ -164,25 +156,39 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
                   <span>基本信息</span>
                 </div>
                 <div class="space-y-2 text-sm">
-                  <div class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:file-01 mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">文件名</span>
                     <span class="min-w-0 break-words text-right text-white/88">{{ photo.id }}</span>
                   </div>
-                  <div class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:maximize-01 mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">尺寸</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ photo.width }} x {{ photo.height }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88"
+                      >{{ photo.width }} x {{ photo.height }}</span
+                    >
                   </div>
-                  <div class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:database-01 mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">文件大小</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ photo.sizeFormatted }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88">{{
+                      photo.sizeFormatted
+                    }}</span>
                   </div>
-                  <div class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:calendar-03 mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">修改时间</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ formatDate(photo.modifiedAt.toString()) }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88">{{
+                      formatDate(photo.modifiedAt.toString())
+                    }}</span>
                   </div>
                 </div>
               </section>
@@ -194,40 +200,75 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
                   <span>拍摄信息</span>
                 </div>
                 <div class="space-y-2 text-sm">
-                  <div v-if="photo.exif.make && photo.exif.model" class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    v-if="photo.exif.make && photo.exif.model"
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:camera-01 mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">相机</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ photo.exif.make }} {{ photo.exif.model }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88"
+                      >{{ photo.exif.make }} {{ photo.exif.model }}</span
+                    >
                   </div>
-                  <div v-if="photo.exif.lens" class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    v-if="photo.exif.lens"
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:camera-lens mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">镜头</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ photo.exif.lens }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88">{{
+                      photo.exif.lens
+                    }}</span>
                   </div>
-                  <div v-if="photo.exif.focalLength" class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    v-if="photo.exif.focalLength"
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:zoom-in-area mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">焦距</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ photo.exif.focalLength }}mm</span>
+                    <span class="min-w-0 break-words text-right text-white/88"
+                      >{{ photo.exif.focalLength }}mm</span
+                    >
                   </div>
-                  <div v-if="photo.exif.fNumber" class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    v-if="photo.exif.fNumber"
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:iris-scan mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">光圈</span>
-                    <span class="min-w-0 break-words text-right text-white/88">f/{{ photo.exif.fNumber }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88"
+                      >f/{{ photo.exif.fNumber }}</span
+                    >
                   </div>
-                  <div v-if="photo.exif.exposureTime" class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    v-if="photo.exif.exposureTime"
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:timer-01 mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">快门</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ formatExposureTime(photo.exif.exposureTime) }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88">{{
+                      formatExposureTime(photo.exif.exposureTime)
+                    }}</span>
                   </div>
-                  <div v-if="photo.exif.iso" class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    v-if="photo.exif.iso"
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:settings-05 mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">ISO</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ photo.exif.iso }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88">{{
+                      photo.exif.iso
+                    }}</span>
                   </div>
-                  <div v-if="photo.exif.dateTime" class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2">
+                  <div
+                    v-if="photo.exif.dateTime"
+                    class="grid grid-cols-[1.25rem_4.5rem_minmax(0,1fr)] items-start gap-2 rounded-md bg-white/[0.045] px-3 py-2"
+                  >
                     <i class="i-hugeicons:clock-01 mt-0.5 text-white/45" />
                     <span class="shrink-0 whitespace-nowrap text-white/55">拍摄时间</span>
-                    <span class="min-w-0 break-words text-right text-white/88">{{ formatDate(photo.exif.dateTime) }}</span>
+                    <span class="min-w-0 break-words text-right text-white/88">{{
+                      formatDate(photo.exif.dateTime)
+                    }}</span>
                   </div>
                 </div>
               </section>
@@ -236,17 +277,18 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
         </div>
 
         <!-- 缩略图列表 -->
-        <div
-          class="shrink-0 rounded-lg p-3 bg-gray-600/10"
-          @click.stop
-        >
+        <div class="shrink-0 rounded-lg p-3 bg-gray-600/10" @click.stop>
           <div class="flex gap-2 overflow-x-auto overscroll-x-contain scroll-smooth scroll-none">
             <button
               v-for="(item, index) in photos"
               :key="item.id"
-              :ref="el => setThumbnailRef(el, index)"
+              :ref="(el) => setThumbnailRef(el, index)"
               class="relative h-18 w-24 shrink-0 overflow-hidden rounded-md border transition-all"
-              :class="item.id === photo.id ? 'border-stone-400 border-dashed shadow-lg shadow-white/12 opacity-100' : 'border-white/12 opacity-58 hover:opacity-90 hover:border-white/35'"
+              :class="
+                item.id === photo.id
+                  ? 'border-stone-400 border-dashed shadow-lg shadow-white/12 opacity-100'
+                  : 'border-white/12 opacity-58 hover:opacity-90 hover:border-white/35'
+              "
               :aria-label="`预览 ${item.filename || item.id}`"
               @click="emit('select', item)"
             >
@@ -255,7 +297,7 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
                 :alt="item.filename"
                 class="size-full object-cover"
                 loading="lazy"
-              >
+              />
               <!-- <div
                 v-if="item.id === photo.id"
                 class="absolute inset-x-0 bottom-0 h-0.75 bg-white"

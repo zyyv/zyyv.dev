@@ -1,7 +1,9 @@
 shellEmulator: true
-trustPolicy: no-downgrade
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   sharp: true
   simple-git-hooks: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - taze@19.14.0

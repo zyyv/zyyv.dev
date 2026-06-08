@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import netlify from '@astrojs/netlify'
+import cloudflare from '@astrojs/cloudflare'
 import vue from '@astrojs/vue'
 import { defineConfig } from 'astro/config'
 import UnoCSS from 'unocss/vite'
@@ -8,7 +8,7 @@ import Components from 'unplugin-vue-components/vite'
 
 export default defineConfig({
   output: 'server',
-  adapter: netlify(),
+  adapter: cloudflare(),
   integrations: [vue()],
   server: {
     port: 4321,
@@ -17,13 +17,8 @@ export default defineConfig({
     plugins: [
       UnoCSS() as any,
       AutoImport({
-        imports: [
-          'vue',
-          '@vueuse/core',
-        ],
-        dirs: [
-          './app/composables',
-        ],
+        imports: ['vue', '@vueuse/core'],
+        dirs: ['./app/composables'],
         vueTemplate: true,
       }),
       Components({
@@ -42,7 +37,7 @@ export default defineConfig({
     },
     define: {
       'import.meta.env.__BUILD_TIME__': JSON.stringify(new Date().toISOString()),
-      '__DEV__': JSON.stringify(process.env.NODE_ENV !== 'production'),
+      __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
     },
     build: {
       target: 'esnext',

@@ -18,8 +18,7 @@ const isAnimating = ref(false) // 添加动画状态标记
 
 watchEffect(() => {
   // 在动画过程中不进行边界限制，避免干扰动画
-  if (isAnimating.value)
-    return
+  if (isAnimating.value) return
 
   if (center.value.x < minx.value) {
     center.value.x = minx.value
@@ -78,11 +77,10 @@ function getQuadrantSize(quadrant: string) {
 
 function getQuadrantScrollProgress() {
   const points = quadrantScrollOrder
-    .map(quadrant => QuadrantSizeConfig.value?.[quadrant])
+    .map((quadrant) => QuadrantSizeConfig.value?.[quadrant])
     .filter(Boolean) as QuadrantSize[]
 
-  if (points.length < 2)
-    return 0
+  if (points.length < 2) return 0
 
   let closestProgress = 0
   let closestDistance = Number.POSITIVE_INFINITY
@@ -93,9 +91,10 @@ function getQuadrantScrollProgress() {
     const dx = end.x - start.x
     const dy = end.y - start.y
     const lengthSquared = dx * dx + dy * dy
-    const rawT = lengthSquared === 0
-      ? 0
-      : ((center.value.x - start.x) * dx + (center.value.y - start.y) * dy) / lengthSquared
+    const rawT =
+      lengthSquared === 0
+        ? 0
+        : ((center.value.x - start.x) * dx + (center.value.y - start.y) * dy) / lengthSquared
     const t = Math.max(0, Math.min(1, rawT))
     const projectedX = start.x + dx * t
     const projectedY = start.y + dy * t
@@ -112,11 +111,10 @@ function getQuadrantScrollProgress() {
 
 function setQuadrantScrollProgress(progress: number) {
   const points = quadrantScrollOrder
-    .map(quadrant => QuadrantSizeConfig.value?.[quadrant])
+    .map((quadrant) => QuadrantSizeConfig.value?.[quadrant])
     .filter(Boolean) as QuadrantSize[]
 
-  if (points.length < 2)
-    return
+  if (points.length < 2) return
 
   const maxProgress = points.length - 1
   const clampedProgress = Math.max(0, Math.min(maxProgress, progress))
@@ -131,8 +129,7 @@ function setQuadrantScrollProgress(progress: number) {
 
 function setQuadrantSize(quadrant: string) {
   const config = getQuadrantSize(quadrant)
-  if (!config)
-    return
+  if (!config) return
 
   // 使用平滑动画过渡
   const startX = center.value.x
@@ -149,17 +146,15 @@ function setQuadrantSize(quadrant: string) {
     const progress = Math.min(elapsed / duration, 1)
 
     // 使用 easeInOutCubic 缓动函数，让动画更流畅
-    const eased = progress < 0.5
-      ? 4 * progress * progress * progress
-      : 1 - (-2 * progress + 2) ** 3 / 2
+    const eased =
+      progress < 0.5 ? 4 * progress * progress * progress : 1 - (-2 * progress + 2) ** 3 / 2
 
     center.value.x = startX + (targetX - startX) * eased
     center.value.y = startY + (targetY - startY) * eased
 
     if (progress < 1) {
       requestAnimationFrame(animate)
-    }
-    else {
+    } else {
       isAnimating.value = false // 动画结束
     }
   }

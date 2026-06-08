@@ -21,8 +21,7 @@ onMounted(() => {
 function syncUrl() {
   if (tags.value.size === 0) {
     history.replaceState(null, '', '/posts')
-  }
-  else {
+  } else {
     history.replaceState(null, '', `/posts?tags=${Array.from(tags.value).join(',')}`)
   }
 }
@@ -31,8 +30,7 @@ function toggleTag(tag: string) {
   const next = new Set(tags.value)
   if (next.has(tag)) {
     next.delete(tag)
-  }
-  else {
+  } else {
     next.add(tag)
   }
   tags.value = next
@@ -45,13 +43,11 @@ const sortedPosts = computed(() => {
   }
 
   return [...props.posts].sort((a, b) => {
-    const aHasTag = a.tags.some(tag => tags.value.has(tag))
-    const bHasTag = b.tags.some(tag => tags.value.has(tag))
+    const aHasTag = a.tags.some((tag) => tags.value.has(tag))
+    const bHasTag = b.tags.some((tag) => tags.value.has(tag))
 
-    if (aHasTag && !bHasTag)
-      return -1
-    if (!aHasTag && bHasTag)
-      return 1
+    if (aHasTag && !bHasTag) return -1
+    if (!aHasTag && bHasTag) return 1
     return 0
   })
 })
@@ -66,7 +62,7 @@ const sortedPosts = computed(() => {
         v-for="post in sortedPosts"
         :key="post.id"
         trans
-        :class="tags.size > 0 && post.tags.every(tag => !tags.has(tag)) ? 'op-50' : ''"
+        :class="tags.size > 0 && post.tags.every((tag) => !tags.has(tag)) ? 'op-50' : ''"
       >
         <a :href="post.path">
           <strong>{{ post.title }}</strong>
@@ -84,14 +80,26 @@ const sortedPosts = computed(() => {
             <span
               v-for="tag in post.tags"
               :key="tag"
-              inline-block text-xs rd-full px-1.5 py-1px cursor-pointer
+              inline-block
+              text-xs
+              rd-full
+              px-1.5
+              py-1px
+              cursor-pointer
               b="~ gray dashed"
-              :class="tags.has(tag) ? 'dark:b-gray-3 dark:bg-gray-3 bg-gray-3 b-gray-3 dark:text-gray-8 text-gray-5' : ''"
+              :class="
+                tags.has(tag)
+                  ? 'dark:b-gray-3 dark:bg-gray-3 bg-gray-3 b-gray-3 dark:text-gray-8 text-gray-5'
+                  : ''
+              "
               @click="toggleTag(tag)"
-            >{{ tag }}</span>
+              >{{ tag }}</span
+            >
           </div>
           <div>
-            <span text-2.75 mr-2>{{ useDateFormat(post.date, 'MMM DD', { locales: 'en-US' }) }}</span>
+            <span text-2.75 mr-2>{{
+              useDateFormat(post.date, 'MMM DD', { locales: 'en-US' })
+            }}</span>
             <span text-2.75>{{ useTimeAgo(post.date) }}</span>
           </div>
         </div>

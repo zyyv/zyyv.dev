@@ -39,8 +39,8 @@ async function compressImages() {
     const files = await readdir(sourcePath)
 
     // 过滤图片文件
-    const imageFiles = files.filter(file =>
-      imageExtensions.some(ext => file.toLowerCase().endsWith(ext)),
+    const imageFiles = files.filter((file) =>
+      imageExtensions.some((ext) => file.toLowerCase().endsWith(ext)),
     )
 
     if (imageFiles.length === 0) {
@@ -51,26 +51,21 @@ async function compressImages() {
     console.log(`📁 Found ${imageFiles.length} images to compress`)
 
     // 确保输出目录存在
-    await Promise.all([
-      ensureDir(compressedDir),
-      ensureDir(thumbDir),
-    ])
+    await Promise.all([ensureDir(compressedDir), ensureDir(thumbDir)])
 
     // 并行压缩所有图片
-    const results = await Promise.allSettled(
-      imageFiles.map(filename => compressImage(filename)),
-    )
+    const results = await Promise.allSettled(imageFiles.map((filename) => compressImage(filename)))
 
     // 统计结果
-    const successful = results.filter(r => r.status === 'fulfilled').length
-    const failed = results.filter(r => r.status === 'rejected').length
+    const successful = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
 
     console.log(`✅ Compression complete: ${successful} successful, ${failed} failed`)
 
     // 生成对比报告
     const successfulResults = results
-      .filter(r => r.status === 'fulfilled')
-      .map(r => (r as PromiseFulfilledResult<any>).value)
+      .filter((r) => r.status === 'fulfilled')
+      .map((r) => (r as PromiseFulfilledResult<any>).value)
 
     if (successfulResults.length > 0) {
       await generateComparisonReport(successfulResults)
@@ -84,11 +79,9 @@ async function compressImages() {
         }
       })
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('💥 Compression failed:', error)
-  }
-  finally {
+  } finally {
     await imagePool.close()
   }
 }
@@ -109,12 +102,14 @@ async function compressImage(filename: string) {
     const sharpInstance = sharp(inputPath).rotate()
 
     // 1. 生成主图 (max 2560px)
-    const mainBuffer = await sharpInstance.clone()
+    const mainBuffer = await sharpInstance
+      .clone()
       .resize({ width: 2560, withoutEnlargement: true })
       .toBuffer()
 
     // 2. 生成缩略图 (max 600px)
-    const thumbBuffer = await sharpInstance.clone()
+    const thumbBuffer = await sharpInstance
+      .clone()
       .resize({ width: 600, withoutEnlargement: true })
       .toBuffer()
 
@@ -154,25 +149,25 @@ async function compressImage(filename: string) {
     // 执行压缩 (Main)
     const encodedMain = await mainImage.encode(encodeOptions)
     const encodedKeyMain = Object.keys(encodedMain)[0]
-    if (!encodedKeyMain)
-      throw new Error('No encoded data found for main image')
+    if (!encodedKeyMain) throw new Error('No encoded data found for main image')
     const mainData = encodedMain[encodedKeyMain].binary
     await writeFile(compressedOutputPath, mainData)
 
     // 执行压缩 (Thumb)
     const encodedThumb = await thumbImage.encode(encodeOptions)
     const encodedKeyThumb = Object.keys(encodedThumb)[0]
-    if (!encodedKeyThumb)
-      throw new Error('No encoded data found for thumbnail')
+    if (!encodedKeyThumb) throw new Error('No encoded data found for thumbnail')
     const thumbData = encodedThumb[encodedKeyThumb].binary
     await writeFile(thumbOutputPath, thumbData)
 
     // 计算压缩率 (Main)
     const compressedSize = mainData.length
-    const compressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(2)
+    const compressionRatio = (((originalSize - compressedSize) / originalSize) * 100).toFixed(2)
 
     console.log(`✅ ${filename} -> ${basename(compressedOutputPath)}`)
-    console.log(`   Original: ${formatSize(originalSize)} | Compressed: ${formatSize(compressedSize)} | Saved: ${compressionRatio}%`)
+    console.log(
+      `   Original: ${formatSize(originalSize)} | Compressed: ${formatSize(compressedSize)} | Saved: ${compressionRatio}%`,
+    )
     console.log(`   Thumbnail: ${formatSize(thumbData.length)}`)
 
     return {
@@ -181,8 +176,7 @@ async function compressImage(filename: string) {
       compressedSize,
       compressionRatio: Number.parseFloat(compressionRatio),
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error(`❌ Failed to compress ${filename}:`, error)
     throw error
   }
@@ -191,8 +185,7 @@ async function compressImage(filename: string) {
 async function ensureDir(dirPath: string) {
   try {
     await stat(dirPath)
-  }
-  catch {
+  } catch {
     // 目录不存在，创建它
     const { mkdir } = await import('node:fs/promises')
     await mkdir(dirPath, { recursive: true })
@@ -200,26 +193,26 @@ async function ensureDir(dirPath: string) {
 }
 
 function formatSize(size: number): string {
-  if (size < 1024)
-    return `${size} B`
-  if (size < 1024 * 1024)
-    return `${(size / 1024).toFixed(2)} KB`
+  if (size < 1024) return `${size} B`
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`
   return `${(size / (1024 * 1024)).toFixed(2)} MB`
 }
 
-async function generateComparisonReport(results: Array<{
-  filename: string
-  originalSize: number
-  compressedSize: number
-  compressionRatio: number
-}>) {
+async function generateComparisonReport(
+  results: Array<{
+    filename: string
+    originalSize: number
+    compressedSize: number
+    compressionRatio: number
+  }>,
+) {
   const reportPath = join(process.cwd(), 'scripts/compression-report.md')
 
   // 计算总体统计
   const totalOriginalSize = results.reduce((sum, r) => sum + r.originalSize, 0)
   const totalCompressedSize = results.reduce((sum, r) => sum + r.compressedSize, 0)
   const totalSaved = totalOriginalSize - totalCompressedSize
-  const averageCompressionRatio = (totalSaved / totalOriginalSize * 100).toFixed(2)
+  const averageCompressionRatio = ((totalSaved / totalOriginalSize) * 100).toFixed(2)
 
   // 生成 markdown 内容
   const content = `# 图片压缩对比报告
@@ -242,7 +235,10 @@ async function generateComparisonReport(results: Array<{
 |--------|----------|------------|----------|--------|
 ${results
   .sort((a, b) => b.compressionRatio - a.compressionRatio)
-  .map(r => `| ${r.filename} | ${formatSize(r.originalSize)} | ${formatSize(r.compressedSize)} | ${formatSize(r.originalSize - r.compressedSize)} | ${r.compressionRatio.toFixed(2)}% |`)
+  .map(
+    (r) =>
+      `| ${r.filename} | ${formatSize(r.originalSize)} | ${formatSize(r.compressedSize)} | ${formatSize(r.originalSize - r.compressedSize)} | ${r.compressionRatio.toFixed(2)}% |`,
+  )
   .join('\n')}
 
 ## 🎯 压缩效果分析
@@ -256,7 +252,10 @@ ${generateCompressionAnalysis(results)}
 ${results
   .sort((a, b) => b.compressionRatio - a.compressionRatio)
   .slice(0, 5)
-  .map((r, index) => `${index + 1}. **${r.filename}** - 压缩率: ${r.compressionRatio.toFixed(2)}% (${formatSize(r.originalSize)} → ${formatSize(r.compressedSize)})`)
+  .map(
+    (r, index) =>
+      `${index + 1}. **${r.filename}** - 压缩率: ${r.compressionRatio.toFixed(2)}% (${formatSize(r.originalSize)} → ${formatSize(r.compressedSize)})`,
+  )
   .join('\n')}
 
 ## 📈 压缩配置
@@ -284,7 +283,9 @@ function generateCompressionAnalysis(results: Array<{ compressionRatio: number }
 
   return ranges
     .map((range) => {
-      const count = results.filter(r => r.compressionRatio >= range.min && r.compressionRatio < range.max).length
+      const count = results.filter(
+        (r) => r.compressionRatio >= range.min && r.compressionRatio < range.max,
+      ).length
       return `- **${range.label}**: ${count} 张`
     })
     .join('\n')

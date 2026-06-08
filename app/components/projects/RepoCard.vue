@@ -1,4 +1,4 @@
-<script lang='ts' setup>
+<script lang="ts" setup>
 import type { Repo } from '~/types'
 import { getLangIcon } from '~/utils/icon'
 
@@ -19,9 +19,18 @@ defineProps<{
     hover="bg-orange bg-op-3"
     dark-hover="bg-purple bg-op-3"
   >
-    <a :href="repo.homepage || repo.html_url" target="_blank" decoration-none flex="~ col gap-3" h-full>
+    <a
+      :href="repo.homepage || repo.html_url"
+      target="_blank"
+      decoration-none
+      flex="~ col gap-3"
+      h-full
+    >
       <h5 fsc gap-1 text-0.9375rem>
-        <i i-hugeicons:repository :style="{ color: repo.language ? getLanguageColor(repo.language) : undefined }" />
+        <i
+          i-hugeicons:repository
+          :style="{ color: repo.language ? getLanguageColor(repo.language) : undefined }"
+        />
         <span>{{ repo.name }}</span>
       </h5>
       <p flex-1 font-dm text-op-80 text-stone-700 dark:text-stone-300>

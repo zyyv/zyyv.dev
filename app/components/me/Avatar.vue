@@ -12,8 +12,7 @@ onMounted(async () => {
       const user = await response.json()
       avatarUrl.value = user.avatar_url || avatarUrl.value
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error)
   }
 })

@@ -64,11 +64,12 @@ function executeCommand(command: CommandItem) {
 }
 
 function scrollToSelectedCommand() {
-  if (!commandListRef.value)
-    return
+  if (!commandListRef.value) return
 
   nextTick(() => {
-    const selectedElement = commandListRef.value?.querySelector(`[data-command-index="${selectedIndex.value}"]`)
+    const selectedElement = commandListRef.value?.querySelector(
+      `[data-command-index="${selectedIndex.value}"]`,
+    )
     if (selectedElement) {
       selectedElement.scrollIntoView({
         behavior: 'auto', // 改为 auto 以获得更快的响应
@@ -81,15 +82,13 @@ function scrollToSelectedCommand() {
 
 function handleMouseEnter(command: CommandItem) {
   // 如果正在进行键盘导航，忽略鼠标事件
-  if (isKeyboardNavigation.value)
-    return
+  if (isKeyboardNavigation.value) return
 
   selectedIndex.value = flattenedCommands.value.indexOf(command)
 }
 
 function handleKeydown(event: KeyboardEvent) {
-  if (!isOpen.value)
-    return
+  if (!isOpen.value) return
 
   switch (event.key) {
     case 'Escape':
@@ -131,8 +130,7 @@ function handleGlobalKeydown(event: KeyboardEvent) {
     event.preventDefault()
     if (isOpen.value) {
       closePanel()
-    }
-    else {
+    } else {
       openPanel()
     }
   }
@@ -190,7 +188,9 @@ defineExpose({
         class="fixed left-1/2 top-1/4 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/4"
         @keydown="handleKeydown"
       >
-        <div class="mx-4 overflow-hidden rounded-xl border bg-basecolor shadow-2xl border-gray-200 dark:border-gray-700">
+        <div
+          class="mx-4 overflow-hidden rounded-xl border bg-basecolor shadow-2xl border-gray-200 dark:border-gray-700"
+        >
           <!-- 搜索输入框 -->
           <div class="flex items-center border-b px-4 py-3 border-gray-200 dark:border-gray-700">
             <div class="i-hugeicons-search-01 mr-3 h-5 w-5 text-gray-400" />
@@ -200,8 +200,10 @@ defineExpose({
               type="text"
               placeholder="搜索命令..."
               class="flex-1 bg-transparent text-basecolor placeholder-gray-500 outline-none dark:placeholder-gray-400"
+            />
+            <kbd
+              class="hidden rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 sm:block dark:bg-gray-700 dark:text-gray-300"
             >
-            <kbd class="hidden rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 sm:block dark:bg-gray-700 dark:text-gray-300">
               ESC
             </kbd>
           </div>
@@ -254,10 +256,7 @@ defineExpose({
                     <div class="font-medium truncate text-basecolor">
                       {{ command.title }}
                     </div>
-                    <div
-                      v-if="command.description"
-                      class="text-sm op-72 truncate"
-                    >
+                    <div v-if="command.description" class="text-sm op-72 truncate">
                       {{ command.description }}
                     </div>
                   </div>

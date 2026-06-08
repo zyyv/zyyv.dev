@@ -57,10 +57,7 @@ const postsList = computed(() => props.posts || [])
 
         <!-- 查看更多链接 -->
         <div class="pt-4 text-center">
-          <a
-            href="/posts"
-            class="inline-flex items-center gap-2 text-sm op-64 hover:op-100 trans"
-          >
+          <a href="/posts" class="inline-flex items-center gap-2 text-sm op-64 hover:op-100 trans">
             <span>View all posts</span>
             <i class="i-hugeicons:arrow-right-01" />
           </a>
@@ -72,20 +69,14 @@ const postsList = computed(() => props.posts || [])
         <div class="text-4xl mb-4">
           <i i-hugeicons:camera-ai />
         </div>
-        <div class="text-sm">
-          No posts yet
-        </div>
+        <div class="text-sm">No posts yet</div>
       </div>
     </div>
   </div>
 
   <!-- 移动端视图 -->
   <div class="quadrant-mobile size-full fcc">
-    <a
-      href="/posts"
-      class="cursor-pointer"
-      text="3xl blue op-80 hover:op-100"
-    >
+    <a href="/posts" class="cursor-pointer" text="3xl blue op-80 hover:op-100">
       <i i-hugeicons:note-edit />
     </a>
   </div>
