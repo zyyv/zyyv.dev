@@ -2,6 +2,7 @@ import type { ZyyvTheme } from 'unocss-preset-zyyv'
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
 import { symbols } from '@unocss/core'
 import { defineZyyvConfig } from 'unocss-preset-zyyv'
+import { presetTypography } from 'unocss'
 
 export default defineZyyvConfig<ZyyvTheme>(
   {
@@ -49,7 +50,7 @@ export default defineZyyvConfig<ZyyvTheme>(
         },
       },
     },
-    typography: true,
+    // typography: true,
   },
   {
     rules: [
@@ -135,5 +136,29 @@ export default defineZyyvConfig<ZyyvTheme>(
         bluesky: '#1185fe',
       },
     },
+    presets: [
+      presetTypography({
+        colorScheme: {
+          body: ['#3f3f46', '#d6d3d1'],
+          headings: ['#18181b', '#fafaf9'],
+          lead: ['#52525b', '#a8a29e'],
+          links: ['#0f766e', '#5eead4'],
+          bold: ['#27272a', '#f5f5f4'],
+          counters: ['#71717a', '#a8a29e'],
+          bullets: ['#a1a1aa', '#78716c'],
+          hr: ['#d4d4d8', '#44403c'],
+          quotes: ['#27272a', '#e7e5e4'],
+          'quote-borders': ['#14b8a6', '#2dd4bf'],
+          captions: ['#71717a', '#a8a29e'],
+          kbd: ['#27272a', '#fafaf9'],
+          'kbd-shadows': ['#18181b', '#000000'],
+          code: ['#1c6b48', '#4d9375'],
+          'pre-code': ['#393a34', '#dbd7caee'],
+          'pre-bg': ['#ffffff', '#121212'],
+          'th-borders': ['#d4d4d8', '#57534e'],
+          'td-borders': ['#e4e4e7', '#44403c'],
+        },
+      }),
+    ],
   },
 )

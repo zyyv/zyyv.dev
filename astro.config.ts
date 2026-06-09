@@ -13,6 +13,15 @@ export default defineConfig({
   server: {
     port: 4321,
   },
+  markdown: {
+    shikiConfig: {
+      themes: {
+        light: 'vitesse-light',
+        dark: 'vitesse-dark',
+      },
+      defaultColor: false,
+    },
+  },
   vite: {
     plugins: [
       UnoCSS() as any,
