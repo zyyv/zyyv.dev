@@ -7,3 +7,7 @@ allowBuilds:
   workerd: true
 minimumReleaseAgeExclude:
   - taze@19.14.0
+
+shamefullyHoist: true
+autoInstallPeers: true
+strictPeerDependencies: false
