@@ -1,0 +1,167 @@
+---
+import { getAuthorSchema, homeLinks } from '../../data/site'
+import { getPageCopy } from '../../i18n/pages'
+import Layout from '../../layouts/Layout.astro'
+import type { Lang } from '../../i18n/utils'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const copy = getPageCopy('home', lang)
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: copy.schema.name,
+  url: copy.schema.url,
+  author: getAuthorSchema(lang, {
+    includeAlternate: true,
+    includeSameAs: true,
+  }),
+}
+---
+
+<Layout title={copy.title} description={copy.description}>
+  <script
+    is:inline
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(schema)}
+  />
+  <main class="px-6 py-12 flex flex-1 items-center justify-center md:px-12">
+    <div class="max-w-xl w-full space-y-10">
+      <header
+        class="fade-in-up flex gap-5 items-center"
+        style="animation-delay: 80ms"
+      >
+        <picture>
+          <source srcset={copy.avatar.avif} type="image/avif" />
+          <img
+            src={copy.avatar.fallback}
+            alt={copy.name}
+            class="animate-shape rounded-full h-20 w-20 ring-2 ring-stone-200/80 shadow-lg shadow-stone-400/10 object-cover md:h-24 md:w-24 dark:ring-stone-700/50 dark:shadow-black/20"
+          />
+        </picture>
+
+        <div>
+          <h1
+            class:list={[
+              'text-3xl md:text-4xl font-700 tracking-tight text-stone-900 dark:text-white leading-tight',
+              copy.nameSerif && 'font-sans',
+            ]}
+          >
+            {copy.name}
+          </h1>
+          <p
+            class="text-stone-500 font-mono mt-1.5 dark:text-stone-400"
+            data-typewriter
+            data-text={copy.bio}
+            data-char-delay={copy.bioCharDelay}
+            aria-label={copy.bio}
+          >
+          </p>
+        </div>
+      </header>
+
+      {(homeLinks.creator.length > 0 || homeLinks.team.length > 0 || homeLinks.contributor.length > 0) && (
+        <div class="space-y-6">
+          {
+            homeLinks.creator.length > 0 && (
+              <section class="fade-in-up" style="animation-delay: 160ms">
+                <div class="flex items-center flex-wrap">
+                  <i class="i-fluent-emoji:sports-medal mr-1"></i>
+                  <span class="op-50">Creator of:</span>
+                  {homeLinks.creator.map((link) => (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-sm px-2 py-1.5 inline-flex"
+                    >
+                      <div class:list={[link.icon, 'text-lg mr-1']}  />
+                      <span>{link.name}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )
+          }
+
+          {
+            homeLinks.team.length > 0 && (
+              <section class="fade-in-up" style="animation-delay: 160ms">
+                <div class="flex items-center flex-wrap">
+                  <i class="i-fluent-emoji:sparkles mr-1"></i>
+                  <span class="op-50">Team of:</span>
+                  {homeLinks.team.map((link) => (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-sm px-2 py-1.5 inline-flex"
+                    >
+                      <div class:list={[link.icon, 'text-lg mr-1']}  />
+                      <span>{link.name}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )
+          }
+
+          {
+            homeLinks.contributor.length > 0 && (
+              <section class="fade-in-up" style="animation-delay: 160ms">
+                <div class="flex items-center flex-wrap">
+                  <i class="i-fluent-emoji:party-popper mr-1"></i>
+                  <span class="op-50">Contributor to:</span>
+                  {homeLinks.contributor.map((link) => (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-sm px-2 py-1.5 inline-flex"
+                    >
+                      <div class:list={[link.icon, 'text-lg mr-1']}  />
+                      <span>{link.name}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )
+          }
+        </div>
+      )}
+    </div>
+  </main>
+  <script>
+  import { runTypewriter } from '../../scripts/typewriter'
+  document.addEventListener('astro:page-load', runTypewriter)
+  </script>
+  <style>
+    @keyframes shape {
+      0%,
+      100% {
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        transform: translate3d(0, 0, 0) rotateZ(0.01deg);
+      }
+      34% {
+        border-radius: 70% 30% 46% 54% / 30% 29% 71% 70%;
+        transform: translate3d(0, 5px, 0) rotateZ(0.01deg);
+      }
+      50% {
+        transform: translate3d(0, 0, 0) rotateZ(0.01deg);
+      }
+      67% {
+        border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%;
+        transform: translate3d(0, -3px, 0) rotateZ(0.01deg);
+      }
+    }
+
+    .animate-shape {
+      animation: shape 6s linear infinite;
+    }
+  </style>  
+</Layout>
+

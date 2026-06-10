@@ -1,0 +1,159 @@
+---
+import { render, type CollectionEntry } from 'astro:content'
+import { getAuthorSchema } from '../../data/site'
+import { getPageCopy } from '../../i18n/pages'
+import {
+  getLocaleFromLang,
+  useTranslatedPath,
+  type Lang,
+} from '../../i18n/utils'
+import Layout from '../../layouts/Layout.astro'
+import {
+  formatDate,
+  getPostOgImagePath,
+  getPostSlug,
+} from '../../utils/content'
+import Prose from '../Prose.astro'
+import TableOfContents from '../TableOfContents.astro'
+import '../../styles/prose.css'
+
+
+interface Props {
+  post: CollectionEntry<'posts'>
+  availableLangs: Lang[]
+  lang: Lang
+}
+
+const { post, availableLangs, lang } = Astro.props
+const { Content, headings } = await render(post)
+const translatePath = useTranslatedPath(lang)
+const copy = getPageCopy('post', lang)
+const locale = getLocaleFromLang(lang)
+const ogImage = post.data.image ?? getPostOgImagePath(post.id)
+const author = getAuthorSchema(lang)
+const getPostTitleTransitionName = (slug: string, currentLang: Lang) =>
+  `post-title-${currentLang}-${
+    slug
+      .toLowerCase()
+      .replaceAll(/[^a-z0-9_-]+/g, '-')
+      .replaceAll(/^-+|-+$/g, '')
+  }`
+const postSlug = getPostSlug(post.id)
+const titleTransitionName = getPostTitleTransitionName(postSlug, lang)
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.date.toISOString(),
+  image: new URL(ogImage, Astro.site).href,
+  url: Astro.url.href,
+  inLanguage: locale,
+  author,
+}
+---
+
+<Layout
+  title={`${post.data.title} - ${copy.titleSuffix}`}
+  description={post.data.description}
+  availableLangs={availableLangs}
+  ogType="article"
+  image={ogImage}
+  publishedDate={post.data.date}
+>
+  <script
+    is:inline
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(schema)}
+  />
+  <main
+    class="px-6 py-16 flex-1 grid grid-cols-[1fr_minmax(0,36rem)_1fr] md:px-12"
+  >
+    <div></div>
+    <article class="min-w-0 w-full">
+      <header class="mb-10">
+        <a
+          href={translatePath('/posts')}
+          class="text-sm text-stone-500 mb-6 inline-flex gap-1 transition-colors duration-200 items-center dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+        >
+          &larr; {copy.backLabel}
+        </a>
+        <h1
+          class="detail-title fade-in-up text-3xl text-stone-900 leading-tight tracking-tight font-700 font-sans md:text-4xl dark:text-white"
+          style="animation-delay: 100ms"
+        >
+          <span
+            class="detail-title-transition"
+            style={`view-transition-name: ${titleTransitionName};`}
+          >
+            {post.data.title}
+          </span>
+        </h1>
+        <div
+          class="fade-in-up text-sm text-stone-500 mt-2 flex gap-2 items-center dark:text-stone-400"
+          style="animation-delay: 120ms"
+        >
+          <time>{formatDate(post.data.date, lang)}</time>
+        </div>
+      </header>
+
+      <Prose
+        class="fade-in-up"
+        style="animation-delay: 160ms"
+        cjkFallback={lang === 'zh'}
+      >
+        <Content />
+      </Prose>
+    </article>
+    <div
+      class="fade-in-up pl-30 hidden xl:block"
+      style="animation-delay: 240ms"
+    >
+      <TableOfContents headings={headings} lang={lang} />
+    </div>
+  </main>
+
+  <button
+    id="back-to-top"
+    class="text-stone-600 rounded-full bg-stone-200 opacity-0 flex h-10 w-10 pointer-events-none shadow-md transition-all duration-300 items-center bottom-8 right-8 justify-center fixed z-50 dark:text-stone-300 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700"
+    aria-label="Back to top"
+  >
+    <span class="i-hugeicons:arrow-up-01 text-xl"></span>
+  </button>
+
+  <script is:inline>
+    const btn = document.querySelector('#back-to-top')
+    let ticking = false
+
+    function updateVisibility() {
+      if (window.scrollY > 300) {
+        btn.classList.remove('opacity-0', 'pointer-events-none')
+        btn.classList.add('opacity-100')
+      } else {
+        btn.classList.add('opacity-0', 'pointer-events-none')
+        btn.classList.remove('opacity-100')
+      }
+      ticking = false
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateVisibility)
+        ticking = true
+      }
+    })
+
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+  </script>
+
+  <style>
+  @media (prefers-reduced-motion: reduce) {
+    .detail-title-transition {
+      view-transition-name: none !important;
+    }
+  }
+  </style>
+</Layout>

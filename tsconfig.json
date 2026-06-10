@@ -1,10 +1,15 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "paths": {
-      "~/*": ["./app/*"]
-    },
-    "types": ["node", "vite/client"]
+    "types": [
+      "node"
+    ]
   },
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    ".astro/types.d.ts",
+    "**/*"
+  ],
+  "exclude": [
+    "dist"
+  ]
 }

@@ -1,0 +1,21 @@
+---
+import PostDetailPage from '../../components/pages/PostDetail.astro'
+import { defaultLang } from '../../i18n/ui'
+import { getLangFromUrl } from '../../i18n/utils'
+import {
+  getAvailableLangsForPost,
+  getPostPaths,
+  getPostSlug,
+} from '../../utils/content'
+
+export function getStaticPaths() {
+  return getPostPaths(defaultLang)
+}
+
+const { post } = Astro.props
+const slug = getPostSlug(post.id)
+const availableLangs = await getAvailableLangsForPost(slug)
+const lang = getLangFromUrl(Astro.url)
+---
+
+<PostDetailPage post={post} availableLangs={availableLangs} lang={lang} />

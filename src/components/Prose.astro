@@ -1,0 +1,29 @@
+---
+interface Props {
+  cjkFallback?: boolean
+  class?: string
+  style?: string
+}
+
+const {
+  cjkFallback = false,
+  class: className,
+  style: styleProp,
+  ...rest
+} = Astro.props
+
+const headingFont = cjkFallback
+  ? "'Newsreader', 'Noto Serif SC', serif"
+  : "'Newsreader', serif"
+const styleParts: string[] = []
+if (styleProp) {
+  const trimmed = styleProp.trim()
+  styleParts.push(trimmed.endsWith(';') ? trimmed : `${trimmed};`)
+}
+styleParts.push(`--prose-heading-font: ${headingFont};`)
+const mergedStyle = styleParts.join(' ')
+---
+
+<div class:list={['prose dark:prose-invert', className]} style={mergedStyle} {...rest}>
+  <slot />
+</div>

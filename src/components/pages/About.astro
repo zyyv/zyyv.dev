@@ -1,0 +1,49 @@
+---
+import { execSync } from 'node:child_process'
+import { getPageCopy } from '../../i18n/pages'
+import Layout from '../../layouts/Layout.astro'
+import type { Lang } from '../../i18n/utils'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const copy = getPageCopy('about', lang)
+
+const gitCommitSha = execSync('git rev-parse --short HEAD').toString().trim()
+const buildDate = new Date().toISOString().split('T')[0]
+---
+
+<Layout title={copy.title} description={copy.description}>
+  <main class="px-6 py-16 flex flex-1 justify-center md:px-12">
+    <article class="max-w-xl w-full space-y-10">
+      <header class="fade-in-up" style="animation-delay: 80ms">
+        <h1 class="text-3xl text-stone-900 tracking-tight font-700 font-sans md:text-4xl dark:text-white">
+          {copy.heading}
+        </h1>
+      </header>
+
+      <section
+        class="fade-in-up text-stone-600 leading-relaxed space-y-4 dark:text-stone-400"
+        style="animation-delay: 160ms"
+      >
+        {copy.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+      </section>
+
+      <footer
+        class="fade-in-up text-sm text-stone-400 dark:text-stone-600"
+        style="animation-delay: 240ms"
+      >
+        <p>
+          Built from <a
+            href={`https://github.com/zyyv/zyyv.dev/commit/${gitCommitSha}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-mono hover:underline"
+          >{gitCommitSha}</a> on {buildDate}
+        </p>
+      </footer>
+    </article>
+  </main>
+</Layout>

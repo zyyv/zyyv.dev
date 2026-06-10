@@ -1,0 +1,8 @@
+---
+import AboutPage from '../../components/pages/About.astro'
+import { getLangFromUrl } from '../../i18n/utils'
+
+const lang = getLangFromUrl(Astro.url)
+---
+
+<AboutPage lang={lang} />

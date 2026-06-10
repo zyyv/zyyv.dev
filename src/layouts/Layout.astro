@@ -1,79 +1,465 @@
 ---
-import NavHeader from '../../app/components/nav/NavHeader.vue'
-import CommandPalette from '../../app/components/command/CommandPalette.vue'
-import 'uno.css'
-import '../../app/styles/vars.css'
-import '../../app/styles/fonts.css'
-import '../../app/styles/prose.css'
-import '../../app/styles/main.css'
+import { ClientRouter } from 'astro:transitions'
+import ThemeSwitcher from '../components/ThemeSwitcher.astro'
+import { pageCopy } from '../i18n/pages'
+import { defaultLang, languages, localeByLang, nav } from '../i18n/ui'
+import { homeLinks } from '../data/site'
+import {
+  getAllLangPrefixes,
+  getLangFromUrl,
+  getUrlPrefix,
+  useTranslatedPath,
+  useTranslations,
+} from '../i18n/utils'
 
 interface Props {
-  title?: string
+  title: string
   description?: string
+  availableLangs?: (keyof typeof languages)[]
   image?: string
-  type?: 'website' | 'article'
-  publishedTime?: string
-  tags?: string[]
-  lang?: string
-  bodyClass?: string
+  ogType?: 'website' | 'article'
+  publishedDate?: Date
+  updatedDate?: Date
 }
 
 const {
-  title = 'Chris',
-  description = 'Regardless of the past, do not ask the future.',
+  title,
+  description,
+  availableLangs,
   image,
-  type = 'website',
-  publishedTime,
-  tags = [],
-  lang = 'en',
-  bodyClass,
+  ogType = 'website',
+  publishedDate,
+  updatedDate,
 } = Astro.props
+const pathname = Astro.url.pathname
+const lang = getLangFromUrl(Astro.url)
+const t = useTranslations(lang)
+const translatePath = useTranslatedPath(lang)
+const languageKeys = Object.keys(languages) as (keyof typeof languages)[]
+const otherLang = lang === 'en' ? 'zh' : 'en'
+const basePath = pathname.replace(/^\/(zh|en)(\/|$)/, '/').replace(/\/$/, '') || '/'
+const otherLangUrl = otherLang === 'en' ? basePath : `/${otherLang}${basePath === '/' ? '' : basePath}`
 
-const ogUrl = 'https://zyyv.dev/'
-const canonicalUrl = new URL(Astro.url.pathname, ogUrl).toString()
-const ogImage = image ?? `${ogUrl}og.png#1`
+const site = Astro.site!
+const canonicalURL = new URL(pathname, site)
+const ogImage = image
+  ? new URL(image, site).href
+  : new URL('/og-default.png', site).href
+const locale = localeByLang[lang]
+
+const hreflangLangs = languageKeys.filter(
+  (l) => !availableLangs || availableLangs.includes(l),
+)
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} data-lang-prefixes={JSON.stringify(getAllLangPrefixes())}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <meta name="author" content="Chris" />
-    <meta name="description" content={description} />
-    <meta name="keywords" content="Chris, Blog, Portfolio" />
-    <meta name="theme-color" content="#3c3c43" />
-    <meta property="og:type" content={type} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:image" content={ogImage} />
-    {type === 'article' && publishedTime && (
-      <meta property="article:published_time" content={publishedTime} />
-    )}
-    {type === 'article' && tags.map(tag => (
-      <meta property="article:tag" content={tag} />
-    ))}
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content={ogImage} />
-    <meta name="twitter:site" content="@chris_zyyv" />
-    <meta name="twitter:url" content={canonicalUrl} />
-    <link rel="canonical" href={canonicalUrl} />
-    <link rel="icon" type="image/x-icon" href="/avatar.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" />
     <title>{title}</title>
-    <script is:inline>
-      const mode = localStorage.getItem('vueuse-color-scheme') || 'auto'
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      document.documentElement.classList.toggle('dark', mode === 'dark' || (mode === 'auto' && prefersDark))
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonicalURL.href} />
+
+    {hreflangLangs.map((l) => {
+      const href = new URL(
+        l === defaultLang ? basePath || '/' : `/${l}${basePath || '/'}`,
+        site,
+      ).href
+      return <link rel="alternate" hreflang={localeByLang[l]} href={href} />
+    })}
+    {hreflangLangs.length > 1 && (
+      <link
+        rel="alternate"
+        hreflang="x-default"
+        href={new URL(basePath || '/', site).href}
+      />
+    )}
+
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonicalURL.href} />
+    <meta property="og:site_name" content={pageCopy.home[lang].name} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={locale} />
+    {hreflangLangs
+      .filter((l) => l !== lang)
+      .map((l) => (
+        <meta property="og:locale:alternate" content={localeByLang[l]} />
+      ))}
+    {ogType === 'article' && publishedDate && (
+      <meta
+        property="article:published_time"
+        content={publishedDate.toISOString()}
+      />
+    )}
+    {ogType === 'article' && updatedDate && (
+      <meta
+        property="article:modified_time"
+        content={updatedDate.toISOString()}
+      />
+    )}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={title} />
+
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={pageCopy.home[lang].name}
+      href={new URL(`${getUrlPrefix(lang)}/rss.xml`, site).href}
+    />
+
+    <script is:inline type="module">
+    const stored = localStorage.getItem('theme')
+    const prefersDark = globalThis.matchMedia(
+      '(prefers-color-scheme: dark)',
+    ).matches
+    if (stored === 'dark' || (!stored && prefersDark)) {
+      document.documentElement.classList.add('dark')
+    }
     </script>
+
+    <ClientRouter />
+    <slot name="head" />
   </head>
-  <body class={bodyClass}>
-    <NavHeader client:load />
-    <main>
-      <slot />
-    </main>
-    <CommandPalette client:idle />
+  <body
+    class="scroll-none text-stone-800 bg-basecolor flex flex-col antialiased min-h-dvh dark:text-stone-200 selection:bg-stone-900/10 dark:selection:bg-stone-100/10"
+    style="text-autospace: normal"
+  >
+    <nav class="fade-in px-4 py-5 flex gap-4 w-full items-center justify-between md:px-12 sm:px-6">
+      <a
+        href={translatePath('/')}
+        class="text-xl text-stone-800 tracking-tight font-600 flex-shrink-0 transition-colors duration-200 dark:text-stone-200 hover:text-stone-500 dark:hover:text-stone-400"
+      >
+        {pageCopy.home[lang].name}
+      </a>
+      <div class="text-sm text-stone-500 font-500 flex gap-3 items-center dark:text-stone-400 md:gap-6 sm:gap-4">
+        {nav
+          .filter((item) => !item.langs || item.langs.includes(lang))
+          .map((item) => (
+            <a
+              href={translatePath(item.href)}
+              class:list={[
+                'transition-colors duration-200',
+                pathname.startsWith(translatePath(item.href))
+                  ? 'text-stone-800 dark:text-stone-200'
+                  : 'hover:text-stone-800 dark:hover:text-stone-200',
+              ]}
+            >
+              {t(item.key)}
+            </a>
+          ))}
+        <button
+          data-lang-url={otherLangUrl}
+          aria-label={t('lang.switch')}
+          class="lang-switch i-carbon:language text-lg text-stone-500 cursor-pointer transition-colors duration-200 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
+        ></button>
+
+        <a
+          href={new URL(`${getUrlPrefix(lang)}/rss.xml`, site).href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="RSS"
+          class="text-stone-500 p-1 transition-colors duration-200 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
+        >
+          <div class="i-hugeicons:wifi-connected-02 text-lg"></div>
+        </a>
+
+        <ThemeSwitcher />
+      </div>
+    </nav>
+
+    <slot />
+
+    <footer class="fade-in px-6 py-6 border-t border-stone-200/60 flex gap-5 w-full items-center justify-center md:px-12 dark:border-stone-800/60">
+      {homeLinks.social.map((link) => (
+        <a
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-stone-500 transition-colors duration-200 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+          aria-label={link.name}
+        >
+          <div class:list={[link.icon, 'w-5 h-5']} />
+        </a>
+      ))}
+    </footer>
   </body>
 </html>
+
+<script>
+const langPrefixes: string[] = JSON.parse(
+  document.documentElement.dataset.langPrefixes!,
+)
+function normalizePath(path: string) {
+  return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path
+}
+function stripLangPrefix(path: string) {
+  const normalized = normalizePath(path)
+  for (const prefix of langPrefixes) {
+    if (!prefix) continue
+    if (normalized.startsWith(prefix)) {
+      return normalized.slice(prefix.length)
+    }
+  }
+  return normalized
+}
+function isPostsIndex(path: string) {
+  return stripLangPrefix(path) === '/posts'
+}
+function isPostsDetail(path: string) {
+  const stripped = stripLangPrefix(path)
+  return stripped.startsWith('/posts/') && stripped !== '/posts'
+}
+function isListToDetail(fromPath: string, toPath: string) {
+  return isPostsIndex(fromPath) && isPostsDetail(toPath)
+}
+function isDetailToList(fromPath: string, toPath: string) {
+  return isPostsDetail(fromPath) && isPostsIndex(toPath)
+}
+
+document.addEventListener('astro:before-swap', (event) => {
+  const { from, to, newDocument } = event
+
+  if (isListToDetail(from.pathname, to.pathname)) {
+    newDocument.documentElement.dataset.disableTitleEntryAnimation = 'true'
+  }
+  if (isDetailToList(from.pathname, to.pathname)) {
+    newDocument.documentElement.dataset.disableListEntryAnimation = 'true'
+  }
+})
+
+document.addEventListener('click', (e) => {
+  const btn = (e.target as Element).closest('.lang-switch')
+  if (!(btn instanceof HTMLButtonElement)) return
+  e.preventDefault()
+  const url = btn.dataset.langUrl
+  if (url) {
+    history.replaceState(null, '', url)
+    location.reload()
+  }
+})
+</script>
+
+<style is:global>
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out both;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .fade-in-up {
+    animation: none;
+  }
+}
+
+html[data-disable-title-entry-animation="true"] .detail-title {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html[data-disable-list-entry-animation="true"] .fade-in-up {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@keyframes cursorBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.terminal-cursor {
+  animation: cursorBlink 1s step-end infinite;
+  color: inherit;
+}
+
+:root {
+  view-transition-name: root;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    view-transition-name: none !important;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
+
+.dark::view-transition-old(root) {
+  z-index: 2147483646;
+}
+
+.dark::view-transition-new(root) {
+  z-index: 1;
+}
+
+html {
+  scroll-padding-top: 5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-cursor {
+    animation: none;
+    display: none;
+  }
+}
+</style>
+
+<!-- NProgress -->
+<script>
+import NProgress from 'nprogress'
+import { initToc } from '../scripts/toc'
+
+NProgress.configure({
+  showSpinner: false,
+  trickleSpeed: 120,
+  minimum: 0.08,
+})
+
+let nprogressTimer: ReturnType<typeof globalThis.setTimeout> | undefined
+function startProgress() {
+  if (nprogressTimer) return
+  nprogressTimer = globalThis.setTimeout(() => {
+    NProgress.start()
+  }, 120)
+}
+function stopProgress() {
+  if (nprogressTimer != null) {
+    clearTimeout(nprogressTimer)
+    nprogressTimer = undefined
+  }
+  NProgress.done(true)
+}
+
+document.addEventListener('astro:before-preparation', startProgress)
+document.addEventListener('astro:after-swap', stopProgress)
+document.addEventListener('astro:page-load', stopProgress)
+document.addEventListener('astro:page-load', initToc)
+</script>
+<style is:global>
+:root {
+  --nprogress-color: rgba(28, 25, 23, 0.45);
+}
+
+.dark {
+  --nprogress-color: rgba(231, 229, 228, 0.5);
+}
+
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: var(--nprogress-color);
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 6px var(--nprogress-color), 0 0 3px var(--nprogress-color);
+  opacity: 1;
+  transform: rotate(3deg) translate(0, -4px);
+}
+
+#nprogress .spinner {
+  display: block;
+  position: fixed;
+  z-index: 1031;
+  top: 15px;
+  right: 15px;
+}
+
+#nprogress .spinner-icon {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: solid 2px transparent;
+  border-top-color: var(--nprogress-color);
+  border-left-color: var(--nprogress-color);
+  border-radius: 50%;
+  animation: nprogress-spinner 400ms linear infinite;
+}
+
+.nprogress-custom-parent {
+  overflow: hidden;
+  position: relative;
+}
+
+.nprogress-custom-parent #nprogress .spinner,
+.nprogress-custom-parent #nprogress .bar {
+  position: absolute;
+}
+
+@keyframes nprogress-spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>

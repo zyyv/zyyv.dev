@@ -1,0 +1,93 @@
+---
+import { friends, type LocalizedString } from '../../data/site'
+import { getPageCopy } from '../../i18n/pages'
+import Layout from '../../layouts/Layout.astro'
+import type { Lang } from '../../i18n/utils'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const copy = getPageCopy('links', lang)
+
+function localize(value: LocalizedString): string {
+  if (typeof value === 'string') return value
+  return value[lang]
+}
+
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = array.slice()
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+---
+
+<Layout title={copy.title} description={copy.description}>
+  <main class="px-6 py-16 flex flex-1 justify-center md:px-12">
+    <div class="max-w-2xl w-full space-y-10">
+      <header class="fade-in-up" style="animation-delay: 80ms">
+        <h1 class="text-3xl text-stone-900 tracking-tight font-700 font-sans md:text-4xl dark:text-white">
+          {copy.heading}
+        </h1>
+        <p class="text-stone-500 mt-2 dark:text-stone-400">
+          {copy.subheading}
+        </p>
+      </header>
+
+      {friends.length > 0 ? (
+        <div
+          id="friends-grid"
+          class="fade-in-up gap-4 grid grid-cols-1 sm:grid-cols-2"
+          style="animation-delay: 160ms"
+        >
+          {shuffleArray(friends).map((friend) => (
+            <a
+              href={localize(friend.href)}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group p-4 border border-stone-200/80 rounded-xl flex gap-4 transition-all duration-200 items-center dark:border-stone-800/80 hover:border-stone-300 hover:bg-stone-100/50 dark:hover:border-stone-700 dark:hover:bg-stone-900/50"
+            >
+              <img
+                src={localize(friend.avatar)}
+                alt={localize(friend.name)}
+                class="rounded-full shrink-0 h-12 w-12 ring-1 ring-stone-200/60 object-cover dark:ring-stone-700/40"
+              />
+              <div class="min-w-0">
+                <div class="text-sm text-stone-800 font-600 transition-colors duration-200 dark:text-stone-200 group-hover:text-stone-950 dark:group-hover:text-white">
+                  {localize(friend.name)}
+                </div>
+                <div class="text-xs text-stone-500 mt-0.5 truncate dark:text-stone-400">
+                  {localize(friend.bio)}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <p class="fade-in-up text-stone-400 dark:text-stone-600" style="animation-delay: 160ms">
+          Coming soon...
+        </p>
+      )}
+    </div>
+  </main>
+</Layout>
+
+<script>
+function shuffleFriendsGrid() {
+  const grid = document.querySelector('#friends-grid')
+  if (!grid) return
+
+  const children = [...grid.children]
+  for (let i = children.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[children[i], children[j]] = [children[j], children[i]]
+  }
+  grid.append(...children)
+}
+
+document.addEventListener('astro:page-load', shuffleFriendsGrid)
+</script>

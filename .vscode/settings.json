@@ -1,6 +1,7 @@
 {
-  "editor.codeActionsOnSave": {
-    "source.fixAll.oxc": "explicit"
-  },
-  "oxc.lint.run": "onType"
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "dprint.dprint",
+  "[json][javascript][typescript][markdown]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  }
 }

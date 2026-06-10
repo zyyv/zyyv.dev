@@ -1,0 +1,91 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils'
+
+const lang = getLangFromUrl(Astro.url)
+const t = useTranslations(lang)
+---
+
+<button
+  id="theme-toggle"
+  aria-label={t('toggle.theme')}
+  class="text-lg text-stone-500 cursor-pointer transition-colors duration-200 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
+>
+  <div class="i-hugeicons:sun-03 dark:i-hugeicons:moon-slow-wind"></div>
+</button>
+
+<script>
+const prefersDarkQuery = globalThis.matchMedia('(prefers-color-scheme: dark)')
+const prefersReducedMotionQuery = globalThis.matchMedia(
+  '(prefers-reduced-motion: reduce)',
+)
+
+function applyTheme(doc = document) {
+  const stored = localStorage.getItem('theme')
+  const shouldDark = stored ? stored === 'dark' : prefersDarkQuery.matches
+  doc.documentElement.classList.toggle('dark', shouldDark)
+}
+
+function toggleTheme(event: MouseEvent) {
+  const shouldDark = !document.documentElement.classList.contains('dark')
+  const apply = () => {
+    if (shouldDark === prefersDarkQuery.matches) {
+      localStorage.removeItem('theme')
+    } else {
+      localStorage.setItem('theme', shouldDark ? 'dark' : 'light')
+    }
+    document.documentElement.classList.toggle('dark', shouldDark)
+  }
+
+  if (!document.startViewTransition || prefersReducedMotionQuery.matches) {
+    apply()
+    return
+  }
+
+  const x = event.clientX
+  const y = event.clientY
+  const endRadius = Math.hypot(
+    Math.max(x, innerWidth - x),
+    Math.max(y, innerHeight - y),
+  )
+  const clipPath = [
+    `circle(0px at ${x}px ${y}px)`,
+    `circle(${endRadius}px at ${x}px ${y}px)`,
+  ]
+
+  document.startViewTransition(() => {
+    apply()
+  }).ready.then(() => {
+    document.documentElement.animate(
+      {
+        clipPath: shouldDark ? [...clipPath].toReversed() : clipPath,
+      },
+      {
+        duration: 300,
+        easing: 'ease-in',
+        fill: 'forwards',
+        pseudoElement: shouldDark
+          ? '::view-transition-old(root)'
+          : '::view-transition-new(root)',
+      },
+    )
+  })
+}
+
+document.querySelector('#theme-toggle')?.addEventListener('click', (e) => {
+  toggleTheme(e as MouseEvent)
+})
+
+prefersDarkQuery.addEventListener('change', (e) => {
+  if (!localStorage.getItem('theme')) {
+    document.documentElement.classList.toggle('dark', e.matches)
+  }
+})
+
+document.addEventListener('astro:before-swap', (event) => {
+  applyTheme(event.newDocument)
+})
+
+document.addEventListener('astro:page-load', () => {
+  applyTheme()
+})
+</script>
