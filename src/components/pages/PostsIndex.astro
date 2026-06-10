@@ -1,0 +1,63 @@
+---
+import { getPageCopy } from '../../i18n/pages'
+import { useTranslatedPath, type Lang } from '../../i18n/utils'
+import Layout from '../../layouts/Layout.astro'
+import { formatDate, getPostsByLang } from '../../utils/content'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const translatePath = useTranslatedPath(lang)
+const posts = await getPostsByLang(lang)
+const copy = getPageCopy('posts', lang)
+
+const getPostTitleTransitionName = (slug: string, currentLang: Lang) =>
+  `post-title-${currentLang}-${
+    slug
+      .toLowerCase()
+      .replaceAll(/[^a-z0-9_-]+/g, '-')
+      .replaceAll(/^-+|-+$/g, '')
+  }`
+---
+
+<Layout title={copy.title} description={copy.description}>
+  <main class="flex flex-1 justify-center px-6 py-16 md:px-12">
+    <div class="fade-in-up posts-index max-w-xl w-full space-y-10">
+      <header style="animation-delay: 80ms">
+        <h1 class="text-3xl text-stone-900 font-700 tracking-tight font-serif md:text-4xl dark:text-white">
+          {copy.heading}
+        </h1>
+      </header>
+
+      <ul class="space-y-1" style="animation-delay: 160ms">
+        {posts.map((post) => (
+          <li>
+            <a
+              href={translatePath(`/posts/${post.slug}/`)}
+              class="group flex items-baseline gap-4 py-3 transition-colors duration-200"
+            >
+              <time
+                class="shrink-0 text-xs text-stone-500 tabular-nums dark:text-stone-400"
+              >
+                {formatDate(post.data.date, lang)}
+              </time>
+              <span
+                class="list-title text-stone-700 font-serif transition-colors duration-200 dark:text-stone-300 group-hover:text-stone-900 dark:group-hover:text-white"
+                style={`view-transition-name: ${
+                  getPostTitleTransitionName(
+                    post.slug,
+                    lang,
+                  )
+                };`}
+              >
+                {post.data.title}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </main>
+</Layout>

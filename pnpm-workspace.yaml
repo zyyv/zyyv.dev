@@ -1,13 +1,6 @@
-shellEmulator: true
 allowBuilds:
-  '@parcel/watcher': true
+  dprint: true
   esbuild: true
   sharp: true
   simple-git-hooks: true
-  workerd: true
-minimumReleaseAgeExclude:
-  - taze@19.14.0
-
-shamefullyHoist: true
-autoInstallPeers: true
-strictPeerDependencies: false
+minimumReleaseAge: 0

@@ -1,0 +1,55 @@
+---
+import { useTranslations, type Lang } from '../i18n/utils'
+
+interface Heading {
+  depth: number
+  slug: string
+  text: string
+}
+
+interface Props {
+  headings: Heading[]
+  lang: Lang
+}
+
+const { headings, lang } = Astro.props
+const t = useTranslations(lang)
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3)
+---
+
+{tocHeadings.length > 0 && (
+  <nav
+    id="toc"
+    class="toc-nav sticky top-24 max-h-[calc(100dvh-8rem)] overflow-y-auto"
+    aria-label="Table of contents"
+  >
+    <div class="mb-2 text-xs text-stone-500 font-500 tracking-wide uppercase dark:text-stone-400">
+      {t('toc.title')}
+    </div>
+    <ul class="border-l border-stone-200/40 text-[13px] leading-relaxed space-y-0.5 dark:border-stone-800/40">
+      {tocHeadings.map((heading) => (
+        <li>
+          <a
+            href={`#${heading.slug}`}
+            class:list={[
+              'toc-link block py-0.5 text-stone-400 transition-colors duration-200 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300',
+              heading.depth === 2 ? 'pl-3' : 'pl-6',
+            ]}
+            data-heading-slug={heading.slug}
+          >
+            {heading.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<style>
+.toc-nav {
+  scrollbar-width: none;
+}
+.toc-nav::-webkit-scrollbar {
+  display: none;
+}
+</style>

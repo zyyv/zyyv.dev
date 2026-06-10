@@ -1,0 +1,8 @@
+---
+import PostsIndexPage from '../../../components/pages/PostsIndex.astro'
+import { getLangFromUrl } from '../../../i18n/utils'
+
+const lang = getLangFromUrl(Astro.url)
+---
+
+<PostsIndexPage lang={lang} />

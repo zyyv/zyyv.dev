@@ -1,55 +1,35 @@
-import { fileURLToPath } from 'node:url'
-import cloudflare from '@astrojs/cloudflare'
-import vue from '@astrojs/vue'
-import { defineConfig } from 'astro/config'
-import UnoCSS from 'unocss/vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
+import sitemap from "@astrojs/sitemap";
+import UnoCSS from "@unocss/astro";
+import { defineConfig } from "astro/config";
+import rehypeExternalLinks from "rehype-external-links";
+import remarkGithubBlockquoteAlert from "remark-github-blockquote-alert";
 
+// https://astro.build/config
 export default defineConfig({
-  output: 'server',
-  adapter: cloudflare(),
-  integrations: [vue()],
-  server: {
-    port: 4321,
-  },
+  site: "https://zyyv.dev",
+  output: "static",
+  prefetch: true,
+  integrations: [UnoCSS(), sitemap()],
   markdown: {
+    remarkPlugins: [remarkGithubBlockquoteAlert],
+    rehypePlugins: [
+      [
+        rehypeExternalLinks,
+        {
+          target: "_blank",
+          rel: ["noopener", "noreferrer"],
+        },
+      ],
+    ],
     shikiConfig: {
       themes: {
-        light: 'vitesse-light',
-        dark: 'vitesse-dark',
+        light: "vitesse-light",
+        dark: "vitesse-dark",
       },
       defaultColor: false,
     },
   },
-  vite: {
-    plugins: [
-      UnoCSS() as any,
-      AutoImport({
-        imports: ['vue', '@vueuse/core'],
-        dirs: ['./app/composables'],
-        vueTemplate: true,
-      }),
-      Components({
-        dirs: ['./app/components'],
-        extensions: ['vue'],
-        deep: true,
-        directoryAsNamespace: true,
-        collapseSamePrefixes: true,
-        dts: true,
-      }),
-    ],
-    resolve: {
-      alias: {
-        '~': fileURLToPath(new URL('./app', import.meta.url)),
-      },
-    },
-    define: {
-      'import.meta.env.__BUILD_TIME__': JSON.stringify(new Date().toISOString()),
-      __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
-    },
-    build: {
-      target: 'esnext',
-    },
+  devToolbar: {
+    enabled: false,
   },
-})
+});

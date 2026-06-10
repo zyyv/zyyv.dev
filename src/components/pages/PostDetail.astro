@@ -1,0 +1,122 @@
+---
+import { render, type CollectionEntry } from 'astro:content'
+import { getAuthorSchema } from '../../data/site'
+import { getPageCopy } from '../../i18n/pages'
+import {
+  getLocaleFromLang,
+  useTranslatedPath,
+  type Lang,
+} from '../../i18n/utils'
+import Layout from '../../layouts/Layout.astro'
+import {
+  formatDate,
+  getPostOgImagePath,
+  getPostSlug,
+} from '../../utils/content'
+import Prose from '../Prose.astro'
+import TableOfContents from '../TableOfContents.astro'
+
+interface Props {
+  post: CollectionEntry<'posts'>
+  availableLangs: Lang[]
+  lang: Lang
+}
+
+const { post, availableLangs, lang } = Astro.props
+const { Content, headings } = await render(post)
+const translatePath = useTranslatedPath(lang)
+const copy = getPageCopy('post', lang)
+const locale = getLocaleFromLang(lang)
+const ogImage = post.data.image ?? getPostOgImagePath(post.id)
+const author = getAuthorSchema(lang)
+const getPostTitleTransitionName = (slug: string, currentLang: Lang) =>
+  `post-title-${currentLang}-${
+    slug
+      .toLowerCase()
+      .replaceAll(/[^a-z0-9_-]+/g, '-')
+      .replaceAll(/^-+|-+$/g, '')
+  }`
+const postSlug = getPostSlug(post.id)
+const titleTransitionName = getPostTitleTransitionName(postSlug, lang)
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.date.toISOString(),
+  image: new URL(ogImage, Astro.site).href,
+  url: Astro.url.href,
+  inLanguage: locale,
+  author,
+}
+---
+
+<Layout
+  title={`${post.data.title} - ${copy.titleSuffix}`}
+  description={post.data.description}
+  availableLangs={availableLangs}
+  ogType="article"
+  image={ogImage}
+  publishedDate={post.data.date}
+>
+  <script
+    is:inline
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(schema)}
+  />
+  <main
+    class="grid grid-cols-[1fr_minmax(0,36rem)_1fr] flex-1 px-6 py-16 md:px-12"
+  >
+    <div></div>
+    <article class="min-w-0 w-full">
+      <header class="mb-10">
+        <a
+          href={translatePath('/posts')}
+          class="mb-6 inline-flex items-center gap-1 text-sm text-stone-500 transition-colors duration-200 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+        >
+          &larr; {copy.backLabel}
+        </a>
+        <h1
+          class="detail-title fade-in-up text-3xl text-stone-900 font-700 leading-tight tracking-tight font-serif md:text-4xl dark:text-white"
+          style="animation-delay: 100ms"
+        >
+          <span
+            class="detail-title-transition"
+            style={`view-transition-name: ${titleTransitionName};`}
+          >
+            {post.data.title}
+          </span>
+        </h1>
+        <div
+          class="fade-in-up mt-2 flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400"
+          style="animation-delay: 120ms"
+        >
+          <time>{formatDate(post.data.date, lang)}</time>
+        </div>
+      </header>
+
+      <Prose
+        class="fade-in-up"
+        style="animation-delay: 160ms"
+        cjkFallback={lang === 'zh'}
+      >
+        <Content />
+      </Prose>
+    </article>
+    <div
+      class="fade-in-up hidden pl-12 xl:block"
+      style="animation-delay: 240ms"
+    >
+      <TableOfContents headings={headings} lang={lang} />
+    </div>
+  </main>
+
+  <style>
+  @media (prefers-reduced-motion: reduce) {
+    .detail-title-transition {
+      view-transition-name: none !important;
+    }
+  }
+  </style>
+</Layout>

@@ -1,0 +1,147 @@
+---
+import { getAuthorSchema, homeLinks } from '../../data/site'
+import { getPageCopy } from '../../i18n/pages'
+import Layout from '../../layouts/Layout.astro'
+import type { Lang } from '../../i18n/utils'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const copy = getPageCopy('home', lang)
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: copy.schema.name,
+  url: copy.schema.url,
+  author: getAuthorSchema(lang, {
+    includeAlternate: true,
+    includeSameAs: true,
+  }),
+}
+---
+
+<Layout title={copy.title} description={copy.description}>
+  <script
+    is:inline
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(schema)}
+  />
+  <main class="flex flex-1 items-center justify-center px-6 py-12 md:px-12">
+    <div class="max-w-xl w-full space-y-10">
+      <header
+        class="fade-in-up flex items-center gap-5"
+        style="animation-delay: 80ms"
+      >
+        <picture>
+          <source srcset={copy.avatar.avif} type="image/avif" />
+          <img
+            src={copy.avatar.fallback}
+            alt={copy.name}
+            class="animate-shape h-20 w-20 rounded-full object-cover shadow-lg shadow-stone-400/10 ring-2 ring-stone-200/80 md:h-24 md:w-24 dark:shadow-black/20 dark:ring-stone-700/50"
+          />
+        </picture>
+
+        <div>
+          <h1
+            class:list={[
+              'text-3xl md:text-4xl font-700 tracking-tight text-stone-900 dark:text-white leading-tight',
+              copy.nameSerif && 'font-serif',
+            ]}
+          >
+            {copy.name}
+          </h1>
+          <p
+            class="mt-1.5 text-stone-500 font-mono dark:text-stone-400"
+            data-typewriter
+            data-text={copy.bio}
+            data-char-delay={copy.bioCharDelay}
+            aria-label={copy.bio}
+          >
+          </p>
+        </div>
+      </header>
+
+      {homeLinks.creator.length > 0 && (
+        <div class="space-y-8">
+          <section class="fade-in-up" style="animation-delay: 160ms">
+            <h2 class="mb-3 text-xs text-stone-500 tracking-wide font-mono dark:text-stone-400">
+              <span
+                class="select-none text-emerald-600/70 dark:text-emerald-500/50"
+                aria-hidden="true"
+              >$
+              </span>cat creator.md
+            </h2>
+            <div class="flex flex-wrap gap-2">
+              {homeLinks.creator.map((link) => (
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center border border-stone-200 rounded-full px-3.5 py-1.5 text-sm text-stone-600 font-500 transition-colors duration-150 dark:border-stone-800 hover:border-stone-400 dark:text-stone-300 hover:text-stone-900 dark:hover:border-stone-600 dark:hover:text-white"
+                >
+                  {link.name}
+                </a>
+              ))}
+            </div>
+          </section>
+
+          {homeLinks.team.length > 0 && (
+            <section class="fade-in-up" style="animation-delay: 240ms">
+              <h2 class="mb-3 text-xs text-stone-500 tracking-wide font-mono dark:text-stone-400">
+                <span
+                  class="select-none text-emerald-600/70 dark:text-emerald-500/50"
+                  aria-hidden="true"
+                >$
+                </span>cat team.md
+              </h2>
+              <div class="flex flex-wrap gap-2">
+                {homeLinks.team.map((link) => (
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center border border-stone-200 rounded-full px-3.5 py-1.5 text-sm text-stone-600 font-500 transition-colors duration-150 dark:border-stone-800 hover:border-stone-400 dark:text-stone-300 hover:text-stone-900 dark:hover:border-stone-600 dark:hover:text-white"
+                  >
+                    {link.name}
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+    </div>
+  </main>
+  <script>
+  import { runTypewriter } from '../../scripts/typewriter'
+  document.addEventListener('astro:page-load', runTypewriter)
+  </script>
+  <style>
+    @keyframes shape {
+      0%,
+      100% {
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        transform: translate3d(0, 0, 0) rotateZ(0.01deg);
+      }
+      34% {
+        border-radius: 70% 30% 46% 54% / 30% 29% 71% 70%;
+        transform: translate3d(0, 5px, 0) rotateZ(0.01deg);
+      }
+      50% {
+        transform: translate3d(0, 0, 0) rotateZ(0.01deg);
+      }
+      67% {
+        border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%;
+        transform: translate3d(0, -3px, 0) rotateZ(0.01deg);
+      }
+    }
+
+    .animate-shape {
+      animation: shape 6s linear infinite;
+    }
+  </style>  
+</Layout>
+
