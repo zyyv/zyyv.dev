@@ -46,29 +46,6 @@ export const nav: ReadonlyArray<{
   langs?: readonly string[];
 }> = [
   { key: "nav.posts", href: "/posts/" },
-  { key: "nav.links", href: "/links/" },
+  // { key: "nav.links", href: "/links/" },
   { key: "nav.about", href: "/about/" },
-];
-
-/* @unocss-include */
-export const social: ReadonlyArray<{
-  icon: string;
-  href: string;
-  label: string;
-}> = [
-  {
-    icon: "i-hugeicons:github",
-    href: "https://github.com/chris-me",
-    label: "GitHub",
-  },
-  {
-    icon: "i-hugeicons:bluesky",
-    href: "https://bsky.app/profile/chris.me",
-    label: "Bluesky",
-  },
-  {
-    icon: "i-hugeicons:new-twitter",
-    href: "https://x.com/chris_me",
-    label: "X",
-  },
 ];

@@ -20,13 +20,13 @@ const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3)
 {tocHeadings.length > 0 && (
   <nav
     id="toc"
-    class="toc-nav sticky top-24 max-h-[calc(100dvh-8rem)] overflow-y-auto"
+    class="toc-nav max-h-[calc(100dvh-8rem)] top-24 sticky overflow-y-auto"
     aria-label="Table of contents"
   >
-    <div class="mb-2 text-xs text-stone-500 font-500 tracking-wide uppercase dark:text-stone-400">
+    <div class="text-xs text-stone-500 tracking-wide font-500 mb-2 uppercase dark:text-stone-400">
       {t('toc.title')}
     </div>
-    <ul class="border-l border-stone-200/40 text-[13px] leading-relaxed space-y-0.5 dark:border-stone-800/40">
+    <ul class="text-[13px] leading-relaxed border-l border-stone-200/40 space-y-0.5 dark:border-stone-800/40">
       {tocHeadings.map((heading) => (
         <li>
           <a

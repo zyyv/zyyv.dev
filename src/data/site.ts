@@ -1,3 +1,4 @@
+/* @unocss-include */
 import type { Lang } from "../i18n/utils";
 
 type Localized<T> = Record<Lang, T>;
@@ -12,8 +13,8 @@ interface AuthorSchema {
 }
 
 export const siteMeta = {
-  domain: "chris.me",
-  url: "https://chris.me",
+  domain: "zyyv.dev",
+  url: "https://zyyv.dev",
 } as const;
 
 export const siteCopy = {
@@ -38,14 +39,14 @@ export const siteCopy = {
     },
     sameAs: {
       en: [
-        "https://github.com/chris-me",
-        "https://x.com/chris_me",
-        "https://bsky.app/profile/chris.me",
+        "https://github.com/zyyv",
+        "https://x.com/chris_zyyv",
+        "https://bsky.app/profile/zyyv.dev",
       ],
       zh: [
-        "https://github.com/chris-me",
-        "https://x.com/chris_me",
-        "https://bsky.app/profile/chris.me",
+        "https://github.com/zyyv",
+        "https://x.com/chris_zyyv",
+        "https://bsky.app/profile/zyyv.dev",
       ],
     },
   },
@@ -90,6 +91,7 @@ export function getAuthorSchema(
 interface Link {
   name: string;
   href: string;
+  icon: string;
 }
 
 export interface Friend {
@@ -102,14 +104,73 @@ export interface Friend {
 interface HomeLinks {
   creator: Link[];
   team: Link[];
+  contributor: Link[];
+  social: Link[];
 }
 
-export const homeLinks: HomeLinks = {
-  creator: [
-    // TODO: Add your projects here
-  ],
+export const homeLinks: Readonly<HomeLinks> = {
   team: [
-    // TODO: Add team projects here
+    {
+      name: "UnoCSS",
+      href: "https://unocss.dev",
+      icon: "i-catppuccin:unocss",
+    },
+    {
+      name: "Elk",
+      href: "https://elk.zone",
+      icon: "i-custom:elk",
+    },
+  ],
+  creator: [
+    {
+      name: "Onu-UI",
+      href: "https://onu.zyyv.dev",
+      icon: "i-custom:onu",
+    },
+    {
+      name: "UnoCSS Community",
+      href: "https://github.com/unocss-community",
+      icon: "i-custom:unocss-community",
+    },
+  ],
+  contributor: [
+    {
+      name: "Vite",
+      href: "https://vitejs.dev",
+      icon: "i-catppuccin:vite",
+    },
+    {
+      name: "Vue",
+      href: "https://vuejs.org",
+      icon: "i-catppuccin:vue",
+    },
+    {
+      name: "Nuxt",
+      href: "https://nuxtjs.org",
+      icon: "i-catppuccin:nuxt",
+    },
+  ],
+  social: [
+    {
+      icon: "i-hugeicons:github",
+      href: "https://github.com/zyyv",
+      name: "GitHub",
+    },
+    {
+      icon: "i-hugeicons:bluesky",
+      href: "https://bsky.app/profile/zyyv.dev",
+      name: "Bluesky",
+    },
+    {
+      icon: "i-hugeicons:new-twitter",
+      href: "https://x.com/chris_zyyv",
+      name: "X",
+    },
+    {
+      icon: "i-ri:bilibili-line",
+      href: "https://space.bilibili.com/402454160",
+      name: "Bilibili",
+    },
   ],
 };
 

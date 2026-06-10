@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://chris.me/sitemap-index.xml
+Sitemap: https://zyyv.dev/sitemap-index.xml

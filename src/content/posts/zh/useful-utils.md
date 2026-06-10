@@ -15,7 +15,7 @@ tags:
 function hash(str: string) {
   let i
   let l
-  let hval = 0x811c9dc5
+  let hval = 0x811C9DC5
 
   for (i = 0, l = str.length; i < l; i++) {
     hval ^= str.charCodeAt(i)
@@ -46,7 +46,7 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const _dirname =
-  typeof __dirname !== 'undefined' ? __dirname : dirname(fileURLToPath(import.meta.url))
+  typeof __dirname === 'undefined' ? dirname(fileURLToPath(import.meta.url)) : __dirname
 ```
 
 ## CreateFilter
@@ -195,8 +195,8 @@ export function deepMerge<T>(original: T, patch: DeepPartial<T>): T {
   if (isObject(o) && isObject(p)) {
     Object.keys(p).forEach((key) => {
       if (isObject(p[key])) {
-        if (!(key in o)) Object.assign(output, { [key]: p[key] })
-        else output[key] = deepMerge(o[key], p[key])
+        if (key in o) {output[key] = deepMerge(o[key], p[key])}
+        else {Object.assign(output, { [key]: p[key] })}
       } else {
         Object.assign(output, { [key]: p[key] })
       }

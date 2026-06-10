@@ -8,7 +8,7 @@ const t = useTranslations(lang)
 <button
   id="theme-toggle"
   aria-label={t('toggle.theme')}
-  class="cursor-pointer text-lg text-stone-500 transition-colors duration-200 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
+  class="text-lg text-stone-500 cursor-pointer transition-colors duration-200 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
 >
   <div class="i-hugeicons:sun-03 dark:i-hugeicons:moon-slow-wind"></div>
 </button>
@@ -25,7 +25,7 @@ function applyTheme(doc = document) {
   doc.documentElement.classList.toggle('dark', shouldDark)
 }
 
-function toggleTheme() {
+function toggleTheme(event: MouseEvent) {
   const shouldDark = !document.documentElement.classList.contains('dark')
   const apply = () => {
     if (shouldDark === prefersDarkQuery.matches) {
@@ -40,17 +40,39 @@ function toggleTheme() {
     apply()
     return
   }
+
+  const x = event.clientX
+  const y = event.clientY
+  const endRadius = Math.hypot(
+    Math.max(x, innerWidth - x),
+    Math.max(y, innerHeight - y),
+  )
+  const clipPath = [
+    `circle(0px at ${x}px ${y}px)`,
+    `circle(${endRadius}px at ${x}px ${y}px)`,
+  ]
+
   document.startViewTransition(() => {
     apply()
+  }).ready.then(() => {
+    document.documentElement.animate(
+      {
+        clipPath: shouldDark ? [...clipPath].toReversed() : clipPath,
+      },
+      {
+        duration: 300,
+        easing: 'ease-in',
+        fill: 'forwards',
+        pseudoElement: shouldDark
+          ? '::view-transition-old(root)'
+          : '::view-transition-new(root)',
+      },
+    )
   })
 }
 
-document.addEventListener('click', (e) => {
-  const target = e.target
-  const targetEl = target instanceof Element ? target : null
-  if (targetEl?.closest('#theme-toggle')) {
-    toggleTheme()
-  }
+document.querySelector('#theme-toggle')?.addEventListener('click', (e) => {
+  toggleTheme(e as MouseEvent)
 })
 
 prefersDarkQuery.addEventListener('change', (e) => {

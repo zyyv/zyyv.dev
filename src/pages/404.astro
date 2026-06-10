@@ -12,16 +12,16 @@ const translatePath = useTranslatedPath(lang)
 ---
 
 <Layout title={t('notFound.title')}>
-  <main class="fade-in-up flex flex-1 flex-col items-center justify-center px-6 py-16">
-    <h1 class="text-8xl text-stone-200 font-bold font-serif dark:text-stone-800">
+  <main class="fade-in-up px-6 py-16 flex flex-1 flex-col items-center justify-center">
+    <h1 class="text-8xl text-stone-200 font-bold font-sans dark:text-stone-800">
       404
     </h1>
-    <p class="mt-4 text-lg text-stone-600 dark:text-stone-400">
+    <p class="text-lg text-stone-600 mt-4 dark:text-stone-400">
       {t('notFound.description')}
     </p>
     <a
       href={translatePath('/')}
-      class="mt-8 rounded-lg bg-stone-800 px-6 py-2.5 text-sm text-white font-medium transition-colors duration-200 dark:bg-stone-200 hover:bg-stone-700 dark:text-stone-900 dark:hover:bg-stone-300"
+      class="text-sm text-white font-medium mt-8 px-6 py-2.5 rounded-lg bg-stone-800 transition-colors duration-200 dark:text-stone-900 dark:bg-stone-200 hover:bg-stone-700 dark:hover:bg-stone-300"
     >
       {t('notFound.backHome')}
     </a>
