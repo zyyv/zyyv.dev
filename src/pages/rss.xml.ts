@@ -6,6 +6,7 @@ import type { APIContext } from 'astro'
 
 export async function GET(context: APIContext) {
   const posts = (await getCollection('posts'))
+    .filter((post) => !post.data.private)
     .filter((post) => post.id.startsWith(`${defaultLang}/`))
     .toSorted((a, b) => b.data.date.getTime() - a.data.date.getTime())
 

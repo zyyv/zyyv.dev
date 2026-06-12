@@ -9,6 +9,7 @@ const schema = z.object({
   image: z.string().optional(),
   updatedAt: z.coerce.date().optional(),
   tags: z.array(z.string()).optional(),
+  private: z.boolean().optional(),
 })
 
 const posts = defineCollection({

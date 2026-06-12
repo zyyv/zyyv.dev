@@ -27,6 +27,7 @@ export async function getPostPaths(lang: Lang) {
 export async function getPostsByLang(lang: Lang) {
   const posts = await getCollection('posts')
   return posts
+    .filter((post) => !post.data.private)
     .filter((post) => post.id.startsWith(`${lang}/`))
     .map((post) => ({
       ...post,
