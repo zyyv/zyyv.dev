@@ -1,9 +1,9 @@
 ---
 import { ClientRouter } from 'astro:transitions'
 import ThemeSwitcher from '../components/ThemeSwitcher.astro'
+import { homeLinks } from '../data/site'
 import { pageCopy } from '../i18n/pages'
 import { defaultLang, languages, localeByLang, nav } from '../i18n/ui'
-import { homeLinks } from '../data/site'
 import {
   getAllLangPrefixes,
   getLangFromUrl,
@@ -37,8 +37,11 @@ const t = useTranslations(lang)
 const translatePath = useTranslatedPath(lang)
 const languageKeys = Object.keys(languages) as (keyof typeof languages)[]
 const otherLang = lang === 'en' ? 'zh' : 'en'
-const basePath = pathname.replace(/^\/(zh|en)(\/|$)/, '/').replace(/\/$/, '') || '/'
-const otherLangUrl = otherLang === 'en' ? basePath : `/${otherLang}${basePath === '/' ? '' : basePath}`
+const basePath = pathname.replace(/^\/(zh|en)(\/|$)/, '/').replace(/\/$/, '')
+  || '/'
+const otherLangUrl = otherLang === 'en'
+  ? basePath
+  : `/${otherLang}${basePath === '/' ? '' : basePath}`
 
 const site = Astro.site!
 const canonicalURL = new URL(pathname, site)
@@ -52,12 +55,12 @@ const hreflangLangs = languageKeys.filter(
 )
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang={lang} data-lang-prefixes={JSON.stringify(getAllLangPrefixes())}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="/avatar.jpg" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <link rel="canonical" href={canonicalURL.href} />
@@ -129,7 +132,7 @@ const hreflangLangs = languageKeys.filter(
     <slot name="head" />
   </head>
   <body
-    class="scroll-none text-stone-800 bg-basecolor flex flex-col antialiased min-h-dvh dark:text-stone-200 selection:bg-stone-900/10 dark:selection:bg-stone-100/10"
+    class="text-stone-800 bg-basecolor flex flex-col antialiased min-h-dvh scroll-none dark:text-stone-200 selection:bg-stone-900/10 dark:selection:bg-stone-100/10"
     style="text-autospace: normal"
   >
     <nav class="fade-in px-4 py-5 flex gap-4 w-full items-center justify-between md:px-12 sm:px-6">
@@ -159,7 +162,8 @@ const hreflangLangs = languageKeys.filter(
           data-lang-url={otherLangUrl}
           aria-label={t('lang.switch')}
           class="lang-switch i-carbon:language text-lg text-stone-500 cursor-pointer transition-colors duration-200 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
-        ></button>
+        >
+        </button>
 
         <a
           href={new URL(`${getUrlPrefix(lang)}/rss.xml`, site).href}
