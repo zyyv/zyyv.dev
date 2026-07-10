@@ -10,7 +10,7 @@ export interface PostPreview {
   date: string
   tags: string[]
   lang: string
-  rawbody?: string
+  readingMinutes: number
 }
 
 export type BaseRepo = Endpoints['GET /users/{username}/repos']['response']['data'][number]

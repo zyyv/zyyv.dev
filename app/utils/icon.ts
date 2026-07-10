@@ -15,7 +15,6 @@ const langIcons = {
   next: 'i-catppuccin:next',
   nuxt: 'i-catppuccin:nuxt',
   solid: 'i-catppuccin:solid',
-  astro: 'i-catppuccin:astro',
   // bundlers
   rollup: 'i-catppuccin:rollup',
   webpack: 'i-catppuccin:webpack',

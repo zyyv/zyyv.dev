@@ -5,12 +5,6 @@ const props = defineProps<{
   posts: PostPreview[]
 }>()
 
-function calculateReadingTime(text: string): number {
-  const wordsPerMinute = 200
-  const words = text.split(/\s/g).length
-  return Math.ceil(words / wordsPerMinute)
-}
-
 const tags = ref(new Set<string>())
 
 onMounted(() => {
@@ -64,12 +58,12 @@ const sortedPosts = computed(() => {
         trans
         :class="tags.size > 0 && post.tags.every((tag) => !tags.has(tag)) ? 'op-50' : ''"
       >
-        <a :href="post.path">
+        <NuxtLink :to="post.path">
           <strong>{{ post.title }}</strong>
-          <sub v-if="post.rawbody" bottom-0 left-1.5>
-            <span text-2.75 op-72>{{ calculateReadingTime(post.rawbody) }} min</span>
+          <sub bottom-0 left-1.5>
+            <span text-2.75 op-72>{{ post.readingMinutes }} min</span>
           </sub>
-        </a>
+        </NuxtLink>
 
         <p italic font-dank my-2 line-clamp-2 text-sm op-72>
           {{ post.description }}

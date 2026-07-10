@@ -1,10 +1,3 @@
 {
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "paths": {
-      "~/*": ["./app/*"]
-    },
-    "types": ["node", "vite/client"]
-  },
-  "exclude": ["node_modules", "dist"]
+  "extends": "./.nuxt/tsconfig.json"
 }

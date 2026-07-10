@@ -1,16 +1,10 @@
-import type { APIRoute } from 'astro'
-import {
-  githubUsername,
-  hasGitHubToken,
-  useOctokit,
-  usePublicOctokit,
-} from '../../../server/utils/github'
+import { githubUsername, hasGitHubToken, useOctokit, usePublicOctokit } from '../utils/github'
 
-export const GET: APIRoute = async () => {
+export default defineEventHandler(async () => {
   if (hasGitHubToken()) {
     try {
       const { data } = await useOctokit().request('GET /user')
-      return Response.json(data)
+      return data
     } catch (error) {
       console.warn(
         'Failed to fetch authenticated GitHub user, falling back to public profile.',
@@ -23,5 +17,5 @@ export const GET: APIRoute = async () => {
     username: githubUsername,
   })
 
-  return Response.json(data)
-}
+  return data
+})

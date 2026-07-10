@@ -1,16 +1,16 @@
-import type { APIRoute } from 'astro'
-import { photosData } from '../../../server/utils/data'
+import { photosData } from '../utils/data'
 
-export const GET: APIRoute = ({ url }) => {
-  const page = Math.max(1, Number(url.searchParams.get('page')) || 1)
-  const limit = Math.max(1, Math.min(50, Number(url.searchParams.get('limit')) || 12))
+export default defineEventHandler((event) => {
+  const query = getQuery(event)
+  const page = Math.max(1, Number(query.page) || 1)
+  const limit = Math.max(1, Math.min(50, Number(query.limit) || 12))
   const offset = (page - 1) * limit
 
   const total = photosData.length
   const totalPages = Math.ceil(total / limit)
   const photos = photosData.slice(offset, offset + limit)
 
-  return Response.json({
+  return {
     photos,
     pagination: {
       page,
@@ -21,5 +21,5 @@ export const GET: APIRoute = ({ url }) => {
       hasPrev: page > 1,
       count: photos.length,
     },
-  })
-}
+  }
+})

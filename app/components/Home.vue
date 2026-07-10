@@ -139,16 +139,16 @@ const mobileLinks = [
     <MeInfo expanded />
 
     <nav class="home-mobile-nav" aria-label="Primary navigation">
-      <a
+      <NuxtLink
         v-for="link in mobileLinks"
         :key="link.label"
-        :href="link.href"
+        :to="link.href"
         class="home-mobile-icon"
         :class="link.class"
         :aria-label="link.label"
       >
         <i :class="link.icon" />
-      </a>
+      </NuxtLink>
     </nav>
   </section>
 </template>

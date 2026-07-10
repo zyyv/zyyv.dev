@@ -67,7 +67,13 @@ function initQuadrantSizeConfig() {
       },
     }
 
-    center.value = { ...QuadrantSizeConfig.value.II }
+    const initialCenter = QuadrantSizeConfig.value.II
+    if (initialCenter) {
+      center.value = {
+        x: initialCenter.x,
+        y: initialCenter.y,
+      }
+    }
   })
 }
 

@@ -4,13 +4,13 @@ let _octokit: Octokit
 let _publicOctokit: Octokit
 
 function getEnv(key: string) {
-  return import.meta.env[key] || process.env[key]
+  return process.env[key]
 }
 
 export const githubUsername = getEnv('GITHUB_USERNAME') || 'zyyv'
 
 export function getGitHubToken() {
-  return getEnv('Chris_GITHUB_TOKEN')
+  return getEnv('NUXT_GITHUB_TOKEN') || getEnv('Chris_GITHUB_TOKEN')
 }
 
 export function hasGitHubToken() {

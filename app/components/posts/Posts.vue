@@ -28,7 +28,7 @@ const postsList = computed(() => props.posts || [])
           :key="post.id"
           class="op-72 hover:op-100 cursor-pointer trans hover:translate-x-2"
         >
-          <a :href="post.path" class="block">
+          <NuxtLink :to="post.path" class="block">
             <h3 class="text-lg font-semibold mb-2 trans">
               {{ post.title }}
             </h3>
@@ -52,15 +52,18 @@ const postsList = computed(() => props.posts || [])
                 <span>{{ useTimeAgo(post.date) }}</span>
               </div>
             </div>
-          </a>
+          </NuxtLink>
         </article>
 
         <!-- 查看更多链接 -->
         <div class="pt-4 text-center">
-          <a href="/posts" class="inline-flex items-center gap-2 text-sm op-64 hover:op-100 trans">
+          <NuxtLink
+            to="/posts"
+            class="inline-flex items-center gap-2 text-sm op-64 hover:op-100 trans"
+          >
             <span>View all posts</span>
             <i class="i-hugeicons:arrow-right-01" />
-          </a>
+          </NuxtLink>
         </div>
       </div>
 
@@ -76,8 +79,8 @@ const postsList = computed(() => props.posts || [])
 
   <!-- 移动端视图 -->
   <div class="quadrant-mobile size-full fcc">
-    <a href="/posts" class="cursor-pointer" text="3xl blue op-80 hover:op-100">
+    <NuxtLink to="/posts" class="cursor-pointer" text="3xl blue op-80 hover:op-100">
       <i i-hugeicons:note-edit />
-    </a>
+    </NuxtLink>
   </div>
 </template>

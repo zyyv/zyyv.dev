@@ -1,6 +1,6 @@
 # Chris
 
-This is my personal website, built with Astro, Vue, UnoCSS, and Netlify SSR.
+This is my personal website, built with Nuxt, Vue, UnoCSS, and Nitro SSR.
 
 ## Development
 
@@ -26,6 +26,9 @@ pnpm run lint
 pnpm run typecheck
 pnpm run build
 ```
+
+The app uses Nuxt file-based routing, Nuxt Content for Markdown posts, and Nitro server routes for
+the GitHub and photo APIs.
 
 ## Activity
 

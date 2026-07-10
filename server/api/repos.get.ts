@@ -1,11 +1,5 @@
-import type { APIRoute } from 'astro'
-import type { BaseRepo, Repo } from '../../../app/types'
-import {
-  githubUsername,
-  hasGitHubToken,
-  useOctokit,
-  usePublicOctokit,
-} from '../../../server/utils/github'
+import type { BaseRepo, Repo } from '~/types'
+import { githubUsername, hasGitHubToken, useOctokit, usePublicOctokit } from '../utils/github'
 
 const CACHE_TTL = 10 * 60 * 1000
 let reposCache:
@@ -22,9 +16,7 @@ type RepoWithTopics = Repo & {
 function filterRepos(repos: RepoWithTopics[], key: string) {
   return repos
     .filter((repo) => repo.topics?.includes(key))
-    .sort((a, b) => {
-      return a.stargazers_count > b.stargazers_count ? -1 : 1
-    })
+    .sort((a, b) => b.stargazers_count - a.stargazers_count)
 }
 
 function toRepo(repo: BaseRepo): RepoWithTopics {
@@ -105,8 +97,8 @@ async function fetchReposFromGitHub() {
   )
 }
 
-export const GET: APIRoute = async () => {
-  if (reposCache && reposCache.expiresAt > Date.now()) return Response.json(reposCache.payload)
+export default defineEventHandler(async () => {
+  if (reposCache && reposCache.expiresAt > Date.now()) return reposCache.payload
 
   try {
     const payload = await withTimeout(fetchReposFromGitHub(), 15000)
@@ -116,9 +108,12 @@ export const GET: APIRoute = async () => {
       payload,
     }
 
-    return Response.json(payload)
+    return payload
   } catch (error) {
     console.warn('Failed to fetch GitHub repos.', error)
-    return Response.json({ message: 'Failed to load repositories.' }, { status: 502 })
+    throw createError({
+      statusCode: 502,
+      statusMessage: 'Failed to load repositories.',
+    })
   }
-}
+})

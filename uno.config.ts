@@ -53,6 +53,7 @@ export default defineZyyvConfig<ZyyvTheme>(
     // typography: true,
   },
   {
+    blocklist: [/^\./u, /^[a-z][\w-]*::/u],
     rules: [
       // 隐藏滚动条
       [

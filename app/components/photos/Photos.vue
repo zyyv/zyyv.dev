@@ -163,8 +163,8 @@ onMounted(() => {
     />
   </div>
   <div class="quadrant-mobile size-full fcc">
-    <a href="/photos" class="cursor-pointer" text="3xl orange op-80 hover:op-100">
+    <NuxtLink to="/photos" class="cursor-pointer" text="3xl orange op-80 hover:op-100">
       <i i-hugeicons:image-03 />
-    </a>
+    </NuxtLink>
   </div>
 </template>
