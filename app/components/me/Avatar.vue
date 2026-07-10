@@ -45,10 +45,9 @@ onMounted(async () => {
       :src="avatarUrl"
       blurhash="L4A1l2Mx0FN402eiyEx|00-;%MIV"
       alt="Avatar"
-      class="w-[clamp(calc(var(--spacing)*10),calc(100cqw/10),calc(var(--spacing)*30))]"
+      class="w-[clamp(calc(var(--spacing)*10),calc(100cqw/10),calc(var(--spacing)*30))] animate-shape"
       :class="{
-        'animate-shape': !props.navigation,
-        'size-[1.2em]! rounded-full! animate-none!': props.navigation,
+        'size-[1.2em]!': props.navigation,
         'lt-md:(w-[clamp(8.5rem,45vw,12rem)]! [box-shadow:0_24px_70px_rgba(248,113,113,0.24)])':
           props.mobile,
       }"
