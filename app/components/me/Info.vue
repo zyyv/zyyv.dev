@@ -1,10 +1,6 @@
 <script lang="ts" setup>
 import type { User } from '~/types'
 
-defineProps<{
-  expanded?: boolean
-}>()
-
 const user = ref<Partial<User>>({
   name: 'Chris',
   bio: 'Regardless of the past, do not ask the future.',
@@ -23,14 +19,13 @@ onMounted(async () => {
 
 <template>
   <div
-    class="me-info fccc py-4 px-6 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full select-none"
-    :class="{ 'me-info-mobile': expanded }"
+    class="me-info me-info-mobile fccc py-4 px-6 gap-4 @2xl:(flex-row! gap-10 flex-row py-0) size-full select-none"
     style="font-size: clamp(0.875rem, calc(100cqw / 40), 1rem)"
   >
     <h1 fsc>
-      <MeAvatar :mobile="expanded" />
+      <MeAvatar mobile shared />
     </h1>
-    <section class="me-info-content" :class="expanded ? 'block' : 'quadrant-desktop-block hidden'">
+    <section class="me-info-content">
       <p>
         I'm <strong>{{ user?.name }}</strong
         >,

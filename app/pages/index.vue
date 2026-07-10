@@ -27,9 +27,6 @@ useSeoMeta({
 })
 
 useHead({
-  bodyAttrs: {
-    class: 'home-page',
-  },
   link: [{ rel: 'canonical', href: 'https://zyyv.dev/' }],
 })
 </script>

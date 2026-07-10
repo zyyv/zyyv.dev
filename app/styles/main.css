@@ -3,8 +3,12 @@ body {
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  --uno: text-basecolor bg-basecolor scroll-none font-dm;
+  --uno: text-basecolor bg-basecolor font-dm;
   background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDMwIDMwIj4KICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE1IiByPSIxIiBmaWxsPSIjY2NjIi8+Cjwvc3ZnPg==');
   background-repeat: repeat;
   background-size: 30px 30px;
@@ -17,20 +21,6 @@ body {
 
 main {
   --uno: min-h-screen flex flex-col font-dm;
-}
-
-@container (min-width: 24rem) and (min-height: 24rem) {
-  .quadrant-desktop-block {
-    display: block;
-  }
-
-  .quadrant-desktop-flex {
-    display: flex;
-  }
-
-  .quadrant-mobile {
-    display: none !important;
-  }
 }
 
 @keyframes animStar {
@@ -60,4 +50,21 @@ main {
 
 @view-transition {
   navigation: auto; /* enabled! */
+}
+
+::view-transition-group(site-avatar) {
+  animation-duration: 480ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-old(site-avatar),
+::view-transition-new(site-avatar) {
+  overflow: clip;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(site-avatar) {
+    animation-duration: 1ms;
+  }
 }

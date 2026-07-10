@@ -5,9 +5,11 @@ import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
 const props = withDefaults(
   defineProps<{
     photos?: Photo[]
+    pageScroll?: boolean
   }>(),
   {
     photos: () => [],
+    pageScroll: false,
   },
 )
 
@@ -79,7 +81,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="quadrant-desktop-flex hidden size-full of-auto scroll-none flex-col">
+  <div
+    class="photos-gallery flex h-full min-h-0 w-full flex-col"
+    :class="{ 'photos-gallery-page': pageScroll }"
+  >
     <!-- 错误状态 -->
     <div v-if="error" class="flex flex-col justify-center items-center h-64 p-4">
       <div class="text-red-500 text-lg mb-4">
@@ -99,7 +104,13 @@ onMounted(() => {
     </div>
 
     <!-- 瀑布流容器 -->
-    <div v-else ref="scrollContainer" class="flex-1 overflow-auto" @scroll="handleScroll">
+    <div
+      v-else
+      ref="scrollContainer"
+      class="photos-scroll flex-1 overflow-auto"
+      :class="{ 'overflow-visible!': pageScroll }"
+      @scroll="pageScroll ? undefined : handleScroll()"
+    >
       <VirtualWaterfall
         :items="allPhotos"
         :calc-item-height="calcItemHeight"
@@ -108,7 +119,7 @@ onMounted(() => {
         :item-min-width="300"
         :min-column-count="1"
         :max-column-count="5"
-        :virtual="true"
+        :virtual="!pageScroll"
         row-key="id"
       >
         <template #default="{ item }">
@@ -134,7 +145,10 @@ onMounted(() => {
       </div>
 
       <!-- 没有更多数据提示 -->
-      <div v-else-if="!hasMore && totalPhotos > 0" class="flex justify-center items-center py-8">
+      <div
+        v-else-if="!pageScroll && !hasMore && totalPhotos > 0"
+        class="flex justify-center items-center py-8"
+      >
         <div class="text-basecolor text-op-50 text-sm">
           All {{ totalPhotos }} photos are displayed
         </div>
@@ -162,9 +176,15 @@ onMounted(() => {
       @select="selectPhoto"
     />
   </div>
-  <div class="quadrant-mobile size-full fcc">
-    <NuxtLink to="/photos" class="cursor-pointer" text="3xl orange op-80 hover:op-100">
-      <i i-hugeicons:image-03 />
-    </NuxtLink>
-  </div>
 </template>
+
+<style scoped>
+.photos-gallery-page {
+  height: auto;
+  min-height: 0;
+}
+
+.photos-gallery-page .photos-scroll {
+  flex: none;
+}
+</style>

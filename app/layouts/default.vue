@@ -8,5 +8,6 @@ import NavHeader from '~/components/nav/NavHeader.vue'
   <main>
     <slot />
   </main>
+  <SiteFooter />
   <CommandPalette />
 </template>

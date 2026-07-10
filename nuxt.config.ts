@@ -1,7 +1,35 @@
+import { execSync } from 'node:child_process'
+
+function getBuildCommit() {
+  const deploymentCommit =
+    process.env.CF_PAGES_COMMIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.GITHUB_SHA ||
+    process.env.COMMIT_SHA
+
+  if (deploymentCommit) return deploymentCommit
+
+  try {
+    return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
+  } catch {
+    return 'local'
+  }
+}
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-07-10',
 
   modules: ['@nuxt/content', '@unocss/nuxt', '@vueuse/nuxt'],
+
+  experimental: {
+    viewTransition: true,
+  },
+
+  runtimeConfig: {
+    public: {
+      buildCommit: getBuildCommit(),
+    },
+  },
 
   css: ['~/styles/vars.css', '~/styles/fonts.css', '~/styles/prose.css', '~/styles/main.css'],
 
@@ -34,7 +62,7 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/posts', '/photos'],
+      routes: ['/', '/posts', '/photos', '/projects'],
     },
   },
 
@@ -62,7 +90,7 @@ export default defineNuxtConfig({
         },
         { name: 'author', content: 'Chris' },
         { name: 'keywords', content: 'Chris, Blog, Portfolio' },
-        { name: 'theme-color', content: '#3c3c43' },
+        { name: 'theme-color', content: '#f5f5f5' },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@chris_zyyv' },
       ],

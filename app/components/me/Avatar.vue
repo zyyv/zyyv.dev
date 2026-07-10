@@ -1,9 +1,21 @@
-<script lang="ts" setup>
-defineProps<{
+<script setup lang="ts">
+interface Props {
   mobile?: boolean
-}>()
+  navigation?: boolean
+  shared?: boolean
+}
 
-const avatarUrl = ref('/avatar.png')
+const props = withDefaults(defineProps<Props>(), {
+  mobile: false,
+  navigation: false,
+  shared: false,
+})
+
+const avatarUrl = shallowRef('/avatar.png')
+
+const avatarStyle = computed(() => ({
+  viewTransitionName: props.shared ? 'site-avatar' : 'none',
+}))
 
 onMounted(async () => {
   try {
@@ -19,17 +31,24 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="avatar-shell" :class="{ 'avatar-shell-mobile': mobile }" view-transition-logo>
+  <div
+    class="avatar-shell"
+    :class="{
+      'avatar-shell-mobile': props.mobile,
+      'avatar-shell-navigation': props.navigation,
+    }"
+    :style="avatarStyle"
+  >
     <ImgBlurHash
       mode="bg"
       :src="avatarUrl"
       blurhash="L4A1l2Mx0FN402eiyEx|00-;%MIV"
       alt="Avatar"
-      class="avatar-image w-[clamp(calc(var(--spacing)_*_10),_calc(100cqw_/_10),_calc(var(--spacing)_*_30))]"
+      class="avatar-image"
+      :class="{ 'animate-shape': !props.navigation }"
       aspect-square
       rd="[62%_47%_82%_35%/45%_45%_80%_66%]"
-      will-change="border-radius,transform,opacity"
-      animate-shape
+      :will-change="props.navigation ? undefined : 'border-radius,transform,opacity'"
     />
   </div>
 </template>
@@ -38,6 +57,21 @@ onMounted(async () => {
 .avatar-shell {
   display: inline-grid;
   place-items: center;
+}
+
+.avatar-image {
+  width: clamp(calc(var(--spacing) * 10), calc(100cqw / 10), calc(var(--spacing) * 30));
+}
+
+.avatar-shell-navigation,
+.avatar-shell-navigation .avatar-image {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.avatar-shell-navigation .avatar-image {
+  border-radius: 50% !important;
+  animation: none !important;
 }
 
 @media (max-width: 767px) {

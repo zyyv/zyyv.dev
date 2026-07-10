@@ -9,7 +9,7 @@ watchEffect(() => {
   if (typeof document !== 'undefined') {
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', state.value === 'dark' ? '#222222' : '#3c3c43')
+      ?.setAttribute('content', state.value === 'dark' ? '#1e1e20' : '#f5f5f5')
   }
 })
 
@@ -62,15 +62,72 @@ const icon = computed(() => {
       return ''
   }
 })
+
+const toggleLabel = computed(() =>
+  state.value === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
+)
 </script>
 
 <template>
   <ClientOnly>
-    <button class="hover:animate-rubber-band fcc cursor-pointer" @click="toggleDark">
-      <i :class="icon" />
+    <button
+      type="button"
+      class="theme-toggle-button"
+      :aria-label="toggleLabel"
+      :title="toggleLabel"
+      @click="toggleDark"
+    >
+      <i class="theme-toggle-icon" :class="icon" aria-hidden="true" />
     </button>
   </ClientOnly>
 </template>
+
+<style scoped>
+.theme-toggle-button {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.12rem;
+  opacity: 0.52;
+  transition:
+    background-color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.theme-toggle-button:hover {
+  background-color: color-mix(in srgb, currentColor 9%, transparent);
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.theme-toggle-button:active {
+  transform: scale(0.96);
+}
+
+.theme-toggle-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.theme-toggle-icon {
+  color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle-button {
+    transition: none;
+  }
+}
+</style>
 
 <style>
 ::view-transition-old(root),

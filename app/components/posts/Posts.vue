@@ -10,7 +10,7 @@ const postsList = computed(() => props.posts || [])
 </script>
 
 <template>
-  <div mxa max-w-65ch px-6 class="quadrant-desktop-block hidden">
+  <div mxa max-w-65ch px-6>
     <div py-8 space-y-6>
       <!-- 加载状态 -->
       <div v-if="status === 'pending'" class="space-y-4">
@@ -54,17 +54,6 @@ const postsList = computed(() => props.posts || [])
             </div>
           </NuxtLink>
         </article>
-
-        <!-- 查看更多链接 -->
-        <div class="pt-4 text-center">
-          <NuxtLink
-            to="/posts"
-            class="inline-flex items-center gap-2 text-sm op-64 hover:op-100 trans"
-          >
-            <span>View all posts</span>
-            <i class="i-hugeicons:arrow-right-01" />
-          </NuxtLink>
-        </div>
       </div>
 
       <!-- 空状态 -->
@@ -75,12 +64,5 @@ const postsList = computed(() => props.posts || [])
         <div class="text-sm">No posts yet</div>
       </div>
     </div>
-  </div>
-
-  <!-- 移动端视图 -->
-  <div class="quadrant-mobile size-full fcc">
-    <NuxtLink to="/posts" class="cursor-pointer" text="3xl blue op-80 hover:op-100">
-      <i i-hugeicons:note-edit />
-    </NuxtLink>
   </div>
 </template>

@@ -6,218 +6,207 @@ defineProps<{
   photos: Photo[]
 }>()
 
-const { center, getQuadrantScrollProgress, initQuadrantSizeConfig, setQuadrantScrollProgress } =
-  useCenter()
-
-initQuadrantSizeConfig()
-
-onMounted(() => {
-  const storage = useLocalStorage('center', center)
-
-  let timeoutId: ReturnType<typeof setTimeout> | null = null
-  watchEffect(() => {
-    if (timeoutId) clearTimeout(timeoutId)
-
-    const currentCenter = { ...center.value }
-    timeoutId = setTimeout(() => {
-      storage.value = currentCenter
-    }, 300)
-  })
-})
-
-const dragState = ref(false)
-const wheelState = ref(false)
-const scrollProgress = ref(0)
-const scrollSensitivity = 0.0005
-let wheelStateTimer: ReturnType<typeof setTimeout> | null = null
-
-function canElementScroll(element: HTMLElement, deltaY: number) {
-  const style = window.getComputedStyle(element)
-  const canOverflow = ['auto', 'scroll', 'overlay'].includes(style.overflowY)
-
-  if (!canOverflow || element.scrollHeight <= element.clientHeight) return false
-
-  if (deltaY > 0) return element.scrollTop + element.clientHeight < element.scrollHeight - 1
-
-  if (deltaY < 0) return element.scrollTop > 1
-
-  return false
-}
-
-function canScrollInsideQuadrant(event: WheelEvent) {
-  let element = event.target instanceof HTMLElement ? event.target : null
-  const boundary = event.currentTarget instanceof HTMLElement ? event.currentTarget : null
-
-  while (element && element !== boundary) {
-    if (canElementScroll(element, event.deltaY)) return true
-
-    element = element.parentElement
-  }
-
-  return false
-}
-
-function handleWheel(event: WheelEvent) {
-  if (canScrollInsideQuadrant(event)) return
-
-  event.preventDefault()
-
-  if (dragState.value) return
-
-  wheelState.value = true
-  if (wheelStateTimer) clearTimeout(wheelStateTimer)
-  wheelStateTimer = setTimeout(() => {
-    wheelState.value = false
-  }, 120)
-
-  scrollProgress.value = getQuadrantScrollProgress()
-  scrollProgress.value += event.deltaY * scrollSensitivity
-  setQuadrantScrollProgress(scrollProgress.value)
-}
-
-onBeforeUnmount(() => {
-  if (wheelStateTimer) clearTimeout(wheelStateTimer)
-})
-
-const mobileLinks = [
-  {
-    href: '/photos',
+const sections = {
+  photos: {
     icon: 'i-hugeicons:image-03',
-    label: 'Photos',
-    class: 'text-orange',
+    label: 'View all photos',
+    to: '/photos',
   },
-  {
-    href: '/posts',
+  projects: {
+    icon: 'i-hugeicons:package-search',
+    label: 'View all projects',
+    to: '/projects',
+  },
+  posts: {
     icon: 'i-hugeicons:note-edit',
-    label: 'Posts',
-    class: 'text-blue',
+    label: 'View all posts',
+    to: '/posts',
   },
-  {
-    href: 'https://github.com/zyyv',
-    icon: 'i-custom:github',
-    label: 'GitHub',
-    class: 'text-basecolor',
-  },
-]
+}
 </script>
 
 <template>
-  <section
-    class="home-quadrants size-screen grid"
-    :class="{ trans: !dragState && !wheelState }"
-    :style="{
-      gridTemplateColumns: `${center.x * 100}% ${100 - center.x * 100}%`,
-      gridTemplateRows: `${center.y * 100}% ${100 - center.y * 100}%`,
-      willChange: dragState || wheelState ? 'auto' : 'grid-template-columns, grid-template-rows',
-    }"
-    @wheel="handleWheel"
-  >
-    <OriginQuadrant quadrant="II">
+  <div class="home-scroll">
+    <section class="home-hero">
       <MeInfo />
-    </OriginQuadrant>
-    <OriginQuadrant quadrant="I">
-      <Photos :photos="photos" />
-    </OriginQuadrant>
-    <OriginQuadrant quadrant="III">
+    </section>
+
+    <section id="photos" class="home-section" aria-labelledby="photos-title">
+      <header class="home-section-header">
+        <i :class="sections.photos.icon" aria-hidden="true" />
+        <h2 id="photos-title">Photos</h2>
+      </header>
+      <Photos :photos="photos.slice(0, 8)" page-scroll />
+      <footer class="home-section-footer">
+        <NuxtLink :to="sections.photos.to" class="home-section-link">
+          {{ sections.photos.label }}
+          <i class="i-hugeicons:arrow-up-right-02" />
+        </NuxtLink>
+      </footer>
+    </section>
+
+    <section id="projects" class="home-section" aria-labelledby="projects-title">
+      <header class="home-section-header">
+        <i :class="sections.projects.icon" aria-hidden="true" />
+        <h2 id="projects-title">Projects</h2>
+      </header>
       <Projects />
-    </OriginQuadrant>
-    <OriginQuadrant quadrant="IV">
+      <footer class="home-section-footer">
+        <NuxtLink :to="sections.projects.to" class="home-section-link">
+          {{ sections.projects.label }}
+          <i class="i-hugeicons:arrow-up-right-02" />
+        </NuxtLink>
+      </footer>
+    </section>
+
+    <section id="posts" class="home-section" aria-labelledby="posts-title">
+      <header class="home-section-header">
+        <i :class="sections.posts.icon" aria-hidden="true" />
+        <h2 id="posts-title">Posts</h2>
+      </header>
       <Posts :posts="posts" />
-    </OriginQuadrant>
-  </section>
-  <div class="home-controller-layer absolute inset-0 z-200 pointer-events-none">
-    <OriginController
-      v-model="center"
-      v-model:state="dragState"
-      class="home-controller"
-      :transition-disabled="wheelState"
-      size-full
-    />
+      <footer class="home-section-footer">
+        <NuxtLink :to="sections.posts.to" class="home-section-link">
+          {{ sections.posts.label }}
+          <i class="i-hugeicons:arrow-up-right-02" />
+        </NuxtLink>
+      </footer>
+    </section>
   </div>
-
-  <section class="home-mobile px-6 pb-10 pt-18">
-    <MeInfo expanded />
-
-    <nav class="home-mobile-nav" aria-label="Primary navigation">
-      <NuxtLink
-        v-for="link in mobileLinks"
-        :key="link.label"
-        :to="link.href"
-        class="home-mobile-icon"
-        :class="link.class"
-        :aria-label="link.label"
-      >
-        <i :class="link.icon" />
-      </NuxtLink>
-    </nav>
-  </section>
 </template>
 
 <style scoped>
-.home-mobile {
-  display: none;
+.home-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.home-hero {
+  position: relative;
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: clamp(4.5rem, 9vw, 8rem) clamp(1.5rem, 5vw, 5rem);
+  container-type: inline-size;
+}
+
+.home-hero :deep(.me-info) {
+  width: min(100%, 72rem);
+  height: auto;
+}
+
+.home-section-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 0.35rem;
+}
+
+.home-section {
+  width: min(calc(100% - clamp(2rem, 8vw, 8rem)), 68rem);
+  margin-inline: auto;
+  padding-block: clamp(4.5rem, 9vw, 8rem);
+  border-top: 1px dashed rgb(120 120 120 / 24%);
+  scroll-margin-top: 2rem;
+  container-type: inline-size;
+}
+
+.home-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: clamp(1.75rem, 4vw, 3rem);
+}
+
+.home-section-header > i {
+  display: inline-grid;
+  width: 1.15em;
+  height: 1.15em;
+  flex: 0 0 auto;
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  opacity: 0.48;
+}
+
+.home-section-header h2 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+}
+
+.home-section-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+  padding-top: 1rem;
+}
+
+.home-section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: inherit;
+  font-size: 0.85rem;
+  opacity: 0.58;
+  text-decoration: none;
+  transition:
+    gap 180ms ease,
+    opacity 180ms ease;
+}
+
+.home-section-link:hover {
+  gap: 0.6rem;
+  opacity: 1;
+}
+
+@keyframes home-section-reveal {
+  from {
+    opacity: 0.14;
+    transform: translateY(2.5rem) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .home-section {
+      animation-name: home-section-reveal;
+      animation-fill-mode: both;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+  }
 }
 
 @media (max-width: 767px) {
-  :global(.home-page) {
-    overflow-y: auto;
-  }
-
-  .home-quadrants,
-  .home-controller-layer,
-  .home-controller {
-    display: none;
-  }
-
-  .home-mobile {
-    display: flex;
-    min-height: 100svh;
-    flex-direction: column;
-    justify-content: center;
-    overflow-x: hidden;
-  }
-
-  .home-mobile :deep(> div) {
-    height: auto;
-    min-height: 0;
-    padding-inline: 0;
-    text-align: left;
-  }
-
-  .home-mobile :deep(h1) {
-    align-self: center;
-  }
-
-  .home-mobile :deep(section) {
-    width: min(100%, 28rem);
-    margin-inline: auto;
-  }
-
-  .home-mobile-nav {
-    display: flex;
-    justify-content: center;
-    gap: 1.25rem;
-    margin-top: 2.5rem;
-  }
-
-  .home-mobile-icon {
-    display: inline-flex;
-    width: 3rem;
-    height: 3rem;
+  .home-hero {
     align-items: center;
-    justify-content: center;
-    border: 1px dashed rgba(120, 120, 120, 0.28);
-    border-radius: 999px;
-    font-size: 1.45rem;
-    opacity: 0.78;
-    transition:
-      opacity 180ms ease,
-      transform 180ms ease,
-      border-color 180ms ease;
+    padding-inline: 1.5rem;
+    padding-bottom: 6rem;
   }
 
-  .home-mobile-icon:active {
-    transform: scale(0.94);
+  .home-section {
+    width: calc(100% - 2rem);
+    padding-block: 4.5rem;
+  }
+
+  .home-section-header {
+    margin-bottom: 1.75rem;
+  }
+
+  .home-section-header h2 {
+    font-size: 2.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-section-link {
+    transition: none;
   }
 }
 </style>

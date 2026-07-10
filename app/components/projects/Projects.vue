@@ -35,7 +35,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div mxa max-w-65ch px-6 class="quadrant-desktop-block hidden">
+  <div mxa max-w-65ch px-6>
     <div py-8 space-y-8>
       <ProjectsSkeleton v-if="status === 'pending'" />
       <div v-for="(repos, key) in data" v-else-if="status === 'success'" :key="key">
@@ -49,11 +49,6 @@ onMounted(async () => {
       <div v-else class="op-64 text-sm">
         {{ errorMessage }}
       </div>
-    </div>
-  </div>
-  <div class="quadrant-mobile size-full fcc">
-    <div class="cursor-pointer" text="3xl yellow op-80 hover:op-100">
-      <i i-hugeicons:package-search />
     </div>
   </div>
 </template>
