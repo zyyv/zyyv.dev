@@ -81,10 +81,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="photos-gallery flex h-full min-h-0 w-full flex-col"
-    :class="{ 'photos-gallery-page': pageScroll }"
-  >
+  <div class="photos-gallery flex h-full min-h-0 w-full flex-col" :class="{ 'h-auto': pageScroll }">
     <!-- 错误状态 -->
     <div v-if="error" class="flex flex-col justify-center items-center h-64 p-4">
       <div class="text-red-500 text-lg mb-4">
@@ -108,7 +105,7 @@ onMounted(() => {
       v-else
       ref="scrollContainer"
       class="photos-scroll flex-1 overflow-auto"
-      :class="{ 'overflow-visible!': pageScroll }"
+      :class="{ 'flex-none! overflow-visible!': pageScroll }"
       @scroll="pageScroll ? undefined : handleScroll()"
     >
       <VirtualWaterfall
@@ -177,14 +174,3 @@ onMounted(() => {
     />
   </div>
 </template>
-
-<style scoped>
-.photos-gallery-page {
-  height: auto;
-  min-height: 0;
-}
-
-.photos-gallery-page .photos-scroll {
-  flex: none;
-}
-</style>

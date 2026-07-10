@@ -17,149 +17,39 @@ function isActive(path: string) {
 </script>
 
 <template>
-  <header class="site-header">
-    <nav class="site-controls" aria-label="Site navigation">
+  <header
+    class="pointer-events-none fixed left-[clamp(0.65rem,1.6vw,1rem)] top-1/2 z-30 -translate-y-1/2 color-inherit lt-md:(bottom-[0.65rem] left-1/2 top-auto -translate-x-1/2 translate-y-0)"
+  >
+    <nav
+      class="pointer-events-auto flex flex-col items-center gap-[0.2rem] border rounded-[0.85rem] p-[0.3rem] [backdrop-filter:blur(18px)_saturate(135%)] [background-color:color-mix(in_srgb,currentColor_6%,transparent)] [border-color:color-mix(in_srgb,currentColor_16%,transparent)] [box-shadow:0_0.75rem_2.5rem_color-mix(in_srgb,currentColor_8%,transparent)] [-webkit-backdrop-filter:blur(18px)_saturate(135%)] lt-md:flex-row"
+      aria-label="Site navigation"
+    >
       <NuxtLink
         v-for="item in navigation"
         :key="item.to"
         :to="item.to"
-        class="site-control"
-        :class="{ 'site-control-active': isActive(item.to) }"
+        class="relative grid size-[2.35rem] place-items-center rounded-[0.65rem] color-inherit text-[1.12rem] op-52 no-underline transition-[background-color,opacity,transform] duration-180 ease hover:(-translate-y-px op-92 [background-color:color-mix(in_srgb,currentColor_9%,transparent)]) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-2) motion-reduce:transition-none"
+        :class="{
+          '[background-color:color-mix(in_srgb,currentColor_14%,transparent)]! op-100!': isActive(
+            item.to,
+          ),
+        }"
         :aria-current="isActive(item.to) ? 'page' : undefined"
         :aria-label="item.label"
         :title="item.label"
       >
         <MeAvatar v-if="item.to === '/'" navigation :shared="!isHome" />
-        <i v-else class="site-control-icon" :class="item.icon" aria-hidden="true" />
-        <span class="visually-hidden">{{ item.label }}</span>
+        <i v-else class="color-inherit" :class="item.icon" aria-hidden="true" />
+        <span class="sr-only">{{ item.label }}</span>
       </NuxtLink>
 
-      <span class="site-controls-divider" aria-hidden="true" />
-      <div class="site-theme-slot">
+      <span
+        class="my-[0.12rem] h-px w-5 [background-color:color-mix(in_srgb,currentColor_18%,transparent)] lt-md:(mx-[0.12rem] my-0 h-5 w-px)"
+        aria-hidden="true"
+      />
+      <div class="grid size-[2.35rem] place-items-center">
         <DarkToggle />
       </div>
     </nav>
   </header>
 </template>
-
-<style scoped>
-.site-header {
-  position: fixed;
-  z-index: 30;
-  top: 50%;
-  left: clamp(0.65rem, 1.6vw, 1rem);
-  color: inherit;
-  pointer-events: none;
-  transform: translateY(-50%);
-}
-
-.site-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
-  padding: 0.3rem;
-  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
-  border-radius: 0.85rem;
-  background-color: color-mix(in srgb, currentColor 6%, transparent);
-  box-shadow: 0 0.75rem 2.5rem color-mix(in srgb, currentColor 8%, transparent);
-  backdrop-filter: blur(18px) saturate(135%);
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
-  pointer-events: auto;
-}
-
-.site-control,
-.site-theme-slot {
-  width: 2.35rem;
-  height: 2.35rem;
-}
-
-.site-control {
-  position: relative;
-  display: grid;
-  place-items: center;
-  border-radius: 0.65rem;
-  color: currentColor;
-  font-size: 1.12rem;
-  opacity: 0.52;
-  text-decoration: none;
-  transition:
-    background-color 180ms ease,
-    opacity 180ms ease,
-    transform 180ms ease;
-}
-
-.site-control-icon {
-  color: currentColor;
-}
-
-.site-control:hover {
-  background-color: color-mix(in srgb, currentColor 9%, transparent);
-  opacity: 0.92;
-  transform: translateY(-1px);
-}
-
-.site-control:active {
-  transform: scale(0.96);
-}
-
-.site-control-active {
-  background-color: color-mix(in srgb, currentColor 14%, transparent);
-  opacity: 1;
-}
-
-.site-controls-divider {
-  width: 1.25rem;
-  height: 1px;
-  margin-block: 0.12rem;
-  background-color: color-mix(in srgb, currentColor 18%, transparent);
-}
-
-.site-theme-slot {
-  display: grid;
-  place-items: center;
-}
-
-.site-control:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-@media (max-width: 767px) {
-  .site-header {
-    top: auto;
-    bottom: 0.65rem;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .site-controls {
-    flex-direction: row;
-  }
-
-  .site-controls-divider {
-    width: 1px;
-    height: 1.25rem;
-    margin-block: 0;
-    margin-inline: 0.12rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .site-control {
-    transition: none;
-  }
-}
-</style>

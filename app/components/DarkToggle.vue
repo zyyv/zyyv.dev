@@ -72,62 +72,15 @@ const toggleLabel = computed(() =>
   <ClientOnly>
     <button
       type="button"
-      class="theme-toggle-button"
+      class="grid size-full cursor-pointer place-items-center border-0 rounded-[0.65rem] bg-transparent p-0 color-inherit text-[1.12rem] op-52 transition-[background-color,opacity,transform] duration-180 ease [font:inherit] hover:(-translate-y-px op-92 [background-color:color-mix(in_srgb,currentColor_9%,transparent)]) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-2) motion-reduce:transition-none"
       :aria-label="toggleLabel"
       :title="toggleLabel"
       @click="toggleDark"
     >
-      <i class="theme-toggle-icon" :class="icon" aria-hidden="true" />
+      <i class="color-inherit" :class="icon" aria-hidden="true" />
     </button>
   </ClientOnly>
 </template>
-
-<style scoped>
-.theme-toggle-button {
-  display: grid;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  place-items: center;
-  border: 0;
-  border-radius: 0.65rem;
-  background: transparent;
-  color: currentColor;
-  cursor: pointer;
-  font: inherit;
-  font-size: 1.12rem;
-  opacity: 0.52;
-  transition:
-    background-color 180ms ease,
-    opacity 180ms ease,
-    transform 180ms ease;
-}
-
-.theme-toggle-button:hover {
-  background-color: color-mix(in srgb, currentColor 9%, transparent);
-  opacity: 0.92;
-  transform: translateY(-1px);
-}
-
-.theme-toggle-button:active {
-  transform: scale(0.96);
-}
-
-.theme-toggle-button:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-.theme-toggle-icon {
-  color: currentColor;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-toggle-button {
-    transition: none;
-  }
-}
-</style>
 
 <style>
 ::view-transition-old(root),

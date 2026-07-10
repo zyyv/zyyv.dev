@@ -26,47 +26,97 @@ const sections = {
 </script>
 
 <template>
-  <div class="home-scroll">
-    <section class="home-hero">
-      <MeInfo />
+  <div class="w-full min-w-0 overflow-x-clip">
+    <section
+      class="relative grid min-h-100svh place-items-center px-[clamp(1.5rem,5vw,5rem)] py-[clamp(4.5rem,9vw,8rem)] [container-type:inline-size] lt-md:(px-6 pb-24)"
+    >
+      <MeInfo class="h-auto! w-[min(100%,72rem)]!" />
     </section>
 
-    <section id="photos" class="home-section" aria-labelledby="photos-title">
-      <header class="home-section-header">
-        <i :class="sections.photos.icon" aria-hidden="true" />
-        <h2 id="photos-title">Photos</h2>
+    <section
+      id="photos"
+      class="home-section mx-auto w-[min(calc(100%-clamp(2rem,8vw,8rem)),68rem)] scroll-mt-8 border-t border-dashed py-[clamp(4.5rem,9vw,8rem)] [border-top-color:rgb(120_120_120/24%)] [container-type:inline-size] lt-md:(w-[calc(100%-2rem)] py-18)"
+      aria-labelledby="photos-title"
+    >
+      <header class="mb-[clamp(1.75rem,4vw,3rem)] flex items-center gap-[0.9rem] lt-md:mb-7">
+        <i
+          class="inline-grid size-[1.15em] flex-none text-[clamp(1.75rem,3vw,2.75rem)] op-48"
+          :class="sections.photos.icon"
+          aria-hidden="true"
+        />
+        <h2
+          id="photos-title"
+          class="m-0 text-[clamp(2rem,4vw,3.5rem)] leading-[0.95] font-600 tracking-[-0.055em] lt-md:text-4xl"
+        >
+          Photos
+        </h2>
       </header>
       <Photos :photos="photos.slice(0, 8)" page-scroll />
-      <footer class="home-section-footer">
-        <NuxtLink :to="sections.photos.to" class="home-section-link">
+      <footer class="mt-[clamp(1.25rem,3vw,2rem)] flex justify-end pt-4">
+        <NuxtLink
+          :to="sections.photos.to"
+          class="inline-flex items-center gap-[0.35rem] color-inherit text-[0.85rem] op-58 no-underline transition-[gap,opacity] duration-180 ease hover:(gap-[0.6rem] op-100) focus-visible:(outline-2 outline-current outline-offset-[0.35rem]) motion-reduce:transition-none"
+        >
           {{ sections.photos.label }}
           <i class="i-hugeicons:arrow-up-right-02" />
         </NuxtLink>
       </footer>
     </section>
 
-    <section id="projects" class="home-section" aria-labelledby="projects-title">
-      <header class="home-section-header">
-        <i :class="sections.projects.icon" aria-hidden="true" />
-        <h2 id="projects-title">Projects</h2>
+    <section
+      id="projects"
+      class="home-section mx-auto w-[min(calc(100%-clamp(2rem,8vw,8rem)),68rem)] scroll-mt-8 border-t border-dashed py-[clamp(4.5rem,9vw,8rem)] [border-top-color:rgb(120_120_120/24%)] [container-type:inline-size] lt-md:(w-[calc(100%-2rem)] py-18)"
+      aria-labelledby="projects-title"
+    >
+      <header class="mb-[clamp(1.75rem,4vw,3rem)] flex items-center gap-[0.9rem] lt-md:mb-7">
+        <i
+          class="inline-grid size-[1.15em] flex-none text-[clamp(1.75rem,3vw,2.75rem)] op-48"
+          :class="sections.projects.icon"
+          aria-hidden="true"
+        />
+        <h2
+          id="projects-title"
+          class="m-0 text-[clamp(2rem,4vw,3.5rem)] leading-[0.95] font-600 tracking-[-0.055em] lt-md:text-4xl"
+        >
+          Projects
+        </h2>
       </header>
       <Projects />
-      <footer class="home-section-footer">
-        <NuxtLink :to="sections.projects.to" class="home-section-link">
+      <footer class="mt-[clamp(1.25rem,3vw,2rem)] flex justify-end pt-4">
+        <NuxtLink
+          :to="sections.projects.to"
+          class="inline-flex items-center gap-[0.35rem] color-inherit text-[0.85rem] op-58 no-underline transition-[gap,opacity] duration-180 ease hover:(gap-[0.6rem] op-100) focus-visible:(outline-2 outline-current outline-offset-[0.35rem]) motion-reduce:transition-none"
+        >
           {{ sections.projects.label }}
           <i class="i-hugeicons:arrow-up-right-02" />
         </NuxtLink>
       </footer>
     </section>
 
-    <section id="posts" class="home-section" aria-labelledby="posts-title">
-      <header class="home-section-header">
-        <i :class="sections.posts.icon" aria-hidden="true" />
-        <h2 id="posts-title">Posts</h2>
+    <section
+      id="posts"
+      class="home-section mx-auto w-[min(calc(100%-clamp(2rem,8vw,8rem)),68rem)] scroll-mt-8 border-t border-dashed py-[clamp(4.5rem,9vw,8rem)] [border-top-color:rgb(120_120_120/24%)] [container-type:inline-size] lt-md:(w-[calc(100%-2rem)] py-18)"
+      aria-labelledby="posts-title"
+    >
+      <header class="mb-[clamp(1.75rem,4vw,3rem)] flex items-center gap-[0.9rem] lt-md:mb-7">
+        <i
+          class="inline-grid size-[1.15em] flex-none text-[clamp(1.75rem,3vw,2.75rem)] op-48"
+          :class="sections.posts.icon"
+          aria-hidden="true"
+        />
+        <h2
+          id="posts-title"
+          class="m-0 text-[clamp(2rem,4vw,3.5rem)] leading-[0.95] font-600 tracking-[-0.055em] lt-md:text-4xl"
+        >
+          Posts
+        </h2>
       </header>
       <Posts :posts="posts" />
-      <footer class="home-section-footer">
-        <NuxtLink :to="sections.posts.to" class="home-section-link">
+      <footer class="mt-[clamp(1.25rem,3vw,2rem)] flex justify-end pt-4">
+        <NuxtLink
+          :to="sections.posts.to"
+          class="inline-flex items-center gap-[0.35rem] color-inherit text-[0.85rem] op-58 no-underline transition-[gap,opacity] duration-180 ease hover:(gap-[0.6rem] op-100) focus-visible:(outline-2 outline-current outline-offset-[0.35rem]) motion-reduce:transition-none"
+        >
           {{ sections.posts.label }}
           <i class="i-hugeicons:arrow-up-right-02" />
         </NuxtLink>
@@ -76,89 +126,6 @@ const sections = {
 </template>
 
 <style scoped>
-.home-scroll {
-  width: 100%;
-  min-width: 0;
-  overflow-x: clip;
-}
-
-.home-hero {
-  position: relative;
-  display: grid;
-  min-height: 100svh;
-  place-items: center;
-  padding: clamp(4.5rem, 9vw, 8rem) clamp(1.5rem, 5vw, 5rem);
-  container-type: inline-size;
-}
-
-.home-hero :deep(.me-info) {
-  width: min(100%, 72rem);
-  height: auto;
-}
-
-.home-section-link:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 0.35rem;
-}
-
-.home-section {
-  width: min(calc(100% - clamp(2rem, 8vw, 8rem)), 68rem);
-  margin-inline: auto;
-  padding-block: clamp(4.5rem, 9vw, 8rem);
-  border-top: 1px dashed rgb(120 120 120 / 24%);
-  scroll-margin-top: 2rem;
-  container-type: inline-size;
-}
-
-.home-section-header {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  margin-bottom: clamp(1.75rem, 4vw, 3rem);
-}
-
-.home-section-header > i {
-  display: inline-grid;
-  width: 1.15em;
-  height: 1.15em;
-  flex: 0 0 auto;
-  font-size: clamp(1.75rem, 3vw, 2.75rem);
-  opacity: 0.48;
-}
-
-.home-section-header h2 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 600;
-  letter-spacing: -0.055em;
-  line-height: 0.95;
-}
-
-.home-section-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: clamp(1.25rem, 3vw, 2rem);
-  padding-top: 1rem;
-}
-
-.home-section-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: inherit;
-  font-size: 0.85rem;
-  opacity: 0.58;
-  text-decoration: none;
-  transition:
-    gap 180ms ease,
-    opacity 180ms ease;
-}
-
-.home-section-link:hover {
-  gap: 0.6rem;
-  opacity: 1;
-}
-
 @keyframes home-section-reveal {
   from {
     opacity: 0.14;
@@ -180,33 +147,6 @@ const sections = {
       animation-timeline: view();
       animation-range: entry 0% entry 80%;
     }
-  }
-}
-
-@media (max-width: 767px) {
-  .home-hero {
-    align-items: center;
-    padding-inline: 1.5rem;
-    padding-bottom: 6rem;
-  }
-
-  .home-section {
-    width: calc(100% - 2rem);
-    padding-block: 4.5rem;
-  }
-
-  .home-section-header {
-    margin-bottom: 1.75rem;
-  }
-
-  .home-section-header h2 {
-    font-size: 2.25rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-section-link {
-    transition: none;
   }
 }
 </style>

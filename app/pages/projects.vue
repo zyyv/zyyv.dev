@@ -18,16 +18,8 @@ useHead({
 </script>
 
 <template>
-  <div class="module-page">
+  <div class="mx-auto w-[min(calc(100%-2rem),68rem)] pb-[clamp(3rem,8vw,7rem)] pt-16">
     <PageHeader title="Projects" description="Open-source projects and experiments." />
     <Projects />
   </div>
 </template>
-
-<style scoped>
-.module-page {
-  width: min(calc(100% - 2rem), 68rem);
-  margin-inline: auto;
-  padding-block: 4rem clamp(3rem, 8vw, 7rem);
-}
-</style>
