@@ -39,9 +39,6 @@ importers:
       octokit:
         specifier: ^5.0.5
         version: 5.0.5
-      ripplable:
-        specifier: ^0.2.0
-        version: 0.2.0(vue@3.5.39(typescript@6.0.3))
       vue:
         specifier: 3.5.39
         version: 3.5.39(typescript@6.0.3)
@@ -5213,11 +5210,6 @@ packages:
 
   rfdc@1.4.1:
     resolution: {integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==}
-
-  ripplable@0.2.0:
-    resolution: {integrity: sha512-kWVDNPqGAw1D/MGIi+kBp4mKj4OTtFjCFgCJNgcPYR9NjWDoCIqlkXfxrJ+gMTXe12Bw5GiTxAOFbCNpwm7tHw==}
-    peerDependencies:
-      vue: 3.5.39
 
   rolldown@1.0.3:
     resolution: {integrity: sha512-i00lAJ2ks1BYr7rjNjKC7BcqAS7nVfiT3QX1SI5aY+AFHblCmaUf9OE9dbdzDvW6dJxbi2ZCZiy9v3CcwOiX3g==}
@@ -11705,10 +11697,6 @@ snapshots:
   reusify@1.1.0: {}
 
   rfdc@1.4.1: {}
-
-  ripplable@0.2.0(vue@3.5.39(typescript@6.0.3)):
-    dependencies:
-      vue: 3.5.39(typescript@6.0.3)
 
   rolldown@1.0.3:
     dependencies:
