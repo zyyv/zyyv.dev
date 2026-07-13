@@ -1,4 +1,4 @@
-import type { Photo } from '~/types'
+import type { Photo } from '../app/types'
 import { existsSync } from 'node:fs'
 import { readdir, stat, unlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -77,7 +77,7 @@ async function generatePhotosData() {
         const photo: Photo = {
           id: filename.replace(/\.[^/.]+$/, ''), // 移除文件扩展名作为 ID
           filename,
-          path: getCompressedPath(filename),
+          src: getCompressedPath(filename),
           thumbnail: getThumbnailPath(filename),
           size: stats.size,
           sizeFormatted: formatSize(stats.size),

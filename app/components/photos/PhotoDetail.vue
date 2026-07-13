@@ -77,7 +77,7 @@ function formatExposureTime(time?: number): string {
 }
 
 function photoPreviewSrc(item: Photo): string {
-  return item.thumbnail || item.path
+  return item.thumbnail || item.src
 }
 
 function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: number) {
@@ -116,7 +116,7 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
             </button>
 
             <img
-              :src="photo.path"
+              :src="photo.src"
               :alt="photo.filename"
               class="max-w-full max-h-full object-contain rounded-md shadow-2xl shadow-black/30"
               @click.stop

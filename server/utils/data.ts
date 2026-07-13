@@ -5,7 +5,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03209',
     filename: 'DSC03209.JPG',
-    path: '/photos/compressed/DSC03209.JPG',
+    src: '/photos/compressed/DSC03209.JPG',
     thumbnail: '/photos/thumb/DSC03209.JPG',
     size: 20668769,
     sizeFormatted: '19.71 MB',
@@ -28,7 +28,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03199',
     filename: 'DSC03199.JPG',
-    path: '/photos/compressed/DSC03199.JPG',
+    src: '/photos/compressed/DSC03199.JPG',
     thumbnail: '/photos/thumb/DSC03199.JPG',
     size: 23112399,
     sizeFormatted: '22.04 MB',
@@ -51,7 +51,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03181',
     filename: 'DSC03181.JPG',
-    path: '/photos/compressed/DSC03181.JPG',
+    src: '/photos/compressed/DSC03181.JPG',
     thumbnail: '/photos/thumb/DSC03181.JPG',
     size: 17522486,
     sizeFormatted: '16.71 MB',
@@ -74,7 +74,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03179',
     filename: 'DSC03179.JPG',
-    path: '/photos/compressed/DSC03179.JPG',
+    src: '/photos/compressed/DSC03179.JPG',
     thumbnail: '/photos/thumb/DSC03179.JPG',
     size: 16352271,
     sizeFormatted: '15.59 MB',
@@ -97,7 +97,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03178',
     filename: 'DSC03178.JPG',
-    path: '/photos/compressed/DSC03178.JPG',
+    src: '/photos/compressed/DSC03178.JPG',
     thumbnail: '/photos/thumb/DSC03178.JPG',
     size: 16604718,
     sizeFormatted: '15.84 MB',
@@ -120,7 +120,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03176',
     filename: 'DSC03176.JPG',
-    path: '/photos/compressed/DSC03176.JPG',
+    src: '/photos/compressed/DSC03176.JPG',
     thumbnail: '/photos/thumb/DSC03176.JPG',
     size: 16354325,
     sizeFormatted: '15.60 MB',
@@ -143,7 +143,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03175',
     filename: 'DSC03175.JPG',
-    path: '/photos/compressed/DSC03175.JPG',
+    src: '/photos/compressed/DSC03175.JPG',
     thumbnail: '/photos/thumb/DSC03175.JPG',
     size: 15258076,
     sizeFormatted: '14.55 MB',
@@ -166,7 +166,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03172',
     filename: 'DSC03172.JPG',
-    path: '/photos/compressed/DSC03172.JPG',
+    src: '/photos/compressed/DSC03172.JPG',
     thumbnail: '/photos/thumb/DSC03172.JPG',
     size: 16298689,
     sizeFormatted: '15.54 MB',
@@ -189,7 +189,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03171',
     filename: 'DSC03171.JPG',
-    path: '/photos/compressed/DSC03171.JPG',
+    src: '/photos/compressed/DSC03171.JPG',
     thumbnail: '/photos/thumb/DSC03171.JPG',
     size: 17093160,
     sizeFormatted: '16.30 MB',
@@ -212,7 +212,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03170',
     filename: 'DSC03170.JPG',
-    path: '/photos/compressed/DSC03170.JPG',
+    src: '/photos/compressed/DSC03170.JPG',
     thumbnail: '/photos/thumb/DSC03170.JPG',
     size: 20917063,
     sizeFormatted: '19.95 MB',
@@ -235,7 +235,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03167',
     filename: 'DSC03167.JPG',
-    path: '/photos/compressed/DSC03167.JPG',
+    src: '/photos/compressed/DSC03167.JPG',
     thumbnail: '/photos/thumb/DSC03167.JPG',
     size: 21507858,
     sizeFormatted: '20.51 MB',
@@ -258,7 +258,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03163',
     filename: 'DSC03163.JPG',
-    path: '/photos/compressed/DSC03163.JPG',
+    src: '/photos/compressed/DSC03163.JPG',
     thumbnail: '/photos/thumb/DSC03163.JPG',
     size: 23263668,
     sizeFormatted: '22.19 MB',
@@ -281,7 +281,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03129',
     filename: 'DSC03129.JPG',
-    path: '/photos/compressed/DSC03129.JPG',
+    src: '/photos/compressed/DSC03129.JPG',
     thumbnail: '/photos/thumb/DSC03129.JPG',
     size: 21521014,
     sizeFormatted: '20.52 MB',
@@ -304,7 +304,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03123',
     filename: 'DSC03123.JPG',
-    path: '/photos/compressed/DSC03123.JPG',
+    src: '/photos/compressed/DSC03123.JPG',
     thumbnail: '/photos/thumb/DSC03123.JPG',
     size: 18611517,
     sizeFormatted: '17.75 MB',
@@ -327,7 +327,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC03109',
     filename: 'DSC03109.JPG',
-    path: '/photos/compressed/DSC03109.JPG',
+    src: '/photos/compressed/DSC03109.JPG',
     thumbnail: '/photos/thumb/DSC03109.JPG',
     size: 17673541,
     sizeFormatted: '16.85 MB',
@@ -350,7 +350,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02924',
     filename: 'DSC02924.JPG',
-    path: '/photos/compressed/DSC02924.JPG',
+    src: '/photos/compressed/DSC02924.JPG',
     thumbnail: '/photos/thumb/DSC02924.JPG',
     size: 18629011,
     sizeFormatted: '17.77 MB',
@@ -373,7 +373,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02913',
     filename: 'DSC02913.JPG',
-    path: '/photos/compressed/DSC02913.JPG',
+    src: '/photos/compressed/DSC02913.JPG',
     thumbnail: '/photos/thumb/DSC02913.JPG',
     size: 17387523,
     sizeFormatted: '16.58 MB',
@@ -396,7 +396,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02911',
     filename: 'DSC02911.JPG',
-    path: '/photos/compressed/DSC02911.JPG',
+    src: '/photos/compressed/DSC02911.JPG',
     thumbnail: '/photos/thumb/DSC02911.JPG',
     size: 16764429,
     sizeFormatted: '15.99 MB',
@@ -419,7 +419,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02791',
     filename: 'DSC02791.JPG',
-    path: '/photos/compressed/DSC02791.JPG',
+    src: '/photos/compressed/DSC02791.JPG',
     thumbnail: '/photos/thumb/DSC02791.JPG',
     size: 19307506,
     sizeFormatted: '18.41 MB',
@@ -442,7 +442,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02771',
     filename: 'DSC02771.JPG',
-    path: '/photos/compressed/DSC02771.JPG',
+    src: '/photos/compressed/DSC02771.JPG',
     thumbnail: '/photos/thumb/DSC02771.JPG',
     size: 22610790,
     sizeFormatted: '21.56 MB',
@@ -465,7 +465,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02753',
     filename: 'DSC02753.JPG',
-    path: '/photos/compressed/DSC02753.JPG',
+    src: '/photos/compressed/DSC02753.JPG',
     thumbnail: '/photos/thumb/DSC02753.JPG',
     size: 22947159,
     sizeFormatted: '21.88 MB',
@@ -488,7 +488,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02745',
     filename: 'DSC02745.JPG',
-    path: '/photos/compressed/DSC02745.JPG',
+    src: '/photos/compressed/DSC02745.JPG',
     thumbnail: '/photos/thumb/DSC02745.JPG',
     size: 23484544,
     sizeFormatted: '22.40 MB',
@@ -511,7 +511,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02744',
     filename: 'DSC02744.JPG',
-    path: '/photos/compressed/DSC02744.JPG',
+    src: '/photos/compressed/DSC02744.JPG',
     thumbnail: '/photos/thumb/DSC02744.JPG',
     size: 23524032,
     sizeFormatted: '22.43 MB',
@@ -534,7 +534,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02742',
     filename: 'DSC02742.JPG',
-    path: '/photos/compressed/DSC02742.JPG',
+    src: '/photos/compressed/DSC02742.JPG',
     thumbnail: '/photos/thumb/DSC02742.JPG',
     size: 23544171,
     sizeFormatted: '22.45 MB',
@@ -557,7 +557,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02735',
     filename: 'DSC02735.JPG',
-    path: '/photos/compressed/DSC02735.JPG',
+    src: '/photos/compressed/DSC02735.JPG',
     thumbnail: '/photos/thumb/DSC02735.JPG',
     size: 23843434,
     sizeFormatted: '22.74 MB',
@@ -580,7 +580,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02718',
     filename: 'DSC02718.JPG',
-    path: '/photos/compressed/DSC02718.JPG',
+    src: '/photos/compressed/DSC02718.JPG',
     thumbnail: '/photos/thumb/DSC02718.JPG',
     size: 11926295,
     sizeFormatted: '11.37 MB',
@@ -603,7 +603,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02709',
     filename: 'DSC02709.JPG',
-    path: '/photos/compressed/DSC02709.JPG',
+    src: '/photos/compressed/DSC02709.JPG',
     thumbnail: '/photos/thumb/DSC02709.JPG',
     size: 16558184,
     sizeFormatted: '15.79 MB',
@@ -626,7 +626,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02649',
     filename: 'DSC02649.JPG',
-    path: '/photos/compressed/DSC02649.JPG',
+    src: '/photos/compressed/DSC02649.JPG',
     thumbnail: '/photos/thumb/DSC02649.JPG',
     size: 16418823,
     sizeFormatted: '15.66 MB',
@@ -649,7 +649,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02626',
     filename: 'DSC02626.JPG',
-    path: '/photos/compressed/DSC02626.JPG',
+    src: '/photos/compressed/DSC02626.JPG',
     thumbnail: '/photos/thumb/DSC02626.JPG',
     size: 16309667,
     sizeFormatted: '15.55 MB',
@@ -672,7 +672,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02619',
     filename: 'DSC02619.JPG',
-    path: '/photos/compressed/DSC02619.JPG',
+    src: '/photos/compressed/DSC02619.JPG',
     thumbnail: '/photos/thumb/DSC02619.JPG',
     size: 17889181,
     sizeFormatted: '17.06 MB',
@@ -695,7 +695,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02616',
     filename: 'DSC02616.JPG',
-    path: '/photos/compressed/DSC02616.JPG',
+    src: '/photos/compressed/DSC02616.JPG',
     thumbnail: '/photos/thumb/DSC02616.JPG',
     size: 17328619,
     sizeFormatted: '16.53 MB',
@@ -718,7 +718,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02603',
     filename: 'DSC02603.JPG',
-    path: '/photos/compressed/DSC02603.JPG',
+    src: '/photos/compressed/DSC02603.JPG',
     thumbnail: '/photos/thumb/DSC02603.JPG',
     size: 18245963,
     sizeFormatted: '17.40 MB',
@@ -741,7 +741,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02551',
     filename: 'DSC02551.JPG',
-    path: '/photos/compressed/DSC02551.JPG',
+    src: '/photos/compressed/DSC02551.JPG',
     thumbnail: '/photos/thumb/DSC02551.JPG',
     size: 15954844,
     sizeFormatted: '15.22 MB',
@@ -764,7 +764,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02431',
     filename: 'DSC02431.JPG',
-    path: '/photos/compressed/DSC02431.JPG',
+    src: '/photos/compressed/DSC02431.JPG',
     thumbnail: '/photos/thumb/DSC02431.JPG',
     size: 16209791,
     sizeFormatted: '15.46 MB',
@@ -787,7 +787,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02413',
     filename: 'DSC02413.JPG',
-    path: '/photos/compressed/DSC02413.JPG',
+    src: '/photos/compressed/DSC02413.JPG',
     thumbnail: '/photos/thumb/DSC02413.JPG',
     size: 19063252,
     sizeFormatted: '18.18 MB',
@@ -810,7 +810,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02376',
     filename: 'DSC02376.JPG',
-    path: '/photos/compressed/DSC02376.JPG',
+    src: '/photos/compressed/DSC02376.JPG',
     thumbnail: '/photos/thumb/DSC02376.JPG',
     size: 16056851,
     sizeFormatted: '15.31 MB',
@@ -833,7 +833,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02202',
     filename: 'DSC02202.JPG',
-    path: '/photos/compressed/DSC02202.JPG',
+    src: '/photos/compressed/DSC02202.JPG',
     thumbnail: '/photos/thumb/DSC02202.JPG',
     size: 20086232,
     sizeFormatted: '19.16 MB',
@@ -856,7 +856,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02164',
     filename: 'DSC02164.JPG',
-    path: '/photos/compressed/DSC02164.JPG',
+    src: '/photos/compressed/DSC02164.JPG',
     thumbnail: '/photos/thumb/DSC02164.JPG',
     size: 20417843,
     sizeFormatted: '19.47 MB',
@@ -879,7 +879,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02039',
     filename: 'DSC02039.JPG',
-    path: '/photos/compressed/DSC02039.JPG',
+    src: '/photos/compressed/DSC02039.JPG',
     thumbnail: '/photos/thumb/DSC02039.JPG',
     size: 20222321,
     sizeFormatted: '19.29 MB',
@@ -902,7 +902,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC02012',
     filename: 'DSC02012.JPG',
-    path: '/photos/compressed/DSC02012.JPG',
+    src: '/photos/compressed/DSC02012.JPG',
     thumbnail: '/photos/thumb/DSC02012.JPG',
     size: 18249554,
     sizeFormatted: '17.40 MB',
@@ -925,7 +925,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC01982',
     filename: 'DSC01982.JPG',
-    path: '/photos/compressed/DSC01982.JPG',
+    src: '/photos/compressed/DSC01982.JPG',
     thumbnail: '/photos/thumb/DSC01982.JPG',
     size: 14506892,
     sizeFormatted: '13.83 MB',
@@ -948,7 +948,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC01944',
     filename: 'DSC01944.JPG',
-    path: '/photos/compressed/DSC01944.JPG',
+    src: '/photos/compressed/DSC01944.JPG',
     thumbnail: '/photos/thumb/DSC01944.JPG',
     size: 15579251,
     sizeFormatted: '14.86 MB',
@@ -971,7 +971,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC01901',
     filename: 'DSC01901.JPG',
-    path: '/photos/compressed/DSC01901.JPG',
+    src: '/photos/compressed/DSC01901.JPG',
     thumbnail: '/photos/thumb/DSC01901.JPG',
     size: 17861092,
     sizeFormatted: '17.03 MB',
@@ -994,7 +994,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC01329',
     filename: 'DSC01329.JPG',
-    path: '/photos/compressed/DSC01329.JPG',
+    src: '/photos/compressed/DSC01329.JPG',
     thumbnail: '/photos/thumb/DSC01329.JPG',
     size: 20111757,
     sizeFormatted: '19.18 MB',
@@ -1017,7 +1017,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC01031',
     filename: 'DSC01031.JPG',
-    path: '/photos/compressed/DSC01031.JPG',
+    src: '/photos/compressed/DSC01031.JPG',
     thumbnail: '/photos/thumb/DSC01031.JPG',
     size: 15608743,
     sizeFormatted: '14.89 MB',
@@ -1040,7 +1040,7 @@ export const photosData: Photo[] = [
   {
     id: 'DSC00964',
     filename: 'DSC00964.JPG',
-    path: '/photos/compressed/DSC00964.JPG',
+    src: '/photos/compressed/DSC00964.JPG',
     thumbnail: '/photos/thumb/DSC00964.JPG',
     size: 18064659,
     sizeFormatted: '17.23 MB',

@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import type { Photo } from '~/types'
 import PhotoDetail from '~/components/photos/PhotoDetail.vue'
+import { Ripplable, type RipplableListItem } from 'ripplable'
+import 'ripplable/styles.css'
 
 const props = defineProps<{
   photos: Photo[]
 }>()
 
 const currentPhoto = shallowRef<Photo | null>(null)
-const previewPhotos = computed(() => props.photos.slice(0, 5))
+const previewPhotos = computed(() => props.photos.slice(0, 15) as unknown as RipplableListItem[])
+
 const currentIndex = computed(() => {
   if (!currentPhoto.value) return -1
   return props.photos.findIndex((photo) => photo.id === currentPhoto.value?.id)
@@ -44,23 +47,19 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
-    <div v-if="previewPhotos.length" class="photo-grid">
-      <button
-        v-for="photo in previewPhotos"
-        :key="photo.id"
-        type="button"
-        class="photo-tile group relative min-h-0 cursor-zoom-in overflow-hidden border-0 bg-transparent p-0 focus-visible:(outline-2 outline-current outline-offset-3)"
-        :aria-label="`Open photo ${photo.filename}`"
-        @click="openPreview(photo)"
-      >
-        <ImgBlurHash
-          :src="photo.thumbnail || photo.path"
-          :blurhash="photo.blurhash"
-          :aspect-ratio="photo.width / photo.height"
-          :alt="photo.filename"
-          class="size-full object-cover transition-[transform,filter] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:(scale-103 saturate-110) motion-reduce:transition-none"
-        />
-      </button>
+    <div v-if="previewPhotos.length" class="w-full h-50vh">
+      <Ripplable :autoplay="1" :fps="true" :list="previewPhotos">
+        <template #card="{ src, label, index }">
+          <div class="photo-card">
+            <img :src="src" alt="" class="photo-card__image" />
+            <div class="photo-card__shade" />
+            <div class="photo-card__meta">
+              <span class="photo-card__eyebrow">Frame {{ label }}</span>
+              <strong class="photo-card__title">Visual {{ index + 1 }}</strong>
+            </div>
+          </div>
+        </template>
+      </Ripplable>
     </div>
 
     <div
@@ -86,56 +85,52 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.photo-grid {
+.photo-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 28px;
+  background: #020617;
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.photo-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-card__shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(1, 4, 9, 0.08), rgba(1, 4, 9, 0.72)),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.22));
+}
+
+.photo-card__meta {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  left: 1rem;
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  height: clamp(25rem, 49vw, 35rem);
+  gap: 0.15rem;
 }
 
-.photo-tile {
-  border-radius: 0.9rem;
+.photo-card__eyebrow {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.photo-tile:first-child {
-  grid-column: span 7;
-  grid-row: span 2;
-}
-
-.photo-tile:nth-child(2) {
-  grid-column: span 3;
-}
-
-.photo-tile:nth-child(3) {
-  grid-column: span 2;
-}
-
-.photo-tile:nth-child(4) {
-  grid-column: span 2;
-}
-
-.photo-tile:nth-child(5) {
-  grid-column: span 3;
-}
-
-@media (max-width: 767.9px) {
-  .photo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: auto;
-    height: auto;
-  }
-
-  .photo-tile,
-  .photo-tile:nth-child(n) {
-    grid-column: span 1;
-    grid-row: auto;
-    aspect-ratio: 1 / 1;
-  }
-
-  .photo-tile:first-child {
-    grid-column: span 2;
-    aspect-ratio: 16 / 10;
-  }
+.photo-card__title {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.1;
 }
 </style>
