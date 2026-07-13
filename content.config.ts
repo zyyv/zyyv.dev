@@ -4,7 +4,7 @@ import { defineCollection, defineContentConfig, z } from '@nuxt/content'
 const posts = defineCollection({
   type: 'page',
   source: {
-    cwd: path.resolve('./src/content/posts'),
+    cwd: path.resolve('./content/posts'),
     include: '**/*.md',
     prefix: '/posts',
   },
