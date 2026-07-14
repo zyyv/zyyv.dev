@@ -10,14 +10,16 @@ const posts = computed(() => (postDocuments.value ?? []).map((post) => toPostPre
 
 useSeoMeta({
   title: 'Posts - Chris',
-  description: 'In the flow of time, seeking resonance with the soul.',
+  description: 'Notes on front-end tooling, open source, and the details discovered along the way.',
   ogType: 'website',
   ogTitle: 'Posts - Chris',
-  ogDescription: 'In the flow of time, seeking resonance with the soul.',
+  ogDescription:
+    'Notes on front-end tooling, open source, and the details discovered along the way.',
   ogImage: 'https://zyyv.dev/og.png#1',
   ogUrl: 'https://zyyv.dev/posts',
   twitterTitle: 'Posts - Chris',
-  twitterDescription: 'In the flow of time, seeking resonance with the soul.',
+  twitterDescription:
+    'Notes on front-end tooling, open source, and the details discovered along the way.',
   twitterImage: 'https://zyyv.dev/og.png#1',
 })
 
@@ -27,7 +29,7 @@ useHead({
 </script>
 
 <template>
-  <div class="mxa w-65ch px-6">
+  <div class="interior-shell interior-shell--reading">
     <PostsIndex :posts="posts" />
   </div>
 </template>

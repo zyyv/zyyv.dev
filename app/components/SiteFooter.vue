@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
+const route = useRoute()
 const year = new Date().getFullYear()
+const isHome = computed(() => route.path === '/')
 const commitHash = computed(() => String(config.public.buildCommit || 'local'))
 const shortCommit = computed(() =>
   commitHash.value === 'local' ? 'local' : commitHash.value.slice(0, 7),
@@ -17,7 +19,7 @@ function backToTop() {
 </script>
 
 <template>
-  <footer class="site-footer">
+  <footer class="site-footer" :class="{ 'site-footer--home': isHome }">
     <div class="site-footer__meta">
       <p>Chris / Front-end developer</p>
       <p>End of transmission</p>
@@ -77,12 +79,14 @@ function backToTop() {
 }
 
 .site-footer__statement {
-  display: grid;
-  margin: clamp(4.5rem, 10vw, 9rem) 0 clamp(5rem, 11vw, 10rem);
-  font-size: clamp(3.9rem, 10.2vw, 10rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  margin: clamp(3rem, 6vw, 5rem) 0 clamp(3.5rem, 7vw, 6rem);
+  font-size: clamp(1.15rem, 2.2vw, 1.7rem);
   font-weight: 500;
-  line-height: 0.78;
-  letter-spacing: -0.085em;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
   text-wrap: balance;
 }
 
@@ -91,8 +95,19 @@ function backToTop() {
 }
 
 .site-footer__statement span:last-child {
-  margin-left: 8vw;
   color: color-mix(in srgb, currentColor 46%, transparent);
+}
+
+.site-footer--home .site-footer__statement {
+  display: grid;
+  margin: clamp(4.5rem, 10vw, 9rem) 0 clamp(5rem, 11vw, 10rem);
+  font-size: clamp(3.9rem, 10.2vw, 10rem);
+  line-height: 0.78;
+  letter-spacing: -0.085em;
+}
+
+.site-footer--home .site-footer__statement span:last-child {
+  margin-left: 8vw;
 }
 
 .site-footer__base {
@@ -162,12 +177,18 @@ function backToTop() {
   }
 
   .site-footer__statement {
+    margin: 3rem 0 4rem;
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+
+  .site-footer--home .site-footer__statement {
     margin: 4.75rem 0 6rem;
     font-size: clamp(3.65rem, 18.5vw, 6rem);
     line-height: 0.82;
   }
 
-  .site-footer__statement span:last-child {
+  .site-footer--home .site-footer__statement span:last-child {
     margin-left: 0;
   }
 

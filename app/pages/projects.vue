@@ -18,8 +18,12 @@ useHead({
 </script>
 
 <template>
-  <div class="mx-auto w-[min(calc(100%-2rem),68rem)] pb-[clamp(3rem,8vw,7rem)] pt-16">
-    <PageHeader title="Projects" description="Open-source projects and experiments." />
+  <div class="interior-shell">
+    <PageHeader
+      title="Projects"
+      eyebrow="Open source / experiments"
+      description="Tools and small experiments made to solve real problems."
+    />
     <Projects />
   </div>
 </template>
