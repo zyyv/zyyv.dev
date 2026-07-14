@@ -1,38 +1,134 @@
 <script setup lang="ts">
+import type { CSSProperties } from 'vue'
 import type { Photo } from '~/types'
 import PhotoDetail from '~/components/photos/PhotoDetail.vue'
+import { useScrollStage } from '~/composables/useScrollStage'
+import { hashFraction } from '~/utils/shuffle'
 
 const props = defineProps<{
   photos: Photo[]
+  allPhotos: Photo[]
 }>()
 
+const tunnelRef = useTemplateRef<HTMLElement>('tunnel')
+const tunnelViewportRef = useTemplateRef<HTMLElement>('tunnelViewport')
 const currentPhoto = shallowRef<Photo | null>(null)
-const preferredNames = [
-  'DSC03176.JPG',
-  'DSC03175.JPG',
-  'DSC03171.JPG',
-  'DSC01982.JPG',
-  'DSC02911.JPG',
-]
-
-const previewPhotos = computed(() => {
-  const preferred = preferredNames
-    .map((name) =>
-      props.photos.find((photo) => photo.filename?.includes(name) || photo.id.includes(name)),
-    )
-    .filter((photo): photo is Photo => !!photo)
-
-  return preferred.length === preferredNames.length ? preferred : props.photos.slice(0, 5)
-})
 
 const currentIndex = computed(() => {
   if (!currentPhoto.value) return -1
-  return props.photos.findIndex((photo) => photo.id === currentPhoto.value?.id)
+  return props.allPhotos.findIndex((photo) => photo.id === currentPhoto.value?.id)
 })
 
-function previewSrc(photo: Photo) {
-  return photo.thumbnail || photo.src
+const tunnelHeight = computed(() => {
+  const scrollLength = Math.min(Math.max(props.photos.length * 17, 245), 330)
+  return `${scrollLength}dvh`
+})
+
+function itemStyle(photo: Photo): CSSProperties {
+  const width = 14 + hashFraction(photo.id, 11) * 13
+  const left = 3 + hashFraction(photo.id, 23) * (94 - width)
+  const mobileWidth = 34 + hashFraction(photo.id, 37) * 22
+  const mobileLeft = 3 + hashFraction(photo.id, 41) * (94 - mobileWidth)
+  const angle = -6.5 + hashFraction(photo.id, 53) * 13
+  const top = 7 + hashFraction(photo.id, 67) * 66
+  const mobileTop = 8 + hashFraction(photo.id, 71) * 68
+
+  return {
+    '--photo-angle': `${angle.toFixed(2)}deg`,
+    '--photo-left': `${left.toFixed(2)}%`,
+    '--photo-mobile-left': `${mobileLeft.toFixed(2)}%`,
+    '--photo-mobile-top': `${mobileTop.toFixed(2)}%`,
+    '--photo-mobile-width': `${mobileWidth.toFixed(2)}vw`,
+    '--photo-width': `${width.toFixed(2)}vw`,
+    aspectRatio: `${photo.width} / ${photo.height}`,
+    top: `${top.toFixed(2)}%`,
+    zIndex: String(2 + Math.floor(hashFraction(photo.id, 79) * 8)),
+  } as CSSProperties
 }
+
+useScrollStage(tunnelRef, {
+  rebuildOnResize: true,
+  setup: () => {
+    const viewport = tunnelViewportRef.value
+    if (!viewport) return []
+
+    const items = Array.from(viewport.querySelectorAll<HTMLElement>('.photo-stream__item'))
+    const lastIndex = Math.max(items.length - 1, 1)
+
+    return items.map((item, index) => {
+      const centerX = viewport.clientWidth / 2 - (item.offsetLeft + item.offsetWidth / 2)
+      const centerY = viewport.clientHeight / 2 - (item.offsetTop + item.offsetHeight / 2)
+      const delay = (index / lastIndex) * 0.74
+      const arrival = delay + 0.085
+      const holdUntil = arrival + 0.045
+      const departure = Math.min(holdUntil + 0.13, 1)
+      const exitX = -centerX * 0.42
+      const exitY = -centerY * 0.42
+
+      const animation = item.animate(
+        [
+          {
+            opacity: 0,
+            filter: 'blur(1rem)',
+            pointerEvents: 'none',
+            transform: `translate3d(${centerX}px, ${centerY}px, 0) rotate(0deg) scale(0.035)`,
+            offset: 0,
+          },
+          {
+            opacity: 0,
+            filter: 'blur(1rem)',
+            pointerEvents: 'none',
+            transform: `translate3d(${centerX}px, ${centerY}px, 0) rotate(0deg) scale(0.035)`,
+            offset: delay,
+          },
+          {
+            opacity: 0.46,
+            filter: 'blur(0.35rem)',
+            pointerEvents: 'auto',
+            transform: `translate3d(${centerX * 0.58}px, ${centerY * 0.58}px, 0) rotate(0deg) scale(0.38)`,
+            offset: delay + (arrival - delay) * 0.48,
+          },
+          {
+            opacity: 1,
+            filter: 'blur(0)',
+            pointerEvents: 'auto',
+            transform: 'translate3d(0, 0, 0) rotate(var(--photo-angle)) scale(1)',
+            offset: arrival,
+          },
+          {
+            opacity: 1,
+            filter: 'blur(0)',
+            pointerEvents: 'auto',
+            transform: 'translate3d(0, 0, 0) rotate(var(--photo-angle)) scale(1.04)',
+            offset: holdUntil,
+          },
+          {
+            opacity: 0,
+            filter: 'blur(0.7rem)',
+            pointerEvents: 'none',
+            transform: `translate3d(${exitX}px, ${exitY}px, 0) rotate(var(--photo-angle)) scale(1.62)`,
+            offset: departure,
+          },
+          {
+            opacity: 0,
+            filter: 'blur(0.7rem)',
+            pointerEvents: 'none',
+            transform: `translate3d(${exitX}px, ${exitY}px, 0) rotate(var(--photo-angle)) scale(1.62)`,
+            offset: 1,
+          },
+        ],
+        {
+          duration: 1000,
+          fill: 'both',
+          easing: 'linear',
+        },
+      )
+
+      animation.pause()
+      return animation
+    })
+  },
+})
 
 function openPreview(photo: Photo) {
   currentPhoto.value = photo
@@ -46,12 +142,12 @@ function closePreview() {
 
 function showPreviousPhoto() {
   if (currentIndex.value <= 0) return
-  currentPhoto.value = props.photos[currentIndex.value - 1] ?? null
+  currentPhoto.value = props.allPhotos[currentIndex.value - 1] ?? null
 }
 
 function showNextPhoto() {
-  if (currentIndex.value < 0 || currentIndex.value >= props.photos.length - 1) return
-  currentPhoto.value = props.photos[currentIndex.value + 1] ?? null
+  if (currentIndex.value < 0 || currentIndex.value >= props.allPhotos.length - 1) return
+  currentPhoto.value = props.allPhotos[currentIndex.value + 1] ?? null
 }
 
 function selectPhoto(photo: Photo) {
@@ -64,46 +160,57 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section id="photos" class="photo-editorial" aria-labelledby="photos-title">
-    <div class="photo-editorial__sticky">
-      <header class="photo-editorial__header">
-        <div class="photo-editorial__intro">
-          <p>Light, weather, and ordinary moments worth keeping.</p>
-          <NuxtLink to="/photos">
-            <span>View all photos</span>
-            <i class="i-hugeicons:arrow-up-right-02" aria-hidden="true" />
-          </NuxtLink>
-        </div>
+  <section id="photos" class="photo-stream" aria-labelledby="photos-title">
+    <header class="photo-stream__header">
+      <div class="photo-stream__intro">
+        <p>Light, weather, and ordinary moments worth keeping.</p>
+        <NuxtLink to="/photos">
+          <span>View all photos</span>
+          <i class="i-hugeicons:arrow-up-right-02" aria-hidden="true" />
+        </NuxtLink>
+      </div>
 
-        <h2 id="photos-title">
-          <span>Selected</span>
-          <span>/ moments</span>
-        </h2>
-      </header>
+      <h2 id="photos-title">
+        <span>Photo</span>
+        <span>/ moments</span>
+      </h2>
+    </header>
 
-      <div v-if="previewPhotos.length" class="photo-editorial__gallery">
+    <div
+      v-if="photos.length"
+      ref="tunnel"
+      class="photo-stream__tunnel"
+      :style="{ height: tunnelHeight }"
+    >
+      <div ref="tunnelViewport" class="photo-stream__gallery">
+        <p class="photo-stream__tunnel-label" aria-hidden="true">Scroll through the frame</p>
         <button
-          v-for="(photo, index) in previewPhotos"
+          v-for="(photo, index) in photos"
           :key="photo.id"
           type="button"
-          class="photo-editorial__item"
-          :class="`photo-editorial__item--${index + 1}`"
+          class="photo-stream__item"
+          :style="itemStyle(photo)"
           :aria-label="`Open photo ${index + 1}`"
           @click="openPreview(photo)"
         >
-          <img :src="previewSrc(photo)" alt="" />
-          <span>{{ String(index + 1).padStart(2, '0') }}</span>
+          <span class="photo-stream__media">
+            <img :src="photo.src" alt="" loading="lazy" />
+            <span class="photo-stream__number">{{ String(index + 1).padStart(2, '0') }}</span>
+          </span>
         </button>
       </div>
+    </div>
 
-      <div v-else class="photo-editorial__empty">
-        <p>No photos available</p>
-      </div>
+    <div v-else class="photo-stream__empty">No photos available</div>
+
+    <div class="photo-stream__archive">
+      <p>More light, places, and accidental frames live in the full archive.</p>
+      <NuxtLink to="/photos">Enter the archive ↗</NuxtLink>
     </div>
 
     <PhotoDetail
       :photo="currentPhoto"
-      :photos="photos"
+      :photos="allPhotos"
       :visible="currentPhoto !== null"
       @close="closePreview"
       @prev="showPreviousPhoto"
@@ -114,18 +221,19 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.photo-editorial {
+.photo-stream {
   position: relative;
-  min-height: 180dvh;
-  padding: clamp(7rem, 13vw, 13rem) clamp(1rem, 4vw, 4rem);
+  padding: clamp(3rem, 6vw, 6rem) 0 0;
+  background: inherit;
+  color: inherit;
 }
 
-.photo-editorial__header {
-  position: relative;
+.photo-stream__header {
   min-height: 58dvh;
+  padding: 0 clamp(1rem, 4vw, 4rem);
 }
 
-.photo-editorial__intro {
+.photo-stream__intro {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -134,12 +242,13 @@ onBeforeUnmount(() => {
   line-height: 1.5;
 }
 
-.photo-editorial__intro p {
+.photo-stream__intro p {
   width: min(23rem, 42vw);
   margin: 0;
 }
 
-.photo-editorial__intro a {
+.photo-stream__intro a,
+.photo-stream__archive a {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -150,42 +259,93 @@ onBeforeUnmount(() => {
   transition: opacity 240ms ease;
 }
 
-.photo-editorial__intro a:hover {
+.photo-stream__intro a:hover,
+.photo-stream__archive a:hover {
   opacity: 0.55;
 }
 
-.photo-editorial__header h2 {
+.photo-stream__header h2 {
   display: grid;
   margin: clamp(4.5rem, 11vh, 8rem) 0 0;
+  font-family: 'DM Sans', sans-serif;
   font-size: clamp(4.8rem, 13vw, 12.5rem);
   font-weight: 500;
   line-height: 0.76;
   letter-spacing: -0.085em;
 }
 
-.photo-editorial__header h2 span:last-child {
+.photo-stream__header h2 span:last-child {
   margin-left: 14vw;
+  opacity: 0.45;
 }
 
-.photo-editorial__gallery {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: repeat(11, minmax(4rem, 7vw));
-  gap: clamp(0.75rem, 1.5vw, 1.5rem);
-}
-
-.photo-editorial__item {
+.photo-stream__tunnel {
   position: relative;
-  min-width: 0;
-  overflow: hidden;
+}
+
+.photo-stream__gallery {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: clip;
+  perspective: 80rem;
+  isolation: isolate;
+}
+
+.photo-stream__gallery::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, currentColor 7%, transparent),
+    transparent 34%
+  );
+  content: '';
+  pointer-events: none;
+}
+
+.photo-stream__tunnel-label {
+  position: absolute;
+  z-index: 1;
+  right: clamp(1rem, 4vw, 4rem);
+  bottom: 2rem;
+  margin: 0;
+  font-size: 0.6rem;
+  letter-spacing: 0.09em;
+  opacity: 0.38;
+  text-transform: uppercase;
+}
+
+.photo-stream__item {
+  position: absolute;
+  left: var(--photo-left);
+  width: var(--photo-width);
   padding: 0;
   border: 0;
+  border-radius: 0;
   background: transparent;
   color: inherit;
   cursor: zoom-in;
+  opacity: 0;
+  transform-origin: center;
+  will-change: filter, opacity, transform;
 }
 
-.photo-editorial__item img {
+.photo-stream__media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  box-shadow: 0 1.2rem 3.5rem color-mix(in srgb, currentColor 11%, transparent);
+  will-change: transform;
+}
+
+.photo-stream__media img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -195,454 +355,132 @@ onBeforeUnmount(() => {
     transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.photo-editorial__item:hover img {
+.photo-stream__item:hover .photo-stream__media img,
+.photo-stream__item:focus-visible .photo-stream__media img {
   filter: grayscale(0) contrast(1);
   transform: scale(1.025);
 }
 
-.photo-editorial__item:focus-visible {
+.photo-stream__item:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 0.4rem;
 }
 
-.photo-editorial__item span {
+.photo-stream__number {
   position: absolute;
   right: 0.55rem;
   bottom: 0.45rem;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgb(255 255 255 / 78%);
   font-size: 0.58rem;
   line-height: 1;
 }
 
-.photo-editorial__item--1 {
-  grid-column: 1 / span 5;
-  grid-row: 1 / span 4;
+.photo-stream__archive {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(6rem, 12vw, 11rem) clamp(1rem, 4vw, 4rem);
+  border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
-.photo-editorial__item--2 {
-  grid-column: 9 / span 4;
-  grid-row: 2 / span 3;
+.photo-stream__archive p {
+  max-width: 23rem;
+  margin: 0;
 }
 
-.photo-editorial__item--3 {
-  grid-column: 4 / span 5;
-  grid-row: 5 / span 3;
-}
-
-.photo-editorial__item--4 {
-  grid-column: 9 / span 3;
-  grid-row: 6 / span 4;
-}
-
-.photo-editorial__item--5 {
-  grid-column: 1 / span 3;
-  grid-row: 8 / span 3;
-}
-
-.photo-editorial__empty {
+.photo-stream__empty {
   display: grid;
   min-height: 50dvh;
   place-items: center;
-  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   font-size: 0.75rem;
   opacity: 0.58;
 }
 
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .photo-editorial__item {
-      animation: photo-enter both cubic-bezier(0.16, 1, 0.3, 1);
-      animation-timeline: view();
-      animation-range: entry 5% entry 72%;
-    }
-  }
-}
-
-@keyframes photo-enter {
-  from {
-    opacity: 0;
-    transform: translateY(3rem);
-  }
-}
-
 @media (max-width: 767.9px) {
-  .photo-editorial {
-    min-height: 0;
-    padding: 8rem 1rem;
+  .photo-stream {
+    padding-top: 6rem;
   }
 
-  .photo-editorial__header {
-    min-height: 34rem;
+  .photo-stream__header {
+    min-height: 31rem;
+    padding: 0 1rem;
   }
 
-  .photo-editorial__intro {
+  .photo-stream__intro {
     display: grid;
   }
 
-  .photo-editorial__intro p {
+  .photo-stream__intro p {
     width: min(18rem, 78vw);
   }
 
-  .photo-editorial__intro a {
+  .photo-stream__intro a {
     width: max-content;
   }
 
-  .photo-editorial__header h2 {
+  .photo-stream__header h2 {
     margin-top: 5rem;
     font-size: clamp(4.15rem, 20vw, 6rem);
     line-height: 0.8;
   }
 
-  .photo-editorial__header h2 span:last-child {
+  .photo-stream__header h2 span:last-child {
     margin-left: 0;
   }
 
-  .photo-editorial__gallery {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(13, 5rem);
-    gap: 0.75rem;
+  .photo-stream__item {
+    left: var(--photo-mobile-left);
+    top: var(--photo-mobile-top) !important;
+    width: var(--photo-mobile-width);
   }
 
-  .photo-editorial__item--1 {
-    grid-column: 1 / -1;
-    grid-row: 1 / span 4;
+  .photo-stream__archive {
+    display: grid;
+    padding: 6rem 1rem;
   }
 
-  .photo-editorial__item--2 {
-    grid-column: 2;
-    grid-row: 5 / span 3;
-  }
-
-  .photo-editorial__item--3 {
-    grid-column: 1;
-    grid-row: 6 / span 4;
-  }
-
-  .photo-editorial__item--4 {
-    grid-column: 2;
-    grid-row: 8 / span 4;
-  }
-
-  .photo-editorial__item--5 {
-    grid-column: 1;
-    grid-row: 10 / span 3;
+  .photo-stream__archive a {
+    width: max-content;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .photo-editorial__intro a,
-  .photo-editorial__item img {
-    transition: none;
-  }
-}
-
-/* The chapter stays in place while the photographs unfold from its title. */
-.photo-editorial {
-  min-height: 270dvh;
-  padding: 0;
-  view-timeline-name: --photo-stage;
-  view-timeline-axis: block;
-}
-
-.photo-editorial__sticky {
-  position: sticky;
-  top: 0;
-  height: 100dvh;
-  overflow: hidden;
-  padding: clamp(5.5rem, 7vw, 7rem) clamp(1rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem);
-  isolation: isolate;
-}
-
-.photo-editorial__header {
-  position: static;
-  min-height: 0;
-}
-
-.photo-editorial__intro {
-  position: relative;
-  z-index: 8;
-}
-
-.photo-editorial__header h2 {
-  position: absolute;
-  top: 50%;
-  right: clamp(1rem, 4vw, 4rem);
-  left: clamp(1rem, 4vw, 4rem);
-  z-index: 3;
-  margin: 0;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-.photo-editorial__gallery {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: block;
-}
-
-.photo-editorial__item {
-  position: absolute;
-  display: block;
-  overflow: hidden;
-  will-change: clip-path, transform;
-}
-
-.photo-editorial__item--1 {
-  top: 10%;
-  left: 4%;
-  z-index: 2;
-  width: min(32vw, 31rem);
-  height: 34vh;
-}
-
-.photo-editorial__item--2 {
-  top: 9%;
-  right: 5%;
-  z-index: 4;
-  width: min(23vw, 22rem);
-  height: 35vh;
-}
-
-.photo-editorial__item--3 {
-  bottom: 5%;
-  left: 27%;
-  z-index: 4;
-  width: min(36vw, 36rem);
-  height: 32vh;
-}
-
-.photo-editorial__item--4 {
-  right: 8%;
-  bottom: -4%;
-  z-index: 2;
-  width: min(18vw, 18rem);
-  height: 43vh;
-}
-
-.photo-editorial__item--5 {
-  bottom: 5%;
-  left: 6%;
-  z-index: 4;
-  width: min(17vw, 17rem);
-  height: 25vh;
-}
-
-.photo-editorial__empty {
-  min-height: 100%;
-}
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .photo-editorial__header h2 span,
-    .photo-editorial__item,
-    .photo-editorial__intro {
-      animation-duration: 1ms;
-      animation-fill-mode: both;
-      animation-timing-function: linear;
-      animation-timeline: --photo-stage;
-      animation-range: cover 0% cover 100%;
-    }
-
-    .photo-editorial__header h2 span:first-child {
-      animation-name: photo-title-first;
-    }
-
-    .photo-editorial__header h2 span:last-child {
-      animation-name: photo-title-last;
-    }
-
-    .photo-editorial__intro {
-      animation-name: photo-intro-drift;
-    }
-
-    .photo-editorial__item--1 {
-      animation-name: photo-unfold-1;
-    }
-
-    .photo-editorial__item--2 {
-      animation-name: photo-unfold-2;
-    }
-
-    .photo-editorial__item--3 {
-      animation-name: photo-unfold-3;
-    }
-
-    .photo-editorial__item--4 {
-      animation-name: photo-unfold-4;
-    }
-
-    .photo-editorial__item--5 {
-      animation-name: photo-unfold-5;
-    }
-  }
-}
-
-@keyframes photo-title-first {
-  from {
-    transform: translate3d(5vw, 10vh, 0);
-  }
-  to {
-    transform: translate3d(-8vw, -8vh, 0);
-  }
-}
-
-@keyframes photo-title-last {
-  from {
-    transform: translate3d(-8vw, 4vh, 0);
-  }
-  to {
-    transform: translate3d(8vw, -2vh, 0);
-  }
-}
-
-@keyframes photo-intro-drift {
-  from {
-    opacity: 0.25;
-    transform: translate3d(0, 6vh, 0);
-  }
-  55%,
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes photo-unfold-1 {
-  0% {
-    clip-path: inset(48% 48% 48% 48%);
-    transform: translate3d(33vw, 29vh, 0) scale(0.12) rotate(-4deg);
-  }
-  56%,
-  100% {
-    clip-path: inset(0);
-    transform: translate3d(0, 0, 0) scale(1) rotate(0);
-  }
-}
-
-@keyframes photo-unfold-2 {
-  0%,
-  10% {
-    clip-path: inset(49% 49% 49% 49%);
-    transform: translate3d(-25vw, 32vh, 0) scale(0.1) rotate(5deg);
-  }
-  66%,
-  100% {
-    clip-path: inset(0);
-    transform: translate3d(0, 0, 0) scale(1) rotate(0);
-  }
-}
-
-@keyframes photo-unfold-3 {
-  0%,
-  20% {
-    clip-path: inset(49% 49% 49% 49%);
-    transform: translate3d(4vw, -20vh, 0) scale(0.1);
-  }
-  76%,
-  100% {
-    clip-path: inset(0);
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes photo-unfold-4 {
-  0%,
-  28% {
-    clip-path: inset(49% 49% 49% 49%);
-    transform: translate3d(-24vw, -24vh, 0) scale(0.08) rotate(-5deg);
-  }
-  86%,
-  100% {
-    clip-path: inset(0);
-    transform: translate3d(0, 0, 0) scale(1) rotate(0);
-  }
-}
-
-@keyframes photo-unfold-5 {
-  0%,
-  36% {
-    clip-path: inset(49% 49% 49% 49%);
-    transform: translate3d(29vw, -23vh, 0) scale(0.08) rotate(6deg);
-  }
-  94%,
-  100% {
-    clip-path: inset(0);
-    transform: translate3d(0, 0, 0) scale(1) rotate(0);
-  }
-}
-
-@media (max-width: 767.9px) {
-  .photo-editorial {
-    min-height: 240dvh;
-    padding: 0;
+  .photo-stream__tunnel {
+    height: auto !important;
   }
 
-  .photo-editorial__sticky {
-    padding: 5.5rem 1rem 5rem;
-  }
-
-  .photo-editorial__intro {
-    display: flex;
-    align-items: flex-start;
-  }
-
-  .photo-editorial__intro p {
-    width: min(12rem, 48vw);
-  }
-
-  .photo-editorial__header h2 {
-    top: 48%;
-    right: 1rem;
-    left: 1rem;
-    margin: 0;
-    font-size: clamp(4rem, 19vw, 5.5rem);
-  }
-
-  .photo-editorial__item--1 {
-    top: 15%;
-    left: -3%;
-    width: 52vw;
-    height: 26vh;
-  }
-
-  .photo-editorial__item--2 {
-    top: 17%;
-    right: -5%;
-    width: 37vw;
-    height: 29vh;
-  }
-
-  .photo-editorial__item--3 {
-    bottom: 8%;
-    left: 20%;
-    width: 58vw;
-    height: 27vh;
-  }
-
-  .photo-editorial__item--4 {
-    right: -2%;
-    bottom: 0;
-    width: 31vw;
-    height: 34vh;
-  }
-
-  .photo-editorial__item--5 {
-    bottom: 10%;
-    left: -2%;
-    width: 30vw;
-    height: 22vh;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .photo-editorial {
-    min-height: 115dvh;
-  }
-
-  .photo-editorial__sticky {
+  .photo-stream__gallery {
     position: relative;
-    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    height: auto;
+    gap: 1rem;
+    padding: 1rem;
+    overflow: visible;
+  }
+
+  .photo-stream__item {
+    position: relative;
+    top: auto !important;
+    left: auto;
+    width: auto;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .photo-stream__media {
+    clip-path: inset(0) !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .photo-stream__media img,
+  .photo-stream__intro a,
+  .photo-stream__archive a {
+    transition: none;
   }
 }
 </style>

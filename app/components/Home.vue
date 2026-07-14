@@ -1,38 +1,24 @@
 <script setup lang="ts">
-import type { Photo, PostPreview } from '~/types'
+import type { Photo } from '~/types'
 import HomePhotosPreview from './home/HomePhotosPreview.vue'
 import HomeHero from './home/HomeHero.vue'
+import { seededShuffle } from '~/utils/shuffle'
 
-defineProps<{
-  posts: PostPreview[]
+const props = defineProps<{
   photos: Photo[]
 }>()
 
-const sections = {
-  projects: {
-    description: 'Tools I build, maintain, and learn from in public.',
-    icon: 'i-hugeicons:package-search',
-    label: 'View all projects',
-    secondaryTitle: '/ projects',
-    title: 'Open source',
-    to: '/projects',
-  },
-  posts: {
-    description: 'Front-end engineering, tooling, and the details in between.',
-    icon: 'i-hugeicons:note-edit',
-    label: 'View all posts',
-    secondaryTitle: '/ notes',
-    title: 'Writing',
-    to: '/posts',
-  },
-} as const
+const photoSeed = useState('home-photo-seed', () => Math.random())
+const randomPhotos = computed(() => seededShuffle(props.photos, photoSeed.value))
+const heroPhotos = computed(() => randomPhotos.value.slice(0, 3))
+const streamPhotos = computed(() => randomPhotos.value.slice(3, 18))
 </script>
 
 <template>
   <div class="home-page w-full min-w-0 overflow-x-clip">
-    <HomeHero :photos="photos" />
+    <HomeHero :photos="heroPhotos" />
 
-    <HomePhotosPreview :photos="photos" />
+    <HomePhotosPreview :all-photos="photos" :photos="streamPhotos" />
   </div>
 </template>
 

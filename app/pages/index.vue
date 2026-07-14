@@ -1,17 +1,11 @@
 <script setup lang="ts">
 import type { Photo } from '~/types'
 import Home from '~/components/Home.vue'
-import { toPostPreview } from '~/utils/posts'
 
-const { data: postDocuments } = await useAsyncData('home-posts', () =>
-  queryCollection('posts').order('date', 'DESC').limit(10).all(),
-)
 const { data: photos } = await useFetch<Photo[]>('/api/photos-data.json', {
   key: 'home-photos',
   default: () => [],
 })
-
-const posts = computed(() => (postDocuments.value ?? []).map((post) => toPostPreview(post)))
 
 useSeoMeta({
   title: 'Chris',
@@ -32,5 +26,5 @@ useHead({
 </script>
 
 <template>
-  <Home :posts="posts" :photos="photos" />
+  <Home :photos="photos" />
 </template>
