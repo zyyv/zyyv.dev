@@ -9,6 +9,13 @@ const navigation = [
 ] as const
 
 const isHome = computed(() => route.path === '/')
+const { mode: photosViewMode, togglePhotosView } = usePhotosViewMode()
+
+const photosToggleLabel = computed(() =>
+  photosViewMode.value === 'waterfall'
+    ? 'Switch photos to Ripplable view'
+    : 'Switch photos to waterfall view',
+)
 
 function isActive(path: string) {
   if (path === '/') return route.path === path
@@ -38,28 +45,41 @@ function isActive(path: string) {
         class="flex items-center"
         :class="isHome ? 'gap-[clamp(1rem,3vw,2.5rem)]' : 'flex-col gap-[0.2rem] lt-md:flex-row'"
       >
-        <NuxtLink
-          v-for="item in navigation"
-          :key="item.to"
-          :to="item.to"
-          class="relative color-inherit no-underline transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
-          :class="[
-            isHome
-              ? 'text-[0.68rem] font-500'
-              : 'grid size-[2.35rem] place-items-center rounded-[0.65rem] text-[1.12rem] op-52 hover:[background-color:color-mix(in_srgb,currentColor_9%,transparent)]',
-            !isHome && isActive(item.to)
-              ? '[background-color:color-mix(in_srgb,currentColor_14%,transparent)]! op-100!'
-              : '',
-          ]"
-          :aria-current="isActive(item.to) ? 'page' : undefined"
-          :aria-label="item.label"
-          :title="item.label"
-        >
-          <span v-if="isHome">{{ item.label }}</span>
-          <MeAvatar v-else-if="item.to === '/'" navigation shared />
-          <i v-else class="color-inherit" :class="item.icon" aria-hidden="true" />
-          <span v-if="!isHome" class="sr-only">{{ item.label }}</span>
-        </NuxtLink>
+        <template v-for="item in navigation" :key="item.to">
+          <button
+            v-if="!isHome && item.to === '/photos' && isActive(item.to)"
+            type="button"
+            class="relative grid size-[2.35rem] place-items-center rounded-[0.65rem] border-0 color-inherit text-[1.12rem] op-100 [background-color:color-mix(in_srgb,currentColor_14%,transparent)] transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
+            :aria-label="photosToggleLabel"
+            :aria-pressed="photosViewMode === 'ripplable'"
+            :title="photosToggleLabel"
+            @click="togglePhotosView"
+          >
+            <i class="i-hugeicons:image-03 color-inherit" aria-hidden="true" />
+          </button>
+
+          <NuxtLink
+            v-else
+            :to="item.to"
+            class="relative color-inherit no-underline transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
+            :class="[
+              isHome
+                ? 'text-[0.68rem] font-500'
+                : 'grid size-[2.35rem] place-items-center rounded-[0.65rem] text-[1.12rem] op-52 hover:[background-color:color-mix(in_srgb,currentColor_9%,transparent)]',
+              !isHome && isActive(item.to)
+                ? '[background-color:color-mix(in_srgb,currentColor_14%,transparent)]! op-100!'
+                : '',
+            ]"
+            :aria-current="isActive(item.to) ? 'page' : undefined"
+            :aria-label="item.label"
+            :title="item.label"
+          >
+            <span v-if="isHome">{{ item.label }}</span>
+            <MeAvatar v-else-if="item.to === '/'" navigation shared />
+            <i v-else class="color-inherit" :class="item.icon" aria-hidden="true" />
+            <span v-if="!isHome" class="sr-only">{{ item.label }}</span>
+          </NuxtLink>
+        </template>
       </div>
 
       <span

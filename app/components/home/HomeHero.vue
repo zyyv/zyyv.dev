@@ -77,13 +77,13 @@ useScrollStage(heroRef, {
 
       <div v-if="photos.length" class="home-hero__images" aria-hidden="true">
         <figure v-if="photos[0]" class="home-hero__frame home-hero__frame--primary">
-          <img :src="photos[0].src" alt="" fetchpriority="high" />
+          <img :src="photos[0].thumbnail" alt="" fetchpriority="high" />
         </figure>
         <figure v-if="photos[1]" class="home-hero__frame home-hero__frame--secondary">
-          <img :src="photos[1].src" alt="" />
+          <img :src="photos[1].thumbnail" alt="" />
         </figure>
         <figure v-if="photos[2]" class="home-hero__frame home-hero__frame--detail">
-          <img :src="photos[2].src" alt="" />
+          <img :src="photos[2].thumbnail" alt="" />
         </figure>
       </div>
 

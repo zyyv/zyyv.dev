@@ -7,6 +7,7 @@ import exifr from 'exifr'
 import sharp from 'sharp'
 
 const sourcePath = join(process.cwd(), 'photos/originals')
+const thumbnailPath = join(process.cwd(), 'public/photos/thumb')
 const dataFile = 'server/utils/data.ts'
 const dataPath = join(process.cwd(), dataFile)
 
@@ -52,8 +53,9 @@ async function generatePhotosData() {
           return encode(new Uint8ClampedArray(data), info.width, info.height, 4, 4)
         }
         const sharped = sharp(filePath)
-        const [stats, originalMetadata, exifData] = await Promise.all([
+        const [stats, thumbnailStats, originalMetadata, exifData] = await Promise.all([
           stat(filePath),
+          stat(join(thumbnailPath, filename)),
           sharped.metadata(),
           exifr.parse(filePath, {
             pick: [
@@ -79,6 +81,8 @@ async function generatePhotosData() {
           filename,
           src: getCompressedPath(filename),
           thumbnail: getThumbnailPath(filename),
+          thumbnailSize: thumbnailStats.size,
+          thumbnailSizeFormatted: formatSize(thumbnailStats.size),
           size: stats.size,
           sizeFormatted: formatSize(stats.size),
           width,

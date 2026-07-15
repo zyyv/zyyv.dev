@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import CommandPalette from '~/components/command/CommandPalette.vue'
 import NavHeader from '~/components/nav/NavHeader.vue'
+
+const route = useRoute()
+const showFooter = computed(() => !route.path.startsWith('/photos'))
 </script>
 
 <template>
@@ -8,6 +11,6 @@ import NavHeader from '~/components/nav/NavHeader.vue'
   <main>
     <slot />
   </main>
-  <SiteFooter />
+  <SiteFooter v-if="showFooter" />
   <CommandPalette />
 </template>

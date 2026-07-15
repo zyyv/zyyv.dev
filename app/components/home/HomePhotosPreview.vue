@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
           @click="openPreview(photo)"
         >
           <span class="photo-stream__media">
-            <img :src="photo.src" alt="" loading="lazy" />
+            <img :src="photo.thumbnail" alt="" loading="lazy" />
             <span class="photo-stream__number">{{ String(index + 1).padStart(2, '0') }}</span>
           </span>
         </button>

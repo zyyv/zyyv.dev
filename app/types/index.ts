@@ -33,7 +33,9 @@ export interface Photo {
   id: string
   filename: string
   src: string // 压缩后的图片地址
-  thumbnail?: string // 缩略图路径
+  thumbnail: string // 缩略图路径
+  thumbnailSize: number // 缩略图文件大小（字节）
+  thumbnailSizeFormatted: string // 格式化后的缩略图文件大小
   originalPath?: string // 原图路径
   size: number
   sizeFormatted: string

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { Photo } from '~/types'
 import PhotosGallery from '~/components/photos/Photos.vue'
+import RipplablePhotos from '~/components/photos/RipplablePhotos.vue'
 
 const { data: photos } = await useFetch<Photo[]>('/api/photos-data.json', {
   key: 'photos-page',
   default: () => [],
 })
+
+const { mode } = usePhotosViewMode()
 
 useSeoMeta({
   title: 'Photos - Chris',
@@ -26,7 +29,17 @@ useHead({
 </script>
 
 <template>
-  <div class="h-screen">
-    <PhotosGallery :photos="photos" />
+  <div class="photos-page">
+    <PhotosGallery v-if="mode === 'waterfall'" :photos="photos" />
+    <RipplablePhotos v-else :photos="photos" />
   </div>
 </template>
+
+<style scoped>
+.photos-page {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+</style>
