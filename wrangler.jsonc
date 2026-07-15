@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "zyyv-dev",
+  "name": "zyyv",
   "pages_build_output_dir": "./dist",
   "compatibility_date": "2026-07-10",
   "compatibility_flags": ["nodejs_compat"],
