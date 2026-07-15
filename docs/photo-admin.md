@@ -5,15 +5,22 @@ compressed, and thumbnail variants in R2.
 
 ## Cloudflare bindings
 
-Configure these bindings on the deployed Worker or Pages project:
+Configure these bindings on the deployed Worker:
 
 - `DB`: D1 database `zyyv_dev`
 - `PHOTOS`: R2 bucket `photos`
 - `IMAGES`: Cloudflare Images binding
 
-Bindings are capabilities and do not need access keys in application code. Copy
-`wrangler.example.jsonc` to `wrangler.jsonc`, replace the D1 database ID, and use it for local
-Cloudflare development if desired.
+Bindings are capabilities and do not need access keys in application code. The checked-in
+`wrangler.jsonc` is the source of truth for local development and deployment.
+
+Deploy the Nuxt application as a Cloudflare Worker with Static Assets. Cloudflare Pages does not
+support the Images binding used for server-side image transforms.
+
+```sh
+pnpm build
+pnpm wrangler deploy
+```
 
 Apply the initial schema:
 

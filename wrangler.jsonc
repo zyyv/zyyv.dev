@@ -1,9 +1,12 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "zyyv-dev",
-  "pages_build_output_dir": "./dist",
+  "main": "./.output/server/index.mjs",
   "compatibility_date": "2026-07-10",
   "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./.output/public",
+  },
   "d1_databases": [
     {
       "binding": "DB",
@@ -20,5 +23,17 @@
   ],
   "images": {
     "binding": "IMAGES",
+    "remote": true,
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.01,
+    },
   },
 }

@@ -1,4 +1,6 @@
-import type { ImagesBinding, R2BucketBinding } from '../types/cloudflare'
+import type { CloudflareBindings, R2BucketBinding } from '../types/cloudflare'
+
+type ImagesBinding = CloudflareBindings['IMAGES']
 
 const MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 const SUPPORTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
@@ -20,6 +22,15 @@ function extensionForType(contentType: string) {
   return 'webp'
 }
 
+function bytesToStream(bytes: Uint8Array) {
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(bytes)
+      controller.close()
+    },
+  })
+}
+
 async function transformImage(
   images: ImagesBinding,
   bytes: Uint8Array,
@@ -29,7 +40,7 @@ async function transformImage(
   const outputOptions =
     contentType === 'image/png' ? { format: contentType } : { format: contentType, quality: 80 }
   const result = await images
-    .input(bytes)
+    .input(bytesToStream(bytes))
     .transform({ width, fit: 'scale-down' })
     .output({ ...outputOptions, anim: false })
   const response = result.response()
@@ -54,7 +65,7 @@ export async function processAndStorePhoto(options: {
     throw createError({ statusCode: 413, statusMessage: '图片不能为空且不能超过 20 MB' })
   }
 
-  const info = await images.info(file.data)
+  const info = await images.info(bytesToStream(file.data))
   if (!info.width || !info.height) {
     throw createError({ statusCode: 422, statusMessage: '无法读取图片尺寸' })
   }
