@@ -12,6 +12,7 @@ const props = withDefaults(
     pageScroll: false,
   },
 )
+const galleryRef = useTemplateRef<HTMLElement>('gallery')
 
 const {
   loading,
@@ -29,22 +30,29 @@ const {
 
 // 图片预览状态
 const showPreview = ref(false)
-const currentPhoto = ref<Photo | null>(null)
+const currentPhoto = shallowRef<Photo | null>(null)
+const { isTransitioning, openPhoto, closePhoto } = usePhotoViewTransition({
+  sourceRoot: galleryRef,
+})
 
 // 打开图片预览
-function openPreview(photo: Photo) {
-  currentPhoto.value = photo
-  showPreview.value = true
-  // 阻止body滚动
-  document.body.style.overflow = 'hidden'
+async function openPreview(photo: Photo, event: MouseEvent) {
+  await openPhoto(photo.src, event.currentTarget as HTMLElement, () => {
+    currentPhoto.value = photo
+    showPreview.value = true
+    document.body.style.overflow = 'hidden'
+  })
 }
 
 // 关闭图片预览
-function closePreview() {
-  showPreview.value = false
-  currentPhoto.value = null
-  // 恢复body滚动
-  document.body.style.overflow = ''
+async function closePreview() {
+  if (!currentPhoto.value) return
+
+  await closePhoto(currentPhoto.value.id, () => {
+    showPreview.value = false
+    currentPhoto.value = null
+    document.body.style.overflow = ''
+  })
 }
 
 onBeforeUnmount(() => {
@@ -81,7 +89,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="photos-gallery flex h-full min-h-0 w-full flex-col" :class="{ 'h-auto': pageScroll }">
+  <div
+    ref="gallery"
+    class="photos-gallery flex h-full min-h-0 w-full flex-col"
+    :class="{ 'h-auto': pageScroll }"
+  >
     <!-- 错误状态 -->
     <div v-if="error" class="flex flex-col justify-center items-center h-64 p-4">
       <div class="text-red-500 text-lg mb-4">
@@ -120,7 +132,11 @@ onMounted(() => {
         row-key="id"
       >
         <template #default="{ item }">
-          <div class="cursor-pointer" @click="openPreview(item)">
+          <div
+            class="cursor-pointer"
+            :data-photo-transition-id="item.id"
+            @click="openPreview(item, $event)"
+          >
             <ImgBlurHash
               :src="item.thumbnail"
               :blurhash="item.blurhash"
@@ -167,6 +183,7 @@ onMounted(() => {
       :photo="currentPhoto"
       :photos="allPhotos"
       :visible="showPreview"
+      :transitioning="isTransitioning"
       @close="closePreview"
       @prev="showPrevPhoto"
       @next="showNextPhoto"

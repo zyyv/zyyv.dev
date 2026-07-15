@@ -7,6 +7,7 @@ interface Props {
   photo: Photo | null
   photos: Photo[]
   visible: boolean
+  transitioning?: boolean
 }
 
 interface Emits {
@@ -145,7 +146,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 <template>
   <Teleport to="body">
-    <Transition name="photo-dialog">
+    <Transition name="photo-dialog" :css="!transitioning">
       <div v-if="visible && photo" class="photo-dialog__backdrop" @mousedown.self="emit('close')">
         <section
           ref="dialog"
@@ -326,6 +327,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   background: rgb(233 233 229 / 94%);
   color: var(--dialog-text);
   backdrop-filter: blur(1.25rem) saturate(0.65);
+  view-transition-name: photo-detail-surface;
 }
 
 :global(.dark .photo-dialog__backdrop) {
@@ -511,6 +513,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   transform-origin: center;
   user-select: none;
   will-change: transform;
+  view-transition-name: photo-detail-image;
 }
 
 .photo-dialog__figure figcaption {

@@ -33,9 +33,16 @@ const motionConfig = computed<Partial<RipplableConfig>>(() =>
     : {},
 )
 
+function getPhotoId(item: RipplableListItem | null) {
+  if (!item || typeof item === 'string' || typeof item.photoId !== 'string') return undefined
+  return item.photoId
+}
+
 function openPreview(item: RipplableListItem | null) {
-  if (!item || typeof item === 'string' || typeof item.photoId !== 'string') return
-  currentPhoto.value = props.photos.find((photo) => photo.id === item.photoId) ?? null
+  const photoId = getPhotoId(item)
+  if (!photoId) return
+
+  currentPhoto.value = props.photos.find((candidate) => candidate.id === photoId) ?? null
   if (currentPhoto.value) document.body.style.overflow = 'hidden'
 }
 
@@ -95,7 +102,7 @@ onBeforeUnmount(() => {
       </Ripplable>
     </ClientOnly>
 
-    <PhotoDetail
+    <PhotosPhotoDetail
       :photo="currentPhoto"
       :photos="photos"
       :visible="currentPhoto !== null"

@@ -8,7 +8,7 @@ const { data: photos } = await useFetch<Photo[]>('/api/photos-data.json', {
   default: () => [],
 })
 
-const { mode } = usePhotosViewMode()
+const { mode, isTransitioning } = usePhotosViewMode()
 
 useSeoMeta({
   title: 'Photos - Chris',
@@ -30,8 +30,10 @@ useHead({
 
 <template>
   <div class="photos-page">
-    <PhotosGallery v-if="mode === 'waterfall'" :photos="photos" />
-    <RipplablePhotos v-else :photos="photos" />
+    <Transition name="photos-view" mode="out-in" :css="!isTransitioning">
+      <PhotosGallery v-if="mode === 'waterfall'" key="waterfall" :photos="photos" />
+      <RipplablePhotos v-else key="ripplable" :photos="photos" />
+    </Transition>
   </div>
 </template>
 
@@ -41,5 +43,30 @@ useHead({
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
+  contain: layout;
+}
+
+.photos-view-enter-active,
+.photos-view-leave-active {
+  transition:
+    opacity 220ms ease,
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photos-view-enter-from {
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.992);
+}
+
+.photos-view-leave-to {
+  opacity: 0;
+  transform: translateY(-0.45rem) scale(0.996);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photos-view-enter-active,
+  .photos-view-leave-active {
+    transition-duration: 1ms;
+  }
 }
 </style>

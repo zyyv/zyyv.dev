@@ -74,8 +74,8 @@ function resetTilt(event: PointerEvent) {
         </template>
 
         <div v-else class="project-card__repo-cover" aria-hidden="true">
-          <span>{{ repo.name.slice(0, 2) }}</span>
-          <i i-hugeicons:repository />
+          <span>{{ repo.name.split('-')[0] }}</span>
+          <i i-hugeicons:repository op-50 />
         </div>
       </div>
 
@@ -138,7 +138,7 @@ function resetTilt(event: PointerEvent) {
   position: relative;
   height: 100%;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, currentColor 13%, transparent);
+  border: 1px dashed color-mix(in srgb, currentColor 13%, transparent);
   border-radius: 0.45rem;
   background: color-mix(in srgb, currentColor 2.8%, transparent);
   transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
@@ -171,7 +171,6 @@ function resetTilt(event: PointerEvent) {
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   background: #deded9;
   transform: translateZ(0.4rem);
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
