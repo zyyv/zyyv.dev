@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "zyyv-dev",
+  "compatibility_date": "2026-07-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zyyv_dev",
+      "database_id": "a2785b81-734a-4ba6-9d97-b436fdc767b6",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PHOTOS",
+      "bucket_name": "photos",
+    },
+  ],
+  "images": {
+    "binding": "IMAGES",
+  },
+}

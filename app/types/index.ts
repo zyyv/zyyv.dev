@@ -59,3 +59,55 @@ export interface Photo {
     }
   }
 }
+
+export interface PhotoExif {
+  make?: string
+  model?: string
+  exposureTime?: number
+  fNumber?: number
+  iso?: number
+  focalLength?: number
+  lens?: string
+  dateTime?: string
+  gps?: {
+    latitude?: number
+    longitude?: number
+  }
+}
+
+export interface NewPhoto {
+  id: string
+  filename: string
+  src: string // src 默认是原图的 src
+
+  origin: string // 原图 src
+  originSize: number // 原图文件大小（字节）
+  originSizeFormatted: string
+
+  compressed: string // 压缩后的图片地址
+  compressedSize: number // 压缩后的图片文件大小（字节）
+  compressedSizeFormatted: string
+
+  thumbnail: string // 缩略图路径
+  thumbnailSize: number // 缩略图文件大小（字节）
+  thumbnailSizeFormatted: string // 格式化后的缩略图文件大小
+
+  width: number
+  height: number
+  blurhash: string
+  createdAt: Date | string
+  modifiedAt: Date | string
+
+  private?: boolean // 隐私图片，默认不展示
+  exif?: PhotoExif
+}
+
+export interface PhotoListResponse {
+  photos: NewPhoto[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}

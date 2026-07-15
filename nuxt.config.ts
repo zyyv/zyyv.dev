@@ -26,6 +26,8 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    adminPassword: process.env.NUXT_ADMIN_PASSWORD || '',
+    sessionSecret: process.env.NUXT_SESSION_SECRET || '',
     public: {
       buildCommit: getBuildCommit(),
     },
@@ -60,6 +62,9 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    routeRules: {
+      '/admin/**': { ssr: false },
+    },
     prerender: {
       crawlLinks: true,
       routes: ['/', '/posts', '/photos', '/projects'],
@@ -67,6 +72,9 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    optimizeDeps: {
+      include: ['exifr'],
+    },
     build: {
       target: 'esnext',
     },
