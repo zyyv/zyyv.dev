@@ -12,6 +12,15 @@ const previewUrl = computed(() => {
 })
 
 const primaryUrl = computed(() => previewUrl.value || props.repo.html_url)
+const previewDomain = computed(() => {
+  if (!previewUrl.value) return ''
+
+  try {
+    return new URL(previewUrl.value).hostname.replace(/^www\./, '')
+  } catch {
+    return previewUrl.value
+  }
+})
 const previewLoaded = ref(false)
 
 function updateTilt(event: PointerEvent) {
@@ -58,6 +67,10 @@ function resetTilt(event: PointerEvent) {
             sandbox="allow-scripts allow-same-origin allow-forms"
             @load="previewLoaded = true"
           />
+          <span class="project-card__domain" aria-hidden="true">
+            <i />
+            {{ previewDomain }}
+          </span>
         </template>
 
         <div v-else class="project-card__repo-cover" aria-hidden="true">
@@ -69,18 +82,42 @@ function resetTilt(event: PointerEvent) {
       <div class="project-card__content">
         <h3>{{ repo.name }}</h3>
         <p>{{ repo.description || 'Source code and project notes on GitHub.' }}</p>
+
+        <div class="project-card__meta">
+          <span v-if="repo.language" class="project-card__language">
+            <i :style="{ backgroundColor: getLanguageColor(repo.language) }" />
+            {{ repo.language }}
+          </span>
+          <span v-if="repo.stargazers_count" title="GitHub stars">
+            <i i-hugeicons:star />
+            {{ repo.stargazers_count }}
+          </span>
+          <span v-if="repo.forks_count" title="GitHub forks">
+            <i i-hugeicons:git-fork />
+            {{ repo.forks_count }}
+          </span>
+          <a
+            class="project-card__source"
+            :href="repo.html_url"
+            target="_blank"
+            rel="noreferrer"
+            :aria-label="`View ${repo.name} source on GitHub`"
+          >
+            <i i-custom:github />
+            Source
+          </a>
+        </div>
       </div>
 
       <div class="project-card__light" aria-hidden="true" />
+      <a
+        class="project-card__link"
+        :href="primaryUrl"
+        target="_blank"
+        rel="noreferrer"
+        :aria-label="`Open ${repo.name}${previewUrl ? ' website' : ' on GitHub'}`"
+      />
     </div>
-
-    <a
-      class="project-card__link"
-      :href="primaryUrl"
-      target="_blank"
-      rel="noreferrer"
-      :aria-label="`Open ${repo.name}${previewUrl ? ' website' : ' on GitHub'}`"
-    />
   </article>
 </template>
 
@@ -125,10 +162,8 @@ function resetTilt(event: PointerEvent) {
   transition-duration: 80ms;
 }
 
-.project-card:focus-within {
-  outline: 2px solid currentColor;
-  outline-offset: 0.22rem;
-  border-radius: 0.45rem;
+.project-card:focus-within .project-card__surface {
+  border-color: color-mix(in srgb, currentColor 30%, transparent);
 }
 
 .project-card__preview {
@@ -167,6 +202,36 @@ function resetTilt(event: PointerEvent) {
 .project-card:hover .project-card__preview iframe {
   opacity: 0.9;
   filter: grayscale(0.35) saturate(0.7) contrast(0.94);
+}
+
+.project-card__domain {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  z-index: 2;
+  display: inline-flex;
+  max-width: calc(100% - 1.3rem);
+  align-items: center;
+  gap: 0.38rem;
+  overflow: hidden;
+  padding: 0.3rem 0.48rem;
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 0.28rem;
+  background: rgb(233 233 229 / 80%);
+  color: #24241f;
+  font-size: 0.58rem;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  backdrop-filter: blur(0.65rem);
+}
+
+.project-card__domain i {
+  width: 0.3rem;
+  height: 0.3rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #718975;
 }
 
 .project-card__preview::after {
@@ -235,8 +300,10 @@ function resetTilt(event: PointerEvent) {
 .project-card__content {
   position: relative;
   z-index: 2;
-  min-height: 8.7rem;
-  padding: 1.1rem 1.15rem 1.25rem;
+  display: flex;
+  min-height: 10.25rem;
+  flex-direction: column;
+  padding: 1.1rem 1.15rem 1rem;
   transform: translateZ(0.7rem);
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -256,11 +323,61 @@ function resetTilt(event: PointerEvent) {
 
 .project-card p {
   max-width: 48ch;
-  margin: 0.7rem 0 0;
+  flex: 1;
+  margin: 0.7rem 0 1.25rem;
   font-size: 0.76rem;
   line-height: 1.55;
   opacity: 0.54;
   text-wrap: pretty;
+}
+
+.project-card__meta {
+  display: flex;
+  min-height: 1.2rem;
+  align-items: center;
+  gap: 0.72rem;
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.52;
+}
+
+.project-card__meta > span,
+.project-card__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.project-card__meta > span > i:not(.project-card__language i),
+.project-card__source > i {
+  width: 0.76rem;
+  height: 0.76rem;
+}
+
+.project-card__language i {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+}
+
+.project-card__source {
+  position: relative;
+  z-index: 6;
+  margin-left: auto;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 180ms ease;
+}
+
+.project-card__source:hover {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 0.18rem;
+}
+
+.project-card__source:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 0.18rem;
 }
 
 .project-card__light {
@@ -313,9 +430,19 @@ function resetTilt(event: PointerEvent) {
   }
 }
 
-@media (max-width: 43.99rem) {
+@media (max-width: 43.99rem), (hover: none) {
   .project-card__preview {
     --preview-scale: 0.31;
+  }
+
+  .project-card__preview iframe,
+  .project-card:hover .project-card__preview iframe {
+    opacity: 1;
+    filter: none;
+  }
+
+  .project-card__preview::after {
+    display: none;
   }
 }
 
