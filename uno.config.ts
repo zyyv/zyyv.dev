@@ -136,6 +136,7 @@ export default defineZyyvConfig<ZyyvTheme>(
         bluesky: '#1185fe',
       },
     },
+
     presets: [
       presetTypography({
         colorScheme: {
