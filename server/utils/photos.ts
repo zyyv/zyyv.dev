@@ -1,4 +1,5 @@
 import type { NewPhoto, Photo, PhotoExif } from '~/types'
+import { imageCdnUrl } from '#shared/constants/images'
 import type { D1DatabaseBinding } from '../types/cloudflare'
 
 export interface PhotoRow {
@@ -25,10 +26,6 @@ export function formatPhotoSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(2)} MB`
 }
 
-function assetUrl(id: string, variant: 'origin' | 'compressed' | 'thumbnail') {
-  return `/api/photo-assets/${encodeURIComponent(id)}/${variant}`
-}
-
 function parseExif(value: string | null): PhotoExif | undefined {
   if (!value) return undefined
   try {
@@ -39,7 +36,7 @@ function parseExif(value: string | null): PhotoExif | undefined {
 }
 
 export function rowToNewPhoto(row: PhotoRow): NewPhoto {
-  const origin = assetUrl(row.id, 'origin')
+  const origin = imageCdnUrl(row.origin_key)
   return {
     id: row.id,
     filename: row.filename,
@@ -47,10 +44,10 @@ export function rowToNewPhoto(row: PhotoRow): NewPhoto {
     origin,
     originSize: row.origin_size,
     originSizeFormatted: formatPhotoSize(row.origin_size),
-    compressed: assetUrl(row.id, 'compressed'),
+    compressed: imageCdnUrl(row.compressed_key),
     compressedSize: row.compressed_size,
     compressedSizeFormatted: formatPhotoSize(row.compressed_size),
-    thumbnail: assetUrl(row.id, 'thumbnail'),
+    thumbnail: imageCdnUrl(row.thumbnail_key),
     thumbnailSize: row.thumbnail_size,
     thumbnailSizeFormatted: formatPhotoSize(row.thumbnail_size),
     width: row.width,
