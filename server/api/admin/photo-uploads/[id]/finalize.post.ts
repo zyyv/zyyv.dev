@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, statusMessage: '图片记录已存在' })
   }
 
-  const keys = photoUploadKeys(filename)
+  const keys = photoUploadKeys(filename, body.compressedContentType, body.thumbnailContentType)
   const [origin, compressed, thumbnail] = await Promise.all([
     PHOTOS.head(keys.originalKey),
     PHOTOS.head(keys.compressedKey),
@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
     compressed.size > PHOTO_UPLOAD_LIMITS.compressed ||
     thumbnail.size > PHOTO_UPLOAD_LIMITS.thumbnail
   ) {
-    await deletePhotoUpload(PHOTOS, filename)
+    await deletePhotoUpload(PHOTOS, filename, body.compressedContentType, body.thumbnailContentType)
     throw createError({ statusCode: 413, statusMessage: '图片文件超过大小限制' })
   }
 
@@ -76,7 +76,12 @@ export default defineEventHandler(async (event) => {
       )
       .run()
   } catch (error) {
-    await deletePhotoUpload(PHOTOS, filename).catch(() => undefined)
+    await deletePhotoUpload(
+      PHOTOS,
+      filename,
+      body.compressedContentType,
+      body.thumbnailContentType,
+    ).catch(() => undefined)
     throw error
   }
 

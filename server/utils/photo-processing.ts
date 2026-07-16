@@ -66,7 +66,6 @@ export async function processAndStorePhoto(options: {
     throw createError({ statusCode: 400, statusMessage: '压缩图与缩略图必须同时上传' })
   }
 
-  const { originalKey, compressedKey, thumbnailKey } = photoUploadKeys(filename)
   let width: number
   let height: number
   let compressed: UploadFile
@@ -121,6 +120,11 @@ export async function processAndStorePhoto(options: {
     thumbnail = { type: contentType, data: thumbnailData }
   }
 
+  const { originalKey, compressedKey, thumbnailKey } = photoUploadKeys(
+    filename,
+    compressed.type || contentType,
+    thumbnail.type || contentType,
+  )
   const cacheControl = 'public, max-age=31536000, immutable'
   const existing = await Promise.all([
     bucket.head(originalKey),

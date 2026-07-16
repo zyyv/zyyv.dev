@@ -9,9 +9,12 @@ import {
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const { DB, PHOTOS } = useCloudflareBindings(event)
-  const body = await readBody<Pick<FinalizePhotoUploadBody, 'filename'>>(event)
+  const body =
+    await readBody<
+      Pick<FinalizePhotoUploadBody, 'filename' | 'compressedContentType' | 'thumbnailContentType'>
+    >(event)
   const filename = validatePhotoFilename(body.filename)
-  const keys = photoUploadKeys(filename)
+  const keys = photoUploadKeys(filename, body.compressedContentType, body.thumbnailContentType)
   const [record, original, compressed, thumbnail] = await Promise.all([
     DB.prepare(
       `SELECT id FROM photos

@@ -69,10 +69,14 @@ export function useAdminPhotos() {
     mutating.value = true
     error.value = null
     let uploadId: string | undefined
+    const variantContentTypes = {
+      compressedContentType: payload.compressed.type,
+      thumbnailContentType: payload.thumbnail.type,
+    }
     try {
       const upload = await $fetch<{ id: string }>('/api/admin/photo-uploads', {
         method: 'POST',
-        body: { filename: payload.file.name },
+        body: { filename: payload.file.name, ...variantContentTypes },
       })
       uploadId = upload.id
       const uploads = await Promise.allSettled([
@@ -88,6 +92,7 @@ export function useAdminPhotos() {
         method: 'POST',
         body: {
           filename: payload.file.name,
+          ...variantContentTypes,
           width: payload.width,
           height: payload.height,
           blurhash: payload.blurhash,
@@ -101,7 +106,7 @@ export function useAdminPhotos() {
       if (uploadId) {
         await $fetch(`/api/admin/photo-uploads/${uploadId}`, {
           method: 'DELETE',
-          query: { filename: payload.file.name },
+          query: { filename: payload.file.name, ...variantContentTypes },
         }).catch(() => undefined)
       }
       error.value = getErrorMessage(cause)

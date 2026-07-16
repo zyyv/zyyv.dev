@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 413, statusMessage: '图片文件超过大小限制' })
   }
   const bytes = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)
-  const key = photoUploadKey(filename, variant)
+  const key = photoUploadKey(filename, variant, contentType)
   if (await PHOTOS.head(key)) {
     throw createError({ statusCode: 409, statusMessage: 'R2 中已存在同名图片，请先重命名' })
   }

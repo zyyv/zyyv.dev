@@ -5,6 +5,8 @@ export type PhotoUploadVariant = 'origin' | 'compressed' | 'thumbnail'
 
 export interface FinalizePhotoUploadBody {
   filename?: string
+  compressedContentType?: string
+  thumbnailContentType?: string
   width?: number
   height?: number
   blurhash?: string
@@ -58,21 +60,57 @@ export function validatePhotoFilename(value: string | undefined) {
   return filename
 }
 
-export function photoUploadKey(filename: string, variant: PhotoUploadVariant) {
-  if (variant === 'origin') return `original/${filename}`
-  if (variant === 'compressed') return `compressed/${filename}`
-  return `thumbnail/${filename}`
+export function validatePhotoUploadContentType(
+  value: string | undefined,
+  variant: PhotoUploadVariant,
+) {
+  const contentType = value?.trim().toLowerCase()
+  if (!contentType || !PHOTO_UPLOAD_CONTENT_TYPES[variant].has(contentType)) {
+    throw createError({ statusCode: 415, statusMessage: '仅支持 JPEG、PNG 和 WebP 图片' })
+  }
+  return contentType
 }
 
-export function photoUploadKeys(filename: string) {
+function filenameForContentType(filename: string, contentType: string) {
+  const extension =
+    contentType === 'image/jpeg' ? 'jpg' : contentType === 'image/png' ? 'png' : 'webp'
+  const extensionIndex = filename.lastIndexOf('.')
+  const basename = extensionIndex > 0 ? filename.slice(0, extensionIndex) : filename
+  return `${basename}.${extension}`
+}
+
+export function photoUploadKey(
+  filename: string,
+  variant: PhotoUploadVariant,
+  contentType?: string,
+) {
+  if (variant === 'origin') return `original/${filename}`
+  const variantFilename = filenameForContentType(
+    filename,
+    validatePhotoUploadContentType(contentType, variant),
+  )
+  if (variant === 'compressed') return `compressed/${variantFilename}`
+  return `thumbnail/${variantFilename}`
+}
+
+export function photoUploadKeys(
+  filename: string,
+  compressedContentType: string | undefined,
+  thumbnailContentType: string | undefined,
+) {
   return {
     originalKey: photoUploadKey(filename, 'origin'),
-    compressedKey: photoUploadKey(filename, 'compressed'),
-    thumbnailKey: photoUploadKey(filename, 'thumbnail'),
+    compressedKey: photoUploadKey(filename, 'compressed', compressedContentType),
+    thumbnailKey: photoUploadKey(filename, 'thumbnail', thumbnailContentType),
   }
 }
 
-export async function deletePhotoUpload(bucket: R2BucketBinding, filename: string) {
-  const keys = photoUploadKeys(filename)
+export async function deletePhotoUpload(
+  bucket: R2BucketBinding,
+  filename: string,
+  compressedContentType: string | undefined,
+  thumbnailContentType: string | undefined,
+) {
+  const keys = photoUploadKeys(filename, compressedContentType, thumbnailContentType)
   await bucket.delete([keys.originalKey, keys.compressedKey, keys.thumbnailKey])
 }
