@@ -132,18 +132,21 @@ onMounted(() => {
         row-key="id"
       >
         <template #default="{ item }">
-          <div
-            class="cursor-pointer"
+          <button
+            type="button"
+            class="photo-card"
             :data-photo-transition-id="item.id"
+            :aria-label="`View ${item.filename}`"
             @click="openPreview(item, $event)"
           >
             <ImgBlurHash
               :src="item.thumbnail"
               :blurhash="item.blurhash"
               :aspect-ratio="item.width / item.height"
-              class="w-full h-auto hover:scale-105 trans"
+              class="photo-card__image"
             />
-          </div>
+            <PhotosPhotoHoverInfo :photo="item" />
+          </button>
         </template>
       </VirtualWaterfall>
 
@@ -191,3 +194,58 @@ onMounted(() => {
     />
   </div>
 </template>
+
+<style scoped>
+.photo-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: zoom-in;
+  outline: none;
+}
+
+.photo-card::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+}
+
+.photo-card:focus-visible {
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+.photo-card:hover :deep(.photo-hover-info),
+.photo-card:focus-visible :deep(.photo-hover-info) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.photo-card__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: scale(1.002);
+  transition:
+    transform 480ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 320ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .photo-card:hover .photo-card__image {
+    filter: brightness(0.88) saturate(0.96);
+    transform: scale(1.025);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-card__image {
+    transition: none;
+  }
+}
+</style>

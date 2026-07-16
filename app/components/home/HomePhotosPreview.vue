@@ -1,23 +1,15 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
 import type { Photo } from '~/types'
-import PhotoDetail from '~/components/photos/PhotoDetail.vue'
 import { useScrollStage } from '~/composables/useScrollStage'
 import { hashFraction } from '~/utils/shuffle'
 
 const props = defineProps<{
   photos: Photo[]
-  allPhotos: Photo[]
 }>()
 
 const tunnelRef = useTemplateRef<HTMLElement>('tunnel')
 const tunnelViewportRef = useTemplateRef<HTMLElement>('tunnelViewport')
-const currentPhoto = shallowRef<Photo | null>(null)
-
-const currentIndex = computed(() => {
-  if (!currentPhoto.value) return -1
-  return props.allPhotos.findIndex((photo) => photo.id === currentPhoto.value?.id)
-})
 
 const tunnelHeight = computed(() => {
   const scrollLength = Math.min(Math.max(props.photos.length * 17, 245), 330)
@@ -168,34 +160,6 @@ useScrollStage(tunnelRef, {
     return [...backgroundAnimations, ...photoAnimations]
   },
 })
-
-function openPreview(photo: Photo) {
-  currentPhoto.value = photo
-  document.body.style.overflow = 'hidden'
-}
-
-function closePreview() {
-  currentPhoto.value = null
-  document.body.style.overflow = ''
-}
-
-function showPreviousPhoto() {
-  if (currentIndex.value <= 0) return
-  currentPhoto.value = props.allPhotos[currentIndex.value - 1] ?? null
-}
-
-function showNextPhoto() {
-  if (currentIndex.value < 0 || currentIndex.value >= props.allPhotos.length - 1) return
-  currentPhoto.value = props.allPhotos[currentIndex.value + 1] ?? null
-}
-
-function selectPhoto(photo: Photo) {
-  currentPhoto.value = photo
-}
-
-onBeforeUnmount(() => {
-  document.body.style.overflow = ''
-})
 </script>
 
 <template>
@@ -236,38 +200,21 @@ onBeforeUnmount(() => {
           <p class="photo-stream__tunnel-label" aria-hidden="true">Scroll through the frame</p>
         </div>
 
-        <button
+        <figure
           v-for="(photo, index) in photos"
           :key="photo.id"
-          type="button"
           class="photo-stream__item"
           :style="itemStyle(photo)"
-          :aria-label="`Open photo ${index + 1}`"
-          @click="openPreview(photo)"
         >
           <span class="photo-stream__media">
             <img :src="photo.thumbnail" alt="" loading="lazy" />
             <span class="photo-stream__number">{{ String(index + 1).padStart(2, '0') }}</span>
           </span>
-        </button>
+        </figure>
       </div>
     </div>
 
     <div v-else class="photo-stream__empty">No photos available</div>
-
-    <div class="photo-stream__archive">
-      <NuxtLink to="/photos">Enter the archive ↗</NuxtLink>
-    </div>
-
-    <PhotoDetail
-      :photo="currentPhoto"
-      :photos="allPhotos"
-      :visible="currentPhoto !== null"
-      @close="closePreview"
-      @prev="showPreviousPhoto"
-      @next="showNextPhoto"
-      @select="selectPhoto"
-    />
   </section>
 </template>
 
@@ -488,12 +435,12 @@ onBeforeUnmount(() => {
   position: absolute;
   left: var(--photo-left);
   width: var(--photo-width);
+  margin: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: inherit;
-  cursor: zoom-in;
   opacity: 0;
   transform-origin: center;
   will-change: filter, opacity, transform;
@@ -521,15 +468,9 @@ onBeforeUnmount(() => {
     transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.photo-stream__item:hover .photo-stream__media img,
-.photo-stream__item:focus-visible .photo-stream__media img {
+.photo-stream__item:hover .photo-stream__media img {
   filter: grayscale(0) contrast(1);
   transform: scale(1.025);
-}
-
-.photo-stream__item:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 0.4rem;
 }
 
 .photo-stream__number {

@@ -18,7 +18,7 @@ const streamPhotos = computed(() => randomPhotos.value.slice(3, 25))
   <div class="home-page w-full min-w-0 overflow-x-clip">
     <HomeHero :photos="heroPhotos" />
 
-    <HomePhotosPreview :all-photos="photos" :photos="streamPhotos" />
+    <HomePhotosPreview :photos="streamPhotos" />
   </div>
 </template>
 
