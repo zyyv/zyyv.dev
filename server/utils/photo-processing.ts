@@ -1,4 +1,5 @@
 import type { CloudflareBindings, R2BucketBinding } from '../types/cloudflare'
+import { photoUploadKeys, validatePhotoFilename } from './photo-upload'
 
 type ImagesBinding = CloudflareBindings['IMAGES']
 
@@ -13,23 +14,6 @@ const MAX_IMAGES_INPUT_SIZE = 20 * 1024 * 1024
 const MAX_COMPRESSED_SIZE = 25 * 1024 * 1024
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024
 const SUPPORTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
-
-function sanitizeBaseName(filename: string) {
-  const withoutExtension = filename.replace(/\.[^/.]+$/, '')
-  return (
-    withoutExtension
-      .normalize('NFKD')
-      .replace(/[^\w.-]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 80) || 'photo'
-  )
-}
-
-function extensionForType(contentType: string) {
-  if (contentType === 'image/jpeg') return 'jpg'
-  if (contentType === 'image/png') return 'png'
-  return 'webp'
-}
 
 function bytesToStream(bytes: Uint8Array) {
   return new ReadableStream<Uint8Array>({
@@ -65,10 +49,9 @@ export async function processAndStorePhoto(options: {
   thumbnail?: UploadFile
   width?: number
   height?: number
-  id: string
 }) {
-  const { bucket, images, file, id } = options
-  const filename = file.filename || 'photo.jpg'
+  const { bucket, images, file } = options
+  const filename = validatePhotoFilename(file.filename)
   const contentType = file.type || 'application/octet-stream'
 
   if (!SUPPORTED_TYPES.has(contentType)) {
@@ -83,9 +66,7 @@ export async function processAndStorePhoto(options: {
     throw createError({ statusCode: 400, statusMessage: '压缩图与缩略图必须同时上传' })
   }
 
-  const baseName = sanitizeBaseName(filename)
-  const extension = extensionForType(contentType)
-  const originalKey = `original/${id}/${baseName}.${extension}`
+  const { originalKey, compressedKey, thumbnailKey } = photoUploadKeys(filename)
   let width: number
   let height: number
   let compressed: UploadFile
@@ -140,11 +121,15 @@ export async function processAndStorePhoto(options: {
     thumbnail = { type: contentType, data: thumbnailData }
   }
 
-  const compressedExtension = extensionForType(compressed.type || contentType)
-  const thumbnailExtension = extensionForType(thumbnail.type || contentType)
-  const compressedKey = `compressed/${id}/${baseName}.compressed.${compressedExtension}`
-  const thumbnailKey = `thumbnail/${id}/${baseName}.thumbnail.${thumbnailExtension}`
   const cacheControl = 'public, max-age=31536000, immutable'
+  const existing = await Promise.all([
+    bucket.head(originalKey),
+    bucket.head(compressedKey),
+    bucket.head(thumbnailKey),
+  ])
+  if (existing.some(Boolean)) {
+    throw createError({ statusCode: 409, statusMessage: 'R2 中已存在同名图片，请先重命名' })
+  }
   try {
     await Promise.all([
       bucket.put(originalKey, file.data, {

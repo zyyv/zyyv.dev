@@ -70,11 +70,20 @@ export function useAdminPhotos() {
     error.value = null
     let uploadId: string | undefined
     try {
-      const upload = await $fetch<{ id: string }>('/api/admin/photo-uploads', { method: 'POST' })
+      const upload = await $fetch<{ id: string }>('/api/admin/photo-uploads', {
+        method: 'POST',
+        body: { filename: payload.file.name },
+      })
       uploadId = upload.id
-      await uploadVariant(uploadId, 'origin', payload.file)
-      await uploadVariant(uploadId, 'compressed', payload.compressed)
-      await uploadVariant(uploadId, 'thumbnail', payload.thumbnail)
+      const uploads = await Promise.allSettled([
+        uploadVariant(uploadId, 'origin', payload.file, payload.file.name),
+        uploadVariant(uploadId, 'compressed', payload.compressed, payload.file.name),
+        uploadVariant(uploadId, 'thumbnail', payload.thumbnail, payload.file.name),
+      ])
+      const failedUpload = uploads.find(
+        (result): result is PromiseRejectedResult => result.status === 'rejected',
+      )
+      if (failedUpload) throw failedUpload.reason
       const photo = await $fetch<NewPhoto>(`/api/admin/photo-uploads/${uploadId}/finalize`, {
         method: 'POST',
         body: {
@@ -90,9 +99,10 @@ export function useAdminPhotos() {
       return photo
     } catch (cause) {
       if (uploadId) {
-        await $fetch(`/api/admin/photo-uploads/${uploadId}`, { method: 'DELETE' }).catch(
-          () => undefined,
-        )
+        await $fetch(`/api/admin/photo-uploads/${uploadId}`, {
+          method: 'DELETE',
+          query: { filename: payload.file.name },
+        }).catch(() => undefined)
       }
       error.value = getErrorMessage(cause)
       throw cause
@@ -105,10 +115,12 @@ export function useAdminPhotos() {
     id: string,
     variant: 'origin' | 'compressed' | 'thumbnail',
     file: File,
+    filename: string,
   ) {
     await $fetch(`/api/admin/photo-uploads/${id}/${variant}`, {
       method: 'PUT',
       body: file,
+      query: { filename },
       headers: { 'Content-Type': file.type },
     })
   }

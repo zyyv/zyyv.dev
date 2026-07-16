@@ -37,21 +37,42 @@ export function isPhotoUploadVariant(value: string | undefined): value is PhotoU
   return value === 'origin' || value === 'compressed' || value === 'thumbnail'
 }
 
-export function photoUploadKey(id: string, variant: PhotoUploadVariant) {
-  if (variant === 'origin') return `original/${id}/source`
-  if (variant === 'compressed') return `compressed/${id}/display`
-  return `thumbnail/${id}/thumbnail`
+export function validatePhotoFilename(value: string | undefined) {
+  const filename = value?.trim()
+  if (!filename) {
+    throw createError({ statusCode: 400, statusMessage: '缺少文件名' })
+  }
+  if (
+    filename.length > 255 ||
+    filename === '.' ||
+    filename === '..' ||
+    filename.includes('/') ||
+    filename.includes('\\') ||
+    Array.from(filename).some((character) => {
+      const codePoint = character.codePointAt(0) ?? 0
+      return codePoint <= 31 || codePoint === 127
+    })
+  ) {
+    throw createError({ statusCode: 400, statusMessage: '文件名无效' })
+  }
+  return filename
 }
 
-export function photoUploadKeys(id: string) {
+export function photoUploadKey(filename: string, variant: PhotoUploadVariant) {
+  if (variant === 'origin') return `original/${filename}`
+  if (variant === 'compressed') return `compressed/${filename}`
+  return `thumbnail/${filename}`
+}
+
+export function photoUploadKeys(filename: string) {
   return {
-    originalKey: photoUploadKey(id, 'origin'),
-    compressedKey: photoUploadKey(id, 'compressed'),
-    thumbnailKey: photoUploadKey(id, 'thumbnail'),
+    originalKey: photoUploadKey(filename, 'origin'),
+    compressedKey: photoUploadKey(filename, 'compressed'),
+    thumbnailKey: photoUploadKey(filename, 'thumbnail'),
   }
 }
 
-export async function deletePhotoUpload(bucket: R2BucketBinding, id: string) {
-  const keys = photoUploadKeys(id)
+export async function deletePhotoUpload(bucket: R2BucketBinding, filename: string) {
+  const keys = photoUploadKeys(filename)
   await bucket.delete([keys.originalKey, keys.compressedKey, keys.thumbnailKey])
 }

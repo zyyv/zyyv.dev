@@ -5,6 +5,7 @@ import {
   type FinalizePhotoUploadBody,
   PHOTO_UPLOAD_LIMITS,
   photoUploadKeys,
+  validatePhotoFilename,
   validatePhotoUploadId,
 } from '../../../../utils/photo-upload'
 import { getPhotoRow, rowToNewPhoto } from '../../../../utils/photos'
@@ -14,13 +15,11 @@ export default defineEventHandler(async (event) => {
   const { DB, PHOTOS } = useCloudflareBindings(event)
   const id = validatePhotoUploadId(getRouterParam(event, 'id'))
   const body = await readBody<FinalizePhotoUploadBody>(event)
-  const filename = body.filename?.trim()
+  const filename = validatePhotoFilename(body.filename)
   const width = Number(body.width)
   const height = Number(body.height)
   const blurhash = body.blurhash?.trim()
 
-  if (!filename) throw createError({ statusCode: 400, statusMessage: '缺少文件名' })
-  if (filename.length > 255) throw createError({ statusCode: 400, statusMessage: '文件名过长' })
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) {
     throw createError({ statusCode: 400, statusMessage: '图片尺寸无效' })
   }
@@ -31,7 +30,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, statusMessage: '图片记录已存在' })
   }
 
-  const keys = photoUploadKeys(id)
+  const keys = photoUploadKeys(filename)
   const [origin, compressed, thumbnail] = await Promise.all([
     PHOTOS.head(keys.originalKey),
     PHOTOS.head(keys.compressedKey),
@@ -45,7 +44,7 @@ export default defineEventHandler(async (event) => {
     compressed.size > PHOTO_UPLOAD_LIMITS.compressed ||
     thumbnail.size > PHOTO_UPLOAD_LIMITS.thumbnail
   ) {
-    await deletePhotoUpload(PHOTOS, id)
+    await deletePhotoUpload(PHOTOS, filename)
     throw createError({ statusCode: 413, statusMessage: '图片文件超过大小限制' })
   }
 
@@ -77,7 +76,7 @@ export default defineEventHandler(async (event) => {
       )
       .run()
   } catch (error) {
-    await deletePhotoUpload(PHOTOS, id).catch(() => undefined)
+    await deletePhotoUpload(PHOTOS, filename).catch(() => undefined)
     throw error
   }
 

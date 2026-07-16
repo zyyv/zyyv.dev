@@ -5,13 +5,15 @@ import {
   PHOTO_UPLOAD_CONTENT_TYPES,
   PHOTO_UPLOAD_LIMITS,
   photoUploadKey,
+  validatePhotoFilename,
   validatePhotoUploadId,
 } from '../../../../utils/photo-upload'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const { PHOTOS } = useCloudflareBindings(event)
-  const id = validatePhotoUploadId(getRouterParam(event, 'id'))
+  validatePhotoUploadId(getRouterParam(event, 'id'))
+  const filename = validatePhotoFilename(getQuery(event).filename as string | undefined)
   const variant = getRouterParam(event, 'variant')
   if (!isPhotoUploadVariant(variant)) {
     throw createError({ statusCode: 404, statusMessage: '图片变体不存在' })
@@ -33,9 +35,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 413, statusMessage: '图片文件超过大小限制' })
   }
   const bytes = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)
+  const key = photoUploadKey(filename, variant)
+  if (await PHOTOS.head(key)) {
+    throw createError({ statusCode: 409, statusMessage: 'R2 中已存在同名图片，请先重命名' })
+  }
 
   try {
-    await PHOTOS.put(photoUploadKey(id, variant), bytes, {
+    await PHOTOS.put(key, bytes, {
       httpMetadata: {
         contentType,
         cacheControl:
@@ -44,7 +50,7 @@ export default defineEventHandler(async (event) => {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : '未知错误'
-    console.error('R2 photo upload failed', { id, variant, message })
+    console.error('R2 photo upload failed', { filename, variant, message })
     throw createError({ statusCode: 500, statusMessage: `R2 上传失败：${message}` })
   }
   return { uploaded: true }

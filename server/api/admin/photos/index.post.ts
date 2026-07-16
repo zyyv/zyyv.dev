@@ -64,7 +64,6 @@ export default defineEventHandler(async (event) => {
     },
     width: Number(getField('width')),
     height: Number(getField('height')),
-    id,
   })
   const now = new Date().toISOString()
   const exif = parseExif(getField('exif'))
