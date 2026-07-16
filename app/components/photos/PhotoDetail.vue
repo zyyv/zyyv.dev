@@ -2,6 +2,7 @@
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo } from '~/types'
 import dayjs from 'dayjs'
+import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
 
 interface Props {
   photo: Photo | null
@@ -27,54 +28,44 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const dialogRef = useTemplateRef<HTMLElement>('dialog')
 const thumbnailRefs: HTMLElement[] = []
-const {
-  imageStyle,
-  isDragging,
-  zoomLabel,
-  zoomIn,
-  zoomOut,
-  resetCanvas,
-  handleWheel,
-  handlePointerDown,
-  handlePointerMove,
-  handlePointerEnd,
-} = useImageCanvas()
+const displayedPhoto = shallowRef<Photo | null>(null)
 
 const currentIndex = computed(() => {
   if (!props.photo || !props.photos.length) return -1
   return props.photos.findIndex((photo) => photo.id === props.photo?.id)
 })
+const detailPhoto = computed(() => displayedPhoto.value ?? props.photo)
 const hasPrev = computed(() => currentIndex.value > 0)
 const hasNext = computed(() => currentIndex.value < props.photos.length - 1)
 const basicDetails = computed<DetailRow[]>(() => {
-  if (!props.photo) return []
+  if (!detailPhoto.value) return []
 
   return [
-    { icon: 'i-hugeicons:file-01', label: 'Filename', value: props.photo.filename },
+    { icon: 'i-hugeicons:file-01', label: 'Filename', value: detailPhoto.value.filename },
     {
       icon: 'i-hugeicons:maximize-01',
       label: 'Dimensions',
-      value: `${props.photo.width} x ${props.photo.height}`,
+      value: `${detailPhoto.value.width} x ${detailPhoto.value.height}`,
     },
     {
       icon: 'i-hugeicons:database-01',
-      label: 'Original size',
-      value: props.photo.originSizeFormatted,
+      label: 'Original',
+      value: detailPhoto.value.originSizeFormatted,
     },
     {
       icon: 'i-hugeicons:image-03',
-      label: 'Compressed size',
-      value: props.photo.compressedSizeFormatted,
+      label: 'Compressed',
+      value: detailPhoto.value.compressedSizeFormatted,
     },
     {
       icon: 'i-hugeicons:calendar-03',
       label: 'Modified',
-      value: formatDate(props.photo.modifiedAt),
+      value: formatDate(detailPhoto.value.modifiedAt),
     },
   ]
 })
 const captureDetails = computed<DetailRow[]>(() => {
-  const exif = props.photo?.exif
+  const exif = detailPhoto.value?.exif
   if (!exif) return []
 
   return [
@@ -104,9 +95,12 @@ const captureDetails = computed<DetailRow[]>(() => {
 
 watch(
   [currentIndex, () => props.visible],
-  async ([index, visible]) => {
-    resetCanvas()
-    if (!visible || index < 0) return
+  async ([index, visible], [, wasVisible]) => {
+    if (!visible || index < 0) {
+      displayedPhoto.value = null
+      return
+    }
+    if (!wasVisible) displayedPhoto.value = props.photo
 
     await nextTick()
     dialogRef.value?.focus({ preventScroll: true })
@@ -144,6 +138,10 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
   if (el instanceof HTMLElement) thumbnailRefs[index] = el
 }
 
+function handleDisplayedChange(photo: Photo) {
+  displayedPhoto.value = photo
+}
+
 onMounted(() => document.addEventListener('keydown', handleKeydown))
 onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 </script>
@@ -164,14 +162,17 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
           <header class="photo-dialog__header">
             <div class="photo-dialog__identity">
               <p>{{ String(currentIndex + 1).padStart(2, '0') }} / {{ photos.length }}</p>
-              <h2 id="photo-dialog-title">{{ photo.filename || photo.id }}</h2>
+              <h2 id="photo-dialog-title">
+                {{ detailPhoto?.filename || detailPhoto?.id }}
+              </h2>
             </div>
 
             <div class="photo-dialog__actions">
               <a
+                v-if="detailPhoto"
                 class="photo-dialog__text-action"
-                :href="photo.origin"
-                :download="photo.filename"
+                :href="detailPhoto.origin"
+                :download="detailPhoto.filename"
                 title="Download original image"
               >
                 <span>Download</span>
@@ -202,56 +203,11 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 <i class="i-hugeicons:arrow-left-01" aria-hidden="true" />
               </button>
 
-              <figure
-                ref="imageCanvas"
-                class="photo-dialog__figure"
-                :class="{ 'is-dragging': isDragging }"
-                @wheel="handleWheel"
-                @pointerdown="handlePointerDown"
-                @pointermove="handlePointerMove"
-                @pointerup="handlePointerEnd"
-                @pointercancel="handlePointerEnd"
-              >
-                <img
-                  :key="photo.id"
-                  ref="canvasImage"
-                  :src="photo.compressed"
-                  :alt="photo.filename"
-                  decoding="async"
-                  draggable="false"
-                  :style="imageStyle"
-                  @load="resetCanvas"
-                />
-
-                <figcaption>Scroll to zoom · Drag to move</figcaption>
-
-                <div
-                  class="photo-dialog__canvas-controls"
-                  aria-label="Image zoom controls"
-                  @pointerdown.stop
-                >
-                  <button
-                    type="button"
-                    aria-label="Zoom out"
-                    title="Zoom out"
-                    @click.stop="zoomOut"
-                  >
-                    <i class="i-hugeicons:zoom-out-area" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    class="photo-dialog__zoom-value"
-                    aria-label="Reset image view"
-                    title="Reset image view"
-                    @click.stop="resetCanvas"
-                  >
-                    {{ zoomLabel }}
-                  </button>
-                  <button type="button" aria-label="Zoom in" title="Zoom in" @click.stop="zoomIn">
-                    <i class="i-hugeicons:zoom-in-area" aria-hidden="true" />
-                  </button>
-                </div>
-              </figure>
+              <PhotoDetailCanvas
+                :photo="photo"
+                :photos="photos"
+                @displayed-change="handleDisplayedChange"
+              />
 
               <button
                 v-if="hasNext"
@@ -379,8 +335,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 .photo-dialog__identity h2,
 .photo-dialog__detail-group h3,
 .photo-dialog__detail-group dl,
-.photo-dialog__detail-group dd,
-.photo-dialog__figure {
+.photo-dialog__detail-group dd {
   margin: 0;
 }
 
@@ -475,106 +430,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   place-items: center;
 }
 
-.photo-dialog__figure {
-  position: relative;
-  display: grid;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-  background-color: var(--dialog-canvas);
-  background-image:
-    linear-gradient(45deg, var(--dialog-checker) 25%, transparent 25%),
-    linear-gradient(-45deg, var(--dialog-checker) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--dialog-checker) 75%),
-    linear-gradient(-45deg, transparent 75%, var(--dialog-checker) 75%);
-  background-position:
-    0 0,
-    0 10px,
-    10px -10px,
-    -10px 0;
-  background-size: 20px 20px;
-  cursor: grab;
-  place-items: center;
-  touch-action: none;
-}
-
-.photo-dialog__figure.is-dragging {
-  cursor: grabbing;
-}
-
-.photo-dialog__figure img {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: auto;
-  height: auto;
-  margin: auto;
-  max-width: calc(100% - clamp(5rem, 12vw, 10rem));
-  max-height: calc(100% - clamp(5.5rem, 15vh, 8rem));
-  object-fit: contain;
-  pointer-events: none;
-  transform-origin: center;
-  user-select: none;
-  will-change: transform;
-  view-transition-name: photo-detail-image;
-}
-
-.photo-dialog__figure figcaption {
-  position: absolute;
-  top: 1rem;
-  left: 1.1rem;
-  margin: 0;
-  color: var(--dialog-muted);
-  font-size: 0.56rem;
-  letter-spacing: 0.08em;
-  pointer-events: none;
-  text-transform: uppercase;
-  user-select: none;
-}
-
-.photo-dialog__canvas-controls {
-  position: absolute;
-  z-index: 2;
-  bottom: 1rem;
-  left: 50%;
-  display: grid;
-  grid-template-columns: 2rem 3.6rem 2rem;
-  min-height: 2rem;
-  overflow: hidden;
-  border: 1px dashed var(--dialog-line);
-  /* background: var(--dialog-control); */
-  backdrop-filter: blur(0.75rem);
-  transform: translateX(-50%);
-}
-
-.photo-dialog__canvas-controls button {
-  display: grid;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--dialog-text);
-  font: inherit;
-  cursor: pointer;
-  place-items: center;
-}
-
-.photo-dialog__canvas-controls button + button {
-  border-left: 1px dashed var(--dialog-line);
-}
-
-.photo-dialog__canvas-controls i {
-  font-size: 0.82rem;
-}
-
-.photo-dialog__canvas-controls .photo-dialog__zoom-value {
-  color: var(--dialog-muted);
-  font-size: 0.56rem;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-  user-select: none;
-}
-
 .photo-dialog__nav {
   position: absolute;
   z-index: 1;
@@ -603,7 +458,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   min-height: 0;
   overflow-y: auto;
   padding: clamp(1.5rem, 2.5vw, 2.75rem) clamp(1rem, 2vw, 2rem);
-  border-left: 1px dashed var(--dialog-line);
   scrollbar-width: thin;
 }
 
@@ -742,10 +596,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
     filter: grayscale(0.2) contrast(1);
     transform: translateY(-0.12rem);
   }
-
-  .photo-dialog__canvas-controls button:hover {
-    background: var(--dialog-checker);
-  }
 }
 
 .photo-dialog__text-action:active,
@@ -757,7 +607,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 .photo-dialog__text-action:focus-visible,
 .photo-dialog__close:focus-visible,
 .photo-dialog__nav:focus-visible,
-.photo-dialog__canvas-controls button:focus-visible,
 .photo-dialog__filmstrip button:focus-visible {
   outline: 1px dashed var(--dialog-text);
   outline-offset: 0.35rem;
@@ -768,8 +617,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   transition: opacity 240ms ease;
 }
 
-.photo-dialog-enter-active .photo-dialog__figure,
-.photo-dialog-leave-active .photo-dialog__figure {
+.photo-dialog-enter-active .photo-detail-canvas,
+.photo-dialog-leave-active .photo-detail-canvas {
   transition:
     opacity 320ms ease,
     transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -777,13 +626,13 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 .photo-dialog-enter-from,
 .photo-dialog-leave-to,
-.photo-dialog-enter-from .photo-dialog__figure,
-.photo-dialog-leave-to .photo-dialog__figure {
+.photo-dialog-enter-from .photo-detail-canvas,
+.photo-dialog-leave-to .photo-detail-canvas {
   opacity: 0;
 }
 
-.photo-dialog-enter-from .photo-dialog__figure,
-.photo-dialog-leave-to .photo-dialog__figure {
+.photo-dialog-enter-from .photo-detail-canvas,
+.photo-dialog-leave-to .photo-detail-canvas {
   transform: translateY(1rem) scale(0.99);
 }
 
@@ -821,25 +670,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
     grid-template-rows: minmax(46dvh, 1fr) minmax(0, 31dvh);
   }
 
-  .photo-dialog__figure {
-    min-height: 0;
-  }
-
-  .photo-dialog__figure img {
-    max-width: calc(100% - 4rem);
-    max-height: calc(100% - 4.5rem);
-  }
-
-  .photo-dialog__figure figcaption {
-    top: 0.75rem;
-    left: 0.8rem;
-    font-size: 0.5rem;
-  }
-
-  .photo-dialog__canvas-controls {
-    bottom: 0.75rem;
-  }
-
   .photo-dialog__details {
     padding: 1.25rem 1rem;
     border-top: 1px dashed var(--dialog-line);
@@ -859,13 +689,12 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 @media (prefers-reduced-motion: reduce) {
   .photo-dialog-enter-active,
   .photo-dialog-leave-active,
-  .photo-dialog-enter-active .photo-dialog__figure,
-  .photo-dialog-leave-active .photo-dialog__figure,
+  .photo-dialog-enter-active .photo-detail-canvas,
+  .photo-dialog-leave-active .photo-detail-canvas,
   .photo-dialog__text-action,
   .photo-dialog__text-action::after,
   .photo-dialog__close,
   .photo-dialog__nav,
-  .photo-dialog__canvas-controls button,
   .photo-dialog__filmstrip button,
   .photo-dialog__filmstrip button::after {
     transition-duration: 1ms;

@@ -1,4 +1,5 @@
 import type { MaybeRefOrGetter } from 'vue'
+import { preloadImage } from '~/utils/preloadImage'
 
 type ViewUpdate = () => void | Promise<void>
 
@@ -7,26 +8,6 @@ interface PhotoViewTransitionOptions {
 }
 
 const PHOTO_IMAGE_TRANSITION_NAME = 'photo-detail-image'
-const decodedImages = new Map<string, Promise<void>>()
-
-function decodeImage(src: string) {
-  const cachedDecode = decodedImages.get(src)
-  if (cachedDecode) return cachedDecode
-
-  const decode = new Promise<void>((resolve) => {
-    const image = new Image()
-    image.decoding = 'async'
-    image.src = src
-
-    void image.decode().then(
-      () => resolve(),
-      () => resolve(),
-    )
-  })
-
-  decodedImages.set(src, decode)
-  return decode
-}
 
 export function usePhotoViewTransition(options: PhotoViewTransitionOptions) {
   const preferredMotion = usePreferredReducedMotion()
@@ -76,7 +57,7 @@ export function usePhotoViewTransition(options: PhotoViewTransitionOptions) {
       return
     }
 
-    await decodeImage(detailSrc)
+    await preloadImage(detailSrc)
     sourceImage.style.viewTransitionName = PHOTO_IMAGE_TRANSITION_NAME
     setTransitionPhase('open')
 
