@@ -1,18 +1,29 @@
-import { photosData } from '../utils/data'
-import { useOptionalDatabase } from '../utils/cloudflare'
+import type { PhotoListResponse } from '~/types'
+import { useCloudflareBindings } from '../utils/cloudflare'
 import { listPublicPhotos } from '../utils/photos'
 
-export default defineEventHandler(async (event) => {
+const BROWSER_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300'
+const EDGE_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=86400'
+
+export default defineEventHandler(async (event): Promise<PhotoListResponse> => {
   const query = getQuery(event)
   const page = Math.max(1, Number(query.page) || 1)
-  const limit = Math.max(1, Math.min(50, Number(query.limit) || 12))
-  const offset = (page - 1) * limit
+  const all = query.all === '1' || query.all === 'true'
+  const requestedLimit = Math.max(1, Math.min(50, Number(query.limit) || 24))
 
-  const database = useOptionalDatabase(event)
-  const source = database ? await listPublicPhotos(database) : photosData
+  const { DB } = useCloudflareBindings(event)
+  const source = await listPublicPhotos(DB)
   const total = source.length
-  const totalPages = Math.ceil(total / limit)
-  const photos = source.slice(offset, offset + limit)
+  const limit = all ? total : requestedLimit
+  const offset = (page - 1) * limit
+  const totalPages = all ? (total ? 1 : 0) : Math.ceil(total / limit)
+  const photos = all ? source : source.slice(offset, offset + limit)
+
+  setResponseHeaders(event, {
+    'Cache-Control': BROWSER_CACHE_CONTROL,
+    'Cloudflare-CDN-Cache-Control': EDGE_CACHE_CONTROL,
+    Vary: 'Accept-Encoding',
+  })
 
   return {
     photos,
@@ -21,7 +32,7 @@ export default defineEventHandler(async (event) => {
       limit,
       total,
       totalPages,
-      hasNext: page < totalPages,
+      hasNext: !all && page < totalPages,
       hasPrev: page > 1,
       count: photos.length,
     },

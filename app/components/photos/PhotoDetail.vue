@@ -56,11 +56,15 @@ const basicDetails = computed<DetailRow[]>(() => {
       label: 'Dimensions',
       value: `${props.photo.width} x ${props.photo.height}`,
     },
-    { icon: 'i-hugeicons:database-01', label: 'Original size', value: props.photo.sizeFormatted },
+    {
+      icon: 'i-hugeicons:database-01',
+      label: 'Original size',
+      value: props.photo.originSizeFormatted,
+    },
     {
       icon: 'i-hugeicons:image-03',
-      label: 'Preview size',
-      value: props.photo.thumbnailSizeFormatted,
+      label: 'Compressed size',
+      value: props.photo.compressedSizeFormatted,
     },
     {
       icon: 'i-hugeicons:calendar-03',
@@ -166,7 +170,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
             <div class="photo-dialog__actions">
               <a
                 class="photo-dialog__text-action"
-                :href="photo.src"
+                :href="photo.origin"
                 :download="photo.filename"
                 title="Download original image"
               >
@@ -211,7 +215,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 <img
                   :key="photo.id"
                   ref="canvasImage"
-                  :src="photo.src"
+                  :src="photo.compressed"
                   :alt="photo.filename"
                   decoding="async"
                   draggable="false"

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { NewPhoto } from '~/types'
+import type { Photo } from '~/types'
 
 defineProps<{
-  photos: readonly NewPhoto[]
+  photos: readonly Photo[]
   loading: boolean
   total: number
   page: number
@@ -12,12 +12,12 @@ defineProps<{
 const search = defineModel<string>('search', { required: true })
 const visibility = defineModel<'all' | 'public' | 'private'>('visibility', { required: true })
 const emit = defineEmits<{
-  edit: [photo: NewPhoto]
-  delete: [photo: NewPhoto]
+  edit: [photo: Photo]
+  delete: [photo: Photo]
   page: [page: number]
 }>()
 
-function photoDate(photo: NewPhoto) {
+function photoDate(photo: Photo) {
   return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium' }).format(new Date(photo.createdAt))
 }
 </script>

@@ -1,4 +1,4 @@
-import type { NewPhoto, PhotoExif, PhotoListResponse } from '~/types'
+import type { Photo, PhotoExif, PhotoListResponse } from '~/types'
 
 export interface PhotoUploadPayload {
   file: File
@@ -30,7 +30,7 @@ function getErrorMessage(error: unknown) {
 }
 
 export function useAdminPhotos() {
-  const photos = ref<NewPhoto[]>([])
+  const photos = ref<Photo[]>([])
   const loading = ref(false)
   const mutating = ref(false)
   const error = ref<string | null>(null)
@@ -88,7 +88,7 @@ export function useAdminPhotos() {
         (result): result is PromiseRejectedResult => result.status === 'rejected',
       )
       if (failedUpload) throw failedUpload.reason
-      const photo = await $fetch<NewPhoto>(`/api/admin/photo-uploads/${uploadId}/finalize`, {
+      const photo = await $fetch<Photo>(`/api/admin/photo-uploads/${uploadId}/finalize`, {
         method: 'POST',
         body: {
           filename: payload.file.name,
@@ -130,11 +130,11 @@ export function useAdminPhotos() {
     })
   }
 
-  async function updatePhoto(id: string, update: Pick<NewPhoto, 'filename' | 'private' | 'exif'>) {
+  async function updatePhoto(id: string, update: Pick<Photo, 'filename' | 'private' | 'exif'>) {
     mutating.value = true
     error.value = null
     try {
-      const photo = await $fetch<NewPhoto>(`/api/admin/photos/${encodeURIComponent(id)}`, {
+      const photo = await $fetch<Photo>(`/api/admin/photos/${encodeURIComponent(id)}`, {
         method: 'PATCH',
         body: update,
       })

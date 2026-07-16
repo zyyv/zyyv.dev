@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NewPhoto } from '~/types'
+import type { Photo } from '~/types'
 import PhotoEditor from './PhotoEditor.vue'
 import PhotoLibrary from './PhotoLibrary.vue'
 import PhotoLogin from './PhotoLogin.vue'
@@ -8,8 +8,8 @@ import PhotoUploadForm from './PhotoUploadForm.vue'
 const authenticated = ref<boolean | null>(null)
 const authLoading = ref(false)
 const authError = ref<string | null>(null)
-const selectedPhoto = ref<NewPhoto | null>(null)
-const deleteTarget = ref<NewPhoto | null>(null)
+const selectedPhoto = ref<Photo | null>(null)
+const deleteTarget = ref<Photo | null>(null)
 const uploadForm = useTemplateRef<InstanceType<typeof PhotoUploadForm>>('uploadForm')
 const {
   photos,
@@ -73,7 +73,7 @@ async function handleUpload(payload: Parameters<typeof uploadPhoto>[0]) {
   }
 }
 
-async function handleSave(update: Pick<NewPhoto, 'filename' | 'private' | 'exif'>) {
+async function handleSave(update: Pick<Photo, 'filename' | 'private' | 'exif'>) {
   if (!selectedPhoto.value) return
   try {
     await updatePhoto(selectedPhoto.value.id, update)

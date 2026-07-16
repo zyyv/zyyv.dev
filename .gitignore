@@ -16,5 +16,6 @@ dev-dist
 .netlify
 .wrangler
 .cloudflare
-photos/originals
-scripts/compression-report.md
+
+local
+scripts/upload-local-photos.ts

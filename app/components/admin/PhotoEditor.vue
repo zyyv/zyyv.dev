@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { NewPhoto, PhotoExif } from '~/types'
+import type { Photo, PhotoExif } from '~/types'
 
-const props = defineProps<{ photo: NewPhoto; busy: boolean }>()
+const props = defineProps<{ photo: Photo; busy: boolean }>()
 const emit = defineEmits<{
   close: []
-  save: [update: Pick<NewPhoto, 'filename' | 'private' | 'exif'>]
+  save: [update: Pick<Photo, 'filename' | 'private' | 'exif'>]
 }>()
 
 const filename = ref(props.photo.filename)

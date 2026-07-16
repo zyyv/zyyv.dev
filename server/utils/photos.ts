@@ -1,4 +1,4 @@
-import type { NewPhoto, Photo, PhotoExif } from '~/types'
+import type { Photo, PhotoExif } from '~/types'
 import { imageCdnUrl } from '#shared/constants/images'
 import type { D1DatabaseBinding } from '../types/cloudflare'
 
@@ -35,12 +35,11 @@ function parseExif(value: string | null): PhotoExif | undefined {
   }
 }
 
-export function rowToNewPhoto(row: PhotoRow): NewPhoto {
+export function rowToPhoto(row: PhotoRow): Photo {
   const origin = imageCdnUrl(row.origin_key)
   return {
     id: row.id,
     filename: row.filename,
-    src: origin,
     origin,
     originSize: row.origin_size,
     originSizeFormatted: formatPhotoSize(row.origin_size),
@@ -60,26 +59,6 @@ export function rowToNewPhoto(row: PhotoRow): NewPhoto {
   }
 }
 
-export function newPhotoToPublicPhoto(photo: NewPhoto): Photo {
-  return {
-    id: photo.id,
-    filename: photo.filename,
-    src: photo.compressed,
-    thumbnail: photo.thumbnail,
-    thumbnailSize: photo.thumbnailSize,
-    thumbnailSizeFormatted: photo.thumbnailSizeFormatted,
-    originalPath: photo.origin,
-    size: photo.compressedSize,
-    sizeFormatted: photo.compressedSizeFormatted,
-    width: photo.width,
-    height: photo.height,
-    blurhash: photo.blurhash,
-    createdAt: photo.createdAt,
-    modifiedAt: photo.modifiedAt,
-    exif: photo.exif,
-  }
-}
-
 export async function getPhotoRow(database: D1DatabaseBinding, id: string) {
   return database.prepare('SELECT * FROM photos WHERE id = ?').bind(id).first<PhotoRow>()
 }
@@ -90,5 +69,5 @@ export async function listPublicPhotos(database: D1DatabaseBinding) {
       "SELECT * FROM photos WHERE is_private = 0 ORDER BY COALESCE(json_extract(exif_json, '$.dateTime'), created_at) DESC",
     )
     .all<PhotoRow>()
-  return (result.results || []).map(rowToNewPhoto).map(newPhotoToPublicPhoto)
+  return (result.results || []).map(rowToPhoto)
 }

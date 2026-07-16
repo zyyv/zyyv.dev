@@ -11,13 +11,16 @@ pnpm run dev
 
 ## Photos
 
-Photo metadata and compressed assets are generated explicitly instead of during install:
+Upload local source photos to the managed D1 + R2 photo library:
 
 ```bash
-pnpm run prepare:photos
+pnpm run upload:local-photos
 ```
 
-Keep original photos in `photos/originals/`. That directory is ignored and is only used as the local source for generating `server/utils/data.ts`, `public/photos/compressed`, and `public/photos/thumb`. Commit the generated metadata and optimized images, not the originals.
+Keep source photos in `local/` (or set `PHOTO_SOURCE_DIR`). The upload script creates optimized
+variants and sends the original, compressed image, thumbnail, and metadata to D1 + R2. The site
+loads the photo list through `/api/photos`; generated photo files are not committed under
+`public/`.
 
 ## Checks
 

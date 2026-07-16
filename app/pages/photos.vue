@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import type { Photo } from '~/types'
 import PhotosGallery from '~/components/photos/Photos.vue'
 import RipplablePhotos from '~/components/photos/RipplablePhotos.vue'
 
-const { data: photos } = await useFetch<Photo[]>('/api/photos-data.json', {
-  key: 'photos-page',
-  default: () => [],
-})
+const { data: photoResponse } = await usePublicPhotos()
+const photos = computed(() => photoResponse.value.photos)
 
 const { mode, isTransitioning } = usePhotosViewMode()
 

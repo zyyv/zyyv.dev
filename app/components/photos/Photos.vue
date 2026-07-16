@@ -37,7 +37,7 @@ const { isTransitioning, openPhoto, closePhoto } = usePhotoViewTransition({
 
 // 打开图片预览
 async function openPreview(photo: Photo, event: MouseEvent) {
-  await openPhoto(photo.src, event.currentTarget as HTMLElement, () => {
+  await openPhoto(photo.compressed, event.currentTarget as HTMLElement, () => {
     currentPhoto.value = photo
     showPreview.value = true
     document.body.style.overflow = 'hidden'

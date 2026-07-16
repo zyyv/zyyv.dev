@@ -1,7 +1,7 @@
 import type { PhotoExif } from '~/types'
 import { requireAdmin } from '../../../utils/admin-auth'
 import { useCloudflareBindings } from '../../../utils/cloudflare'
-import { getPhotoRow, rowToNewPhoto } from '../../../utils/photos'
+import { getPhotoRow, rowToPhoto } from '../../../utils/photos'
 
 interface UpdatePhotoBody {
   filename?: string
@@ -32,5 +32,5 @@ export default defineEventHandler(async (event) => {
 
   const updated = await getPhotoRow(DB, id)
   if (!updated) throw createError({ statusCode: 500, statusMessage: '更新后读取失败' })
-  return rowToNewPhoto(updated)
+  return rowToPhoto(updated)
 })

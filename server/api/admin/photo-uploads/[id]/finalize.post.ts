@@ -8,7 +8,7 @@ import {
   validatePhotoFilename,
   validatePhotoUploadId,
 } from '../../../../utils/photo-upload'
-import { getPhotoRow, rowToNewPhoto } from '../../../../utils/photos'
+import { getPhotoRow, rowToPhoto } from '../../../../utils/photos'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -88,5 +88,5 @@ export default defineEventHandler(async (event) => {
   const row = await getPhotoRow(DB, id)
   if (!row) throw createError({ statusCode: 500, statusMessage: '图片已上传，但记录读取失败' })
   setResponseStatus(event, 201)
-  return rowToNewPhoto(row)
+  return rowToPhoto(row)
 })

@@ -2,7 +2,7 @@ import type { PhotoListResponse } from '~/types'
 import type { PhotoRow } from '../../../utils/photos'
 import { requireAdmin } from '../../../utils/admin-auth'
 import { useCloudflareBindings } from '../../../utils/cloudflare'
-import { rowToNewPhoto } from '../../../utils/photos'
+import { rowToPhoto } from '../../../utils/photos'
 
 export default defineEventHandler(async (event): Promise<PhotoListResponse> => {
   await requireAdmin(event)
@@ -40,7 +40,7 @@ export default defineEventHandler(async (event): Promise<PhotoListResponse> => {
     .all<PhotoRow>()
 
   return {
-    photos: (result.results || []).map(rowToNewPhoto),
+    photos: (result.results || []).map(rowToPhoto),
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   }
 })

@@ -1,4 +1,4 @@
-import type { Photo } from '~/types'
+import type { Photo, PhotoListResponse } from '~/types'
 
 interface PhotosPayload {
   photos: Photo[]
@@ -11,6 +11,18 @@ interface PhotosPayload {
     hasPrev: boolean
     count: number
   }
+}
+
+export function usePublicPhotos() {
+  return useFetch<PhotoListResponse>('/api/photos', {
+    key: 'public-photos',
+    query: { all: '1' },
+    default: () => ({
+      photos: [],
+      pagination: { page: 1, limit: 0, total: 0, totalPages: 0 },
+    }),
+    dedupe: 'defer',
+  })
 }
 
 function createPhotosPayload(photos: Photo[], page: number, limit: number): PhotosPayload {
@@ -44,12 +56,6 @@ export function usePhotos(initialPhotos: Photo[] = []) {
   const error = ref<string | null>(null) // 错误状态
 
   async function getPhotosPayload(page: number): Promise<PhotosPayload> {
-    if (!sourcePhotos.value.length) {
-      const response = await fetch('/api/photos-data.json')
-      if (!response.ok) throw new Error(`Failed to load photos: ${response.status}`)
-      sourcePhotos.value = (await response.json()) as Photo[]
-    }
-
     return createPhotosPayload(sourcePhotos.value, page, pageSize.value)
   }
 

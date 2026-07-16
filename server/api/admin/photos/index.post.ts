@@ -2,7 +2,7 @@ import type { PhotoExif } from '~/types'
 import { requireAdmin } from '../../../utils/admin-auth'
 import { useCloudflareBindings } from '../../../utils/cloudflare'
 import { processAndStorePhoto } from '../../../utils/photo-processing'
-import { getPhotoRow, rowToNewPhoto } from '../../../utils/photos'
+import { getPhotoRow, rowToPhoto } from '../../../utils/photos'
 
 function parseBoolean(value: string | undefined) {
   return value === 'true' || value === '1'
@@ -104,5 +104,5 @@ export default defineEventHandler(async (event) => {
   const row = await getPhotoRow(DB, id)
   if (!row) throw createError({ statusCode: 500, statusMessage: '图片已上传，但记录读取失败' })
   setResponseStatus(event, 201)
-  return rowToNewPhoto(row)
+  return rowToPhoto(row)
 })

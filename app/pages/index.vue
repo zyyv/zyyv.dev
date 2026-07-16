@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import type { Photo } from '~/types'
 import Home from '~/components/Home.vue'
 
-const { data: photos } = await useFetch<Photo[]>('/api/photos-data.json', {
-  key: 'home-photos',
-  default: () => [],
-})
+const { data: photoResponse } = await usePublicPhotos()
+const photos = computed(() => photoResponse.value.photos)
 
 useSeoMeta({
   title: 'Chris',

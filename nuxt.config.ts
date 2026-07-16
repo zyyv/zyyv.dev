@@ -24,10 +24,6 @@ export default defineNuxtConfig({
       devProxy: {
         '/api/admin': { target: 'https://zyyv.dev/api/admin', changeOrigin: true },
         '/api/photo-assets': { target: 'https://zyyv.dev/api/photo-assets', changeOrigin: true },
-        '/api/photos-data.json': {
-          target: 'https://zyyv.dev/api/photos-data.json',
-          changeOrigin: true,
-        },
         '/api/photos': { target: 'https://zyyv.dev/api/photos', changeOrigin: true },
       },
     },
@@ -88,7 +84,8 @@ export default defineNuxtConfig({
     },
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/posts', '/photos', '/projects'],
+      ignore: ['/', '/photos'],
+      routes: ['/posts', '/projects'],
     },
   },
 

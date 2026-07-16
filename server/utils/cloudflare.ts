@@ -13,7 +13,3 @@ export function useCloudflareBindings(event: H3Event): CloudflareBindings {
 
   return bindings
 }
-
-export function useOptionalDatabase(event: H3Event) {
-  return event.context.cloudflare?.env.DB
-}

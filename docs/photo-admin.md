@@ -58,5 +58,28 @@ No R2 access key, account ID, or D1 API token is used by the application.
 - R2 keys are scoped by a server-generated upload UUID
 - EXIF and BlurHash are extracted from the original in the browser before upload
 
-In production, `/api/photos-data.json` and `/api/photos` read non-private records from D1. During
-local development, Nitro proxies both endpoints to the deployed Worker.
+In production, `/api/photos?all=1` reads all non-private records from D1. The response uses a
+short browser cache and a longer CDN cache with stale-while-revalidate. Compressed and thumbnail
+URLs point directly to `https://img.zyyv.dev` and are uploaded with a one-year immutable cache.
+During local development, Nitro proxies the endpoint to the deployed Worker.
+
+## Cache rules
+
+R2 object metadata and the public API response already send cache headers, but the zone must also
+make both routes eligible for Cloudflare edge caching. Create a Cache Rule matching:
+
+```text
+(http.host eq "img.zyyv.dev") or
+(http.host eq "zyyv.dev" and http.request.uri.path eq "/api/photos")
+```
+
+Use these settings:
+
+- Cache eligibility: Eligible for cache
+- Edge TTL: Use cache-control header if present
+- Browser TTL: Respect origin
+
+After deploying and enabling the rule, request the same image twice and verify that
+`cf-cache-status` changes from `MISS` to `HIT`. The uploaded compressed and thumbnail objects use
+one-year immutable URLs; `/api/photos` uses a 60-second browser TTL and a 5-minute edge TTL with
+stale-while-revalidate.
