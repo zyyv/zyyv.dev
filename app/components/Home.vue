@@ -11,7 +11,7 @@ const props = defineProps<{
 const photoSeed = useState('home-photo-seed', () => Math.random())
 const randomPhotos = computed(() => seededShuffle(props.photos, photoSeed.value))
 const heroPhotos = computed(() => randomPhotos.value.slice(0, 3))
-const streamPhotos = computed(() => randomPhotos.value.slice(3, 18))
+const streamPhotos = computed(() => randomPhotos.value.slice(3, 25))
 </script>
 
 <template>

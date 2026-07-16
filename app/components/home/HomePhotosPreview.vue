@@ -52,10 +52,47 @@ useScrollStage(tunnelRef, {
     const viewport = tunnelViewportRef.value
     if (!viewport) return []
 
+    const backgroundAnimations = [
+      viewport.querySelector<HTMLElement>('.photo-stream__warp-lines')?.animate(
+        [
+          { opacity: 0.08, transform: 'rotate(-7deg) scale(0.42)' },
+          { opacity: 0.28, transform: 'rotate(-2deg) scale(0.92)', offset: 0.34 },
+          { opacity: 0.42, transform: 'rotate(4deg) scale(1.46)', offset: 0.72 },
+          { opacity: 0.06, transform: 'rotate(9deg) scale(2.7)' },
+        ],
+        { duration: 1000, fill: 'both', easing: 'linear' },
+      ),
+      viewport.querySelector<HTMLElement>('.photo-stream__dust--far')?.animate(
+        [
+          { opacity: 0.1, transform: 'translate3d(1.5%, -1%, 0) scale(0.7)' },
+          { opacity: 0.26, transform: 'translate3d(-1%, 1.5%, 0) scale(1.35)', offset: 0.58 },
+          { opacity: 0.04, transform: 'translate3d(-2.5%, 3%, 0) scale(2.5)' },
+        ],
+        { duration: 1000, fill: 'both', easing: 'linear' },
+      ),
+      viewport.querySelector<HTMLElement>('.photo-stream__dust--near')?.animate(
+        [
+          { opacity: 0.04, transform: 'translate3d(-1%, 1%, 0) scale(0.5)' },
+          { opacity: 0.32, transform: 'translate3d(1.5%, -1.5%, 0) scale(1.5)', offset: 0.66 },
+          { opacity: 0, transform: 'translate3d(4%, -4%, 0) scale(4.2)' },
+        ],
+        { duration: 1000, fill: 'both', easing: 'linear' },
+      ),
+      viewport.querySelector<HTMLElement>('.photo-stream__warp-core')?.animate(
+        [
+          { opacity: 0.05, transform: 'translate(-50%, -50%) scale(0.45)' },
+          { opacity: 0.24, transform: 'translate(-50%, -50%) scale(1.05)', offset: 0.48 },
+          { opacity: 0.1, transform: 'translate(-50%, -50%) scale(1.7)', offset: 0.78 },
+          { opacity: 0, transform: 'translate(-50%, -50%) scale(3)' },
+        ],
+        { duration: 1000, fill: 'both', easing: 'linear' },
+      ),
+    ].filter((animation): animation is Animation => animation !== undefined)
+
     const items = Array.from(viewport.querySelectorAll<HTMLElement>('.photo-stream__item'))
     const lastIndex = Math.max(items.length - 1, 1)
 
-    return items.map((item, index) => {
+    const photoAnimations = items.map((item, index) => {
       const centerX = viewport.clientWidth / 2 - (item.offsetLeft + item.offsetWidth / 2)
       const centerY = viewport.clientHeight / 2 - (item.offsetTop + item.offsetHeight / 2)
       const delay = (index / lastIndex) * 0.74
@@ -127,6 +164,8 @@ useScrollStage(tunnelRef, {
       animation.pause()
       return animation
     })
+
+    return [...backgroundAnimations, ...photoAnimations]
   },
 })
 
@@ -183,7 +222,20 @@ onBeforeUnmount(() => {
       :style="{ height: tunnelHeight }"
     >
       <div ref="tunnelViewport" class="photo-stream__gallery">
-        <p class="photo-stream__tunnel-label" aria-hidden="true">Scroll through the frame</p>
+        <div class="photo-stream__space" aria-hidden="true">
+          <span class="photo-stream__warp-lines" />
+          <span class="photo-stream__dust photo-stream__dust--far" />
+          <span class="photo-stream__dust photo-stream__dust--near" />
+          <span class="photo-stream__warp-core" />
+        </div>
+
+        <div class="photo-stream__tunnel-caption">
+          <p class="photo-stream__tunnel-copy">
+            More light, places, and accidental frames live in the full archive.
+          </p>
+          <p class="photo-stream__tunnel-label" aria-hidden="true">Scroll through the frame</p>
+        </div>
+
         <button
           v-for="(photo, index) in photos"
           :key="photo.id"
@@ -204,7 +256,6 @@ onBeforeUnmount(() => {
     <div v-else class="photo-stream__empty">No photos available</div>
 
     <div class="photo-stream__archive">
-      <p>More light, places, and accidental frames live in the full archive.</p>
       <NuxtLink to="/photos">Enter the archive ↗</NuxtLink>
     </div>
 
@@ -295,23 +346,138 @@ onBeforeUnmount(() => {
 
 .photo-stream__gallery::before {
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   inset: 0;
-  background: radial-gradient(
-    circle at 50% 50%,
-    color-mix(in srgb, currentColor 7%, transparent),
-    transparent 34%
-  );
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 13%, rgb(0 0 0 / 5%) 58%, rgb(0 0 0 / 18%)),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, currentColor 7%, transparent),
+      transparent 38%
+    );
   content: '';
   pointer-events: none;
 }
 
-.photo-stream__tunnel-label {
+.photo-stream__space,
+.photo-stream__space span {
   position: absolute;
-  z-index: 1;
+  pointer-events: none;
+}
+
+.photo-stream__space {
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+}
+
+.photo-stream__warp-lines {
+  inset: -72vmax;
+  background: repeating-conic-gradient(
+    from 2deg at 50% 50%,
+    color-mix(in srgb, currentColor 18%, transparent) 0deg 0.045deg,
+    transparent 0.045deg 3.2deg
+  );
+  opacity: 0.08;
+  transform-origin: center;
+  mask-image: radial-gradient(circle, transparent 0 7%, #000 18% 68%, transparent 88%);
+}
+
+.photo-stream__dust {
+  inset: -18%;
+  background-repeat: repeat;
+  transform-origin: center;
+}
+
+.photo-stream__dust--far {
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, currentColor 34%, transparent) 0 0.06rem,
+      transparent 0.08rem
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, currentColor 22%, transparent) 0 0.045rem,
+      transparent 0.07rem
+    );
+  background-position:
+    1rem 2rem,
+    5rem 7rem;
+  background-size:
+    7.4rem 7.4rem,
+    11rem 11rem;
+  opacity: 0.1;
+}
+
+.photo-stream__dust--near {
+  background-image:
+    radial-gradient(
+      ellipse,
+      color-mix(in srgb, currentColor 45%, transparent) 0 0.055rem,
+      transparent 0.22rem
+    ),
+    radial-gradient(
+      ellipse,
+      color-mix(in srgb, currentColor 32%, transparent) 0 0.045rem,
+      transparent 0.17rem
+    );
+  background-position:
+    3rem 1rem,
+    8rem 5rem;
+  background-size:
+    13rem 13rem,
+    17rem 17rem;
+  filter: blur(0.04rem);
+  opacity: 0.04;
+}
+
+.photo-stream__warp-core {
+  top: 50%;
+  left: 50%;
+  width: min(26vw, 22rem);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 0 18%,
+    color-mix(in srgb, currentColor 7%, transparent) 48%,
+    transparent 72%
+  );
+  box-shadow:
+    inset 0 0 4rem color-mix(in srgb, currentColor 8%, transparent),
+    0 0 7rem color-mix(in srgb, currentColor 6%, transparent);
+  opacity: 0.05;
+  transform: translate(-50%, -50%) scale(0.45);
+}
+
+.photo-stream__tunnel-caption {
+  position: absolute;
+  z-index: 20;
   right: clamp(1rem, 4vw, 4rem);
   bottom: 2rem;
+  left: clamp(1rem, 4vw, 4rem);
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  pointer-events: none;
+}
+
+.photo-stream__tunnel-caption p {
   margin: 0;
+}
+
+.photo-stream__tunnel-copy {
+  width: min(23rem, 42vw);
+  font-size: 0.68rem;
+  line-height: 1.5;
+  opacity: 0.58;
+}
+
+.photo-stream__tunnel-label {
+  flex: none;
   font-size: 0.6rem;
   letter-spacing: 0.09em;
   opacity: 0.38;
@@ -378,17 +544,12 @@ onBeforeUnmount(() => {
 .photo-stream__archive {
   display: flex;
   align-items: end;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 2rem;
   padding: clamp(6rem, 12vw, 11rem) clamp(1rem, 4vw, 4rem);
   border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
   font-size: 0.72rem;
   line-height: 1.5;
-}
-
-.photo-stream__archive p {
-  max-width: 23rem;
-  margin: 0;
 }
 
 .photo-stream__empty {
@@ -437,8 +598,24 @@ onBeforeUnmount(() => {
     width: var(--photo-mobile-width);
   }
 
-  .photo-stream__archive {
+  .photo-stream__warp-core {
+    width: 48vw;
+  }
+
+  .photo-stream__tunnel-caption {
     display: grid;
+    gap: 0.75rem;
+  }
+
+  .photo-stream__tunnel-copy {
+    width: min(18rem, 78vw);
+  }
+
+  .photo-stream__tunnel-label {
+    justify-self: end;
+  }
+
+  .photo-stream__archive {
     padding: 6rem 1rem;
   }
 
@@ -460,6 +637,28 @@ onBeforeUnmount(() => {
     gap: 1rem;
     padding: 1rem;
     overflow: visible;
+  }
+
+  .photo-stream__space {
+    display: none;
+  }
+
+  .photo-stream__tunnel-caption {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    display: block;
+    grid-column: 1 / -1;
+    padding-bottom: 1rem;
+  }
+
+  .photo-stream__tunnel-copy {
+    width: min(23rem, 78vw);
+  }
+
+  .photo-stream__tunnel-label {
+    display: none;
   }
 
   .photo-stream__item {
