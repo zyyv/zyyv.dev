@@ -2,7 +2,16 @@ import type { CloudflareBindings, R2BucketBinding } from '../types/cloudflare'
 
 type ImagesBinding = CloudflareBindings['IMAGES']
 
-const MAX_UPLOAD_SIZE = 20 * 1024 * 1024
+interface UploadFile {
+  filename?: string
+  type?: string
+  data: Uint8Array
+}
+
+const MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+const MAX_IMAGES_INPUT_SIZE = 20 * 1024 * 1024
+const MAX_COMPRESSED_SIZE = 25 * 1024 * 1024
+const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024
 const SUPPORTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 function sanitizeBaseName(filename: string) {
@@ -50,8 +59,12 @@ async function transformImage(
 
 export async function processAndStorePhoto(options: {
   bucket: R2BucketBinding
-  images: ImagesBinding
-  file: { filename?: string; type?: string; data: Uint8Array }
+  images?: ImagesBinding
+  file: UploadFile
+  compressed?: UploadFile
+  thumbnail?: UploadFile
+  width?: number
+  height?: number
   id: string
 }) {
   const { bucket, images, file, id } = options
@@ -62,32 +75,87 @@ export async function processAndStorePhoto(options: {
     throw createError({ statusCode: 415, statusMessage: '仅支持 JPEG、PNG 和 WebP 图片' })
   }
   if (!file.data.byteLength || file.data.byteLength > MAX_UPLOAD_SIZE) {
-    throw createError({ statusCode: 413, statusMessage: '图片不能为空且不能超过 20 MB' })
+    throw createError({ statusCode: 413, statusMessage: '图片不能为空且不能超过 50 MB' })
   }
 
-  const info = await images.info(bytesToStream(file.data))
-  if (!info.width || !info.height) {
-    throw createError({ statusCode: 422, statusMessage: '无法读取图片尺寸' })
+  const hasPreparedVariants = Boolean(options.compressed && options.thumbnail)
+  if (Boolean(options.compressed) !== Boolean(options.thumbnail)) {
+    throw createError({ statusCode: 400, statusMessage: '压缩图与缩略图必须同时上传' })
   }
 
   const baseName = sanitizeBaseName(filename)
   const extension = extensionForType(contentType)
   const originalKey = `original/${id}/${baseName}.${extension}`
-  const compressedKey = `compressed/${id}/${baseName}.compressed.${extension}`
-  const thumbnailKey = `thumbnail/${id}/${baseName}.thumbnail.${extension}`
-  const [compressed, thumbnail] = await Promise.all([
-    transformImage(images, file.data, 2560, contentType),
-    transformImage(images, file.data, 600, contentType),
-  ])
+  let width: number
+  let height: number
+  let compressed: UploadFile
+  let thumbnail: UploadFile
 
-  const httpMetadata = { contentType, cacheControl: 'public, max-age=31536000, immutable' }
+  if (hasPreparedVariants) {
+    compressed = options.compressed!
+    thumbnail = options.thumbnail!
+    width = Number(options.width)
+    height = Number(options.height)
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) {
+      throw createError({ statusCode: 400, statusMessage: '图片尺寸无效' })
+    }
+    if (
+      !SUPPORTED_TYPES.has(compressed.type || '') ||
+      !compressed.data.byteLength ||
+      compressed.data.byteLength > MAX_COMPRESSED_SIZE
+    ) {
+      throw createError({ statusCode: 413, statusMessage: '压缩图无效或超过 25 MB' })
+    }
+    if (
+      !SUPPORTED_TYPES.has(thumbnail.type || '') ||
+      !thumbnail.data.byteLength ||
+      thumbnail.data.byteLength > MAX_THUMBNAIL_SIZE
+    ) {
+      throw createError({ statusCode: 413, statusMessage: '缩略图无效或超过 10 MB' })
+    }
+  } else {
+    if (!images) {
+      throw createError({
+        statusCode: 503,
+        statusMessage: '缺少 Cloudflare Images binding，无法在服务端生成图片变体',
+      })
+    }
+    if (file.data.byteLength > MAX_IMAGES_INPUT_SIZE) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: '超过 20 MB 的图片需要由新版管理页面生成压缩图后上传',
+      })
+    }
+    const info = await images.info(bytesToStream(file.data))
+    if (!info.width || !info.height) {
+      throw createError({ statusCode: 422, statusMessage: '无法读取图片尺寸' })
+    }
+    width = info.width
+    height = info.height
+    const [compressedData, thumbnailData] = await Promise.all([
+      transformImage(images, file.data, 2560, contentType),
+      transformImage(images, file.data, 600, contentType),
+    ])
+    compressed = { type: contentType, data: compressedData }
+    thumbnail = { type: contentType, data: thumbnailData }
+  }
+
+  const compressedExtension = extensionForType(compressed.type || contentType)
+  const thumbnailExtension = extensionForType(thumbnail.type || contentType)
+  const compressedKey = `compressed/${id}/${baseName}.compressed.${compressedExtension}`
+  const thumbnailKey = `thumbnail/${id}/${baseName}.thumbnail.${thumbnailExtension}`
+  const cacheControl = 'public, max-age=31536000, immutable'
   try {
     await Promise.all([
       bucket.put(originalKey, file.data, {
         httpMetadata: { contentType, cacheControl: 'private, no-store' },
       }),
-      bucket.put(compressedKey, compressed, { httpMetadata }),
-      bucket.put(thumbnailKey, thumbnail, { httpMetadata }),
+      bucket.put(compressedKey, compressed.data, {
+        httpMetadata: { contentType: compressed.type || contentType, cacheControl },
+      }),
+      bucket.put(thumbnailKey, thumbnail.data, {
+        httpMetadata: { contentType: thumbnail.type || contentType, cacheControl },
+      }),
     ])
   } catch (error) {
     await bucket.delete([originalKey, compressedKey, thumbnailKey]).catch(() => undefined)
@@ -96,13 +164,13 @@ export async function processAndStorePhoto(options: {
 
   return {
     filename,
-    width: info.width,
-    height: info.height,
+    width,
+    height,
     originalKey,
     originalSize: file.data.byteLength,
     compressedKey,
-    compressedSize: compressed.byteLength,
+    compressedSize: compressed.data.byteLength,
     thumbnailKey,
-    thumbnailSize: thumbnail.byteLength,
+    thumbnailSize: thumbnail.data.byteLength,
   }
 }

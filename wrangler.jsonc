@@ -3,9 +3,16 @@
   "name": "zyyv-dev",
   "main": "./.output/server/index.mjs",
   "compatibility_date": "2026-07-10",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": ["nodejs_compat", "no_nodejs_compat_v2"],
+  "routes": [
+    {
+      "pattern": "zyyv.dev",
+      "custom_domain": true,
+    },
+  ],
   "assets": {
     "directory": "./.output/public",
+    "binding": "ASSETS",
   },
   "d1_databases": [
     {

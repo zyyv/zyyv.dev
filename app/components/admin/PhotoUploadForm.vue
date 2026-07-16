@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PhotoUploadPayload } from '~/composables/useAdminPhotos'
-import { extractPhotoMetadata } from '~/utils/photoMetadata'
+import { preparePhotoUpload } from '~/utils/photoMetadata'
 
 defineProps<{ busy: boolean }>()
 const emit = defineEmits<{ submit: [payload: PhotoUploadPayload] }>()
@@ -25,8 +25,8 @@ function selectFile(nextFile?: File) {
     localError.value = '仅支持 JPEG、PNG 和 WebP 图片。'
     return
   }
-  if (nextFile.size > 20 * 1024 * 1024) {
-    localError.value = '原图不能超过 20 MB。'
+  if (nextFile.size > 50 * 1024 * 1024) {
+    localError.value = '原图不能超过 50 MB。'
     return
   }
   revokePreview()
@@ -44,7 +44,7 @@ async function submit() {
   processing.value = true
   localError.value = null
   try {
-    const metadata = await extractPhotoMetadata(file.value)
+    const metadata = await preparePhotoUpload(file.value)
     emit('submit', { file: file.value, private: isPrivate.value, ...metadata })
   } catch (error) {
     localError.value = error instanceof Error ? error.message : '图片解析失败'
@@ -86,7 +86,7 @@ onBeforeUnmount(revokePreview)
       <button v-else type="button" @click="input?.click()">
         <i class="i-hugeicons:image-upload" aria-hidden="true" />
         <strong>拖入原图</strong>
-        <small>或点击选择，最大 20 MB</small>
+        <small>或点击选择，最大 50 MB</small>
       </button>
       <input
         ref="input"
@@ -118,7 +118,7 @@ onBeforeUnmount(revokePreview)
         :disabled="!file || busy || processing"
         @click="submit"
       >
-        <span>{{ busy ? '正在写入 R2' : processing ? '正在解析原图' : '上传并处理' }}</span>
+        <span>{{ busy ? '正在写入 R2' : processing ? '正在生成图片变体' : '上传并处理' }}</span>
         <i class="i-hugeicons:arrow-up-right-01" aria-hidden="true" />
       </button>
     </div>

@@ -2,6 +2,10 @@ import type { NewPhoto, PhotoExif, PhotoListResponse } from '~/types'
 
 export interface PhotoUploadPayload {
   file: File
+  compressed: File
+  thumbnail: File
+  width: number
+  height: number
   blurhash: string
   exif?: PhotoExif
   private: boolean
@@ -64,21 +68,49 @@ export function useAdminPhotos() {
   async function uploadPhoto(payload: PhotoUploadPayload) {
     mutating.value = true
     error.value = null
+    let uploadId: string | undefined
     try {
-      const form = new FormData()
-      form.append('file', payload.file)
-      form.append('blurhash', payload.blurhash)
-      form.append('private', String(payload.private))
-      if (payload.exif) form.append('exif', JSON.stringify(payload.exif))
-      const photo = await $fetch<NewPhoto>('/api/admin/photos', { method: 'POST', body: form })
+      const upload = await $fetch<{ id: string }>('/api/admin/photo-uploads', { method: 'POST' })
+      uploadId = upload.id
+      await uploadVariant(uploadId, 'origin', payload.file)
+      await uploadVariant(uploadId, 'compressed', payload.compressed)
+      await uploadVariant(uploadId, 'thumbnail', payload.thumbnail)
+      const photo = await $fetch<NewPhoto>(`/api/admin/photo-uploads/${uploadId}/finalize`, {
+        method: 'POST',
+        body: {
+          filename: payload.file.name,
+          width: payload.width,
+          height: payload.height,
+          blurhash: payload.blurhash,
+          private: payload.private,
+          exif: payload.exif,
+        },
+      })
       await loadPhotos(1)
       return photo
     } catch (cause) {
+      if (uploadId) {
+        await $fetch(`/api/admin/photo-uploads/${uploadId}`, { method: 'DELETE' }).catch(
+          () => undefined,
+        )
+      }
       error.value = getErrorMessage(cause)
       throw cause
     } finally {
       mutating.value = false
     }
+  }
+
+  async function uploadVariant(
+    id: string,
+    variant: 'origin' | 'compressed' | 'thumbnail',
+    file: File,
+  ) {
+    await $fetch(`/api/admin/photo-uploads/${id}/${variant}`, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type },
+    })
   }
 
   async function updatePhoto(id: string, update: Pick<NewPhoto, 'filename' | 'private' | 'exif'>) {

@@ -20,10 +20,22 @@ function parseExif(value: string | undefined): PhotoExif | undefined {
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
+  const contentLength = Number(getHeader(event, 'content-length'))
+  if (Number.isFinite(contentLength) && contentLength > 10 * 1024 * 1024) {
+    throw createError({
+      statusCode: 413,
+      statusMessage: '旧版 multipart 上传不支持大文件，请刷新管理页后重试',
+    })
+  }
   const { DB, PHOTOS, IMAGES } = useCloudflareBindings(event)
   const parts = await readMultipartFormData(event)
   const filePart = parts?.find((part) => part.name === 'file' && part.filename)
+  const compressedPart = parts?.find((part) => part.name === 'compressed' && part.filename)
+  const thumbnailPart = parts?.find((part) => part.name === 'thumbnail' && part.filename)
   if (!filePart) throw createError({ statusCode: 400, statusMessage: '请选择一张图片' })
+  if (!compressedPart || !thumbnailPart) {
+    throw createError({ statusCode: 400, statusMessage: '缺少压缩图或缩略图，请刷新管理页后重试' })
+  }
 
   const getField = (name: string) => {
     const part = parts?.find((item) => item.name === name && !item.filename)
@@ -40,6 +52,18 @@ export default defineEventHandler(async (event) => {
     bucket: PHOTOS,
     images: IMAGES,
     file: { filename: filePart.filename, type: filePart.type, data: filePart.data },
+    compressed: {
+      filename: compressedPart.filename,
+      type: compressedPart.type,
+      data: compressedPart.data,
+    },
+    thumbnail: {
+      filename: thumbnailPart.filename,
+      type: thumbnailPart.type,
+      data: thumbnailPart.data,
+    },
+    width: Number(getField('width')),
+    height: Number(getField('height')),
     id,
   })
   const now = new Date().toISOString()

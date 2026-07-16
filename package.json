@@ -69,7 +69,7 @@
     "unocss": "^66.7.5",
     "unocss-preset-zyyv": "^2.0.2",
     "vue-tsc": "^3.3.7",
-    "wrangler": "^4.98.0"
+    "wrangler": "^4.111.0"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

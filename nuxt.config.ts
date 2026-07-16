@@ -19,6 +19,26 @@ function getBuildCommit() {
 export default defineNuxtConfig({
   compatibilityDate: '2026-07-10',
 
+  $development: {
+    nitro: {
+      devProxy: {
+        '/api/admin': { target: 'https://zyyv.dev/api/admin', changeOrigin: true },
+        '/api/photo-assets': { target: 'https://zyyv.dev/api/photo-assets', changeOrigin: true },
+        '/api/photos-data.json': {
+          target: 'https://zyyv.dev/api/photos-data.json',
+          changeOrigin: true,
+        },
+        '/api/photos': { target: 'https://zyyv.dev/api/photos', changeOrigin: true },
+      },
+    },
+  },
+
+  $production: {
+    nitro: {
+      preset: 'cloudflare_module',
+    },
+  },
+
   modules: ['@nuxt/content', '@unocss/nuxt', '@vueuse/nuxt'],
 
   experimental: {
@@ -63,7 +83,6 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'cloudflare_module',
     routeRules: {
       '/admin/**': { ssr: false },
     },

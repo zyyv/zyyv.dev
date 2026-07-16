@@ -2,7 +2,9 @@ import type { PhotoExif } from '~/types'
 import { encode } from 'blurhash'
 import exifr from 'exifr'
 
-async function loadBitmap(file: File) {
+type LoadedImage = ImageBitmap | HTMLImageElement
+
+async function loadBitmap(file: File): Promise<LoadedImage> {
   if ('createImageBitmap' in window) {
     return createImageBitmap(file, { imageOrientation: 'from-image' })
   }
@@ -18,8 +20,7 @@ async function loadBitmap(file: File) {
   }
 }
 
-async function createBlurhash(file: File) {
-  const image = await loadBitmap(file)
+function createBlurhash(image: LoadedImage) {
   const width = image.width
   const height = image.height
   const sampleWidth = Math.min(32, width)
@@ -31,8 +32,42 @@ async function createBlurhash(file: File) {
   if (!context) throw new Error('浏览器无法创建图片画布')
   context.drawImage(image, 0, 0, sampleWidth, sampleHeight)
   const pixels = context.getImageData(0, 0, sampleWidth, sampleHeight).data
-  if ('close' in image && typeof image.close === 'function') image.close()
   return encode(pixels, sampleWidth, sampleHeight, 4, 4)
+}
+
+function variantFilename(filename: string, suffix: string) {
+  const extensionIndex = filename.lastIndexOf('.')
+  const baseName = extensionIndex <= 0 ? filename : filename.slice(0, extensionIndex)
+  return `${baseName}.${suffix}.webp`
+}
+
+function canvasToFile(canvas: HTMLCanvasElement, filename: string, contentType: string) {
+  return new Promise<File>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('浏览器无法生成图片预览'))
+          return
+        }
+        resolve(new File([blob], filename, { type: blob.type || contentType }))
+      },
+      contentType,
+      contentType === 'image/png' ? undefined : 0.8,
+    )
+  })
+}
+
+function createVariant(image: LoadedImage, file: File, maxWidth: number, suffix: string) {
+  const scale = Math.min(1, maxWidth / image.width)
+  const width = Math.max(1, Math.round(image.width * scale))
+  const height = Math.max(1, Math.round(image.height * scale))
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('浏览器无法创建图片画布')
+  context.drawImage(image, 0, 0, width, height)
+  return canvasToFile(canvas, variantFilename(file.name, suffix), 'image/webp')
 }
 
 function toIsoString(value: unknown) {
@@ -74,7 +109,22 @@ async function readExif(file: File): Promise<PhotoExif | undefined> {
   return exif
 }
 
-export async function extractPhotoMetadata(file: File) {
-  const [blurhash, exif] = await Promise.all([createBlurhash(file), readExif(file)])
-  return { blurhash, exif }
+export async function preparePhotoUpload(file: File) {
+  const [image, exif] = await Promise.all([loadBitmap(file), readExif(file)])
+  try {
+    const [compressed, thumbnail] = await Promise.all([
+      createVariant(image, file, 2560, 'compressed'),
+      createVariant(image, file, 600, 'thumbnail'),
+    ])
+    return {
+      blurhash: createBlurhash(image),
+      exif,
+      width: image.width,
+      height: image.height,
+      compressed,
+      thumbnail,
+    }
+  } finally {
+    if ('close' in image && typeof image.close === 'function') image.close()
+  }
 }
