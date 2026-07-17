@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import type { Photo } from '~/types'
+import type { Photo, PhotoReactionType } from '~/types'
 import { preloadImage } from '~/utils/preloadImage'
+import PhotoReactions from './PhotoReactions.vue'
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
 
 interface Props {
   photo: Photo
   photos: Photo[]
+  reactionError: string | null
+  reactionSaving: boolean
 }
 
 interface Emits {
   displayedChange: [photo: Photo]
+  react: [reaction: PhotoReactionType]
 }
 
 const props = defineProps<Props>()
@@ -25,6 +29,8 @@ const isAnimating = shallowRef(false)
 const isLoading = shallowRef(false)
 const showLoading = shallowRef(false)
 const useCheckerboard = shallowRef(false)
+const showReactions = shallowRef(false)
+const reactionControl = useTemplateRef<HTMLElement>('reactionControl')
 const {
   imageStyle,
   isDragging,
@@ -49,10 +55,18 @@ const canvasClasses = computed(() => ({
   'is-dragging': isDragging.value,
   [`is-${direction.value}`]: true,
 }))
+onClickOutside(reactionControl, () => {
+  showReactions.value = false
+})
+
+onKeyStroke('Escape', () => {
+  showReactions.value = false
+})
 
 watch(
   () => props.photo,
   (photo) => {
+    showReactions.value = false
     void displayPhoto(photo)
   },
   { immediate: true },
@@ -248,42 +262,75 @@ onBeforeUnmount(() => {
       </span>
     </figcaption>
 
-    <div class="photo-detail-canvas__controls" aria-label="Image canvas controls" @pointerdown.stop>
-      <button
-        type="button"
-        :aria-label="
-          useCheckerboard
-            ? 'Use blurred image background'
-            : 'Use transparency checkerboard background'
-        "
-        :aria-pressed="useCheckerboard"
-        :title="
-          useCheckerboard
-            ? 'Use blurred image background'
-            : 'Use transparency checkerboard background'
-        "
-        @click.stop="useCheckerboard = !useCheckerboard"
-      >
-        <i
-          :class="useCheckerboard ? 'i-hugeicons:blur' : 'i-hugeicons:grid-table'"
-          aria-hidden="true"
+    <div ref="reactionControl" class="photo-detail-canvas__control-stack" @pointerdown.stop>
+      <Transition name="reaction-popover">
+        <PhotoReactions
+          v-if="showReactions"
+          class="photo-detail-canvas__reactions"
+          :disabled="!displayedPhoto || reactionSaving"
+          :error="reactionError"
+          @react="emit('react', $event)"
         />
-      </button>
-      <button type="button" aria-label="Zoom out" title="Zoom out" @click.stop="zoomOut">
-        <i class="i-hugeicons:zoom-out-area" aria-hidden="true" />
-      </button>
-      <button
-        type="button"
-        class="photo-detail-canvas__zoom-value"
-        aria-label="Reset image view"
-        title="Reset image view"
-        @click.stop="resetCanvas"
-      >
-        {{ zoomLabel }}
-      </button>
-      <button type="button" aria-label="Zoom in" title="Zoom in" @click.stop="zoomIn">
-        <i class="i-hugeicons:zoom-in-area" aria-hidden="true" />
-      </button>
+      </Transition>
+
+      <div class="photo-detail-canvas__controls" aria-label="Image canvas controls">
+        <button
+          type="button"
+          aria-label="React to this photo"
+          aria-haspopup="dialog"
+          :aria-expanded="showReactions"
+          title="React to this photo"
+          @click.stop="showReactions = !showReactions"
+        >
+          <i class="i-hugeicons:smile" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          :aria-label="
+            useCheckerboard
+              ? 'Use blurred image background'
+              : 'Use transparency checkerboard background'
+          "
+          :aria-pressed="useCheckerboard"
+          :title="
+            useCheckerboard
+              ? 'Use blurred image background'
+              : 'Use transparency checkerboard background'
+          "
+          @click.stop="useCheckerboard = !useCheckerboard"
+        >
+          <i
+            :class="useCheckerboard ? 'i-hugeicons:blur' : 'i-hugeicons:grid-table'"
+            aria-hidden="true"
+          />
+        </button>
+        <button type="button" aria-label="Zoom out" title="Zoom out" @click.stop="zoomOut">
+          <i class="i-hugeicons:zoom-out-area" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="photo-detail-canvas__zoom-value"
+          aria-label="Reset image view"
+          title="Reset image view"
+          @click.stop="resetCanvas"
+        >
+          {{ zoomLabel }}
+        </button>
+        <button type="button" aria-label="Zoom in" title="Zoom in" @click.stop="zoomIn">
+          <i class="i-hugeicons:zoom-in-area" aria-hidden="true" />
+        </button>
+        <a
+          v-if="displayedPhoto"
+          :href="`/api/photos/${displayedPhoto.id}/download`"
+          :download="displayedPhoto.filename"
+          aria-label="Download original image"
+          title="Download original image"
+          @pointerdown.stop
+          @click.stop
+        >
+          <i class="i-hugeicons:download-04" aria-hidden="true" />
+        </a>
+      </div>
     </div>
   </figure>
 </template>
@@ -469,23 +516,35 @@ onBeforeUnmount(() => {
   animation: photo-detail-loading 900ms ease-in-out infinite alternate;
 }
 
-.photo-detail-canvas__controls {
+.photo-detail-canvas__control-stack {
   position: absolute;
   z-index: 3;
   bottom: 1rem;
   left: 50%;
-  display: grid;
-  grid-template-columns: 2rem 2rem 3.6rem 2rem;
+  transform: translateX(-50%);
+}
+
+.photo-detail-canvas__reactions {
+  position: absolute;
+  bottom: calc(100% + 0.55rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.photo-detail-canvas__controls {
+  display: flex;
   min-height: 2rem;
   overflow: hidden;
   border: 1px dashed var(--dialog-line);
   background: var(--dialog-control);
   backdrop-filter: blur(0.75rem);
-  transform: translateX(-50%);
 }
 
-.photo-detail-canvas__controls button {
+.photo-detail-canvas__controls button,
+.photo-detail-canvas__controls a {
   display: grid;
+  flex: 0 0 auto;
+  width: 2rem;
   padding: 0;
   border: 0;
   background: transparent;
@@ -493,9 +552,11 @@ onBeforeUnmount(() => {
   font: inherit;
   cursor: pointer;
   place-items: center;
+  text-decoration: none;
 }
 
-.photo-detail-canvas__controls button + button {
+.photo-detail-canvas__controls > button:not(:first-child),
+.photo-detail-canvas__controls > a:not(:first-child) {
   border-left: 1px dashed var(--dialog-line);
 }
 
@@ -504,6 +565,7 @@ onBeforeUnmount(() => {
 }
 
 .photo-detail-canvas__controls .photo-detail-canvas__zoom-value {
+  width: 3.6rem;
   color: var(--dialog-muted);
   font-size: 0.56rem;
   font-variant-numeric: tabular-nums;
@@ -518,13 +580,28 @@ onBeforeUnmount(() => {
   }
 }
 
+.reaction-popover-enter-active,
+.reaction-popover-leave-active {
+  transition:
+    opacity 160ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reaction-popover-enter-from,
+.reaction-popover-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(0.45rem) scale(0.98);
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .photo-detail-canvas__controls button:hover {
+  .photo-detail-canvas__controls button:hover,
+  .photo-detail-canvas__controls a:hover {
     background: var(--dialog-checker);
   }
 }
 
-.photo-detail-canvas__controls button:focus-visible {
+.photo-detail-canvas__controls button:focus-visible,
+.photo-detail-canvas__controls a:focus-visible {
   outline: 1px dashed var(--dialog-text);
   outline-offset: 0.35rem;
 }
@@ -546,6 +623,10 @@ onBeforeUnmount(() => {
   }
 
   .photo-detail-canvas__controls {
+    bottom: auto;
+  }
+
+  .photo-detail-canvas__control-stack {
     bottom: 0.75rem;
   }
 }
@@ -554,6 +635,11 @@ onBeforeUnmount(() => {
   .photo-detail-canvas__background,
   .photo-detail-canvas__media,
   .photo-detail-canvas__controls button {
+    transition-duration: 1ms;
+  }
+
+  .reaction-popover-enter-active,
+  .reaction-popover-leave-active {
     transition-duration: 1ms;
   }
 

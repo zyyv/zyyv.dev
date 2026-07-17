@@ -1,6 +1,7 @@
 import type { ZyyvTheme } from 'unocss-preset-zyyv'
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
 import { symbols } from '@unocss/core'
+import { PHOTO_REACTIONS } from './shared/constants/photo-reactions'
 import { defineZyyvConfig } from 'unocss-preset-zyyv'
 import { presetTypography } from 'unocss'
 
@@ -53,6 +54,7 @@ export default defineZyyvConfig<ZyyvTheme>(
     // typography: true,
   },
   {
+    safelist: PHOTO_REACTIONS.map((reaction) => reaction.icon),
     blocklist: [/^\./u, /^[a-z][\w-]*::/u],
     rules: [
       // 隐藏滚动条

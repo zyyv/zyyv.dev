@@ -1,4 +1,7 @@
 import type { Endpoints } from '@octokit/types'
+import type { PhotoReactionType } from '#shared/constants/photo-reactions'
+
+export type { PhotoReactionType } from '#shared/constants/photo-reactions'
 
 export * from './article'
 
@@ -68,6 +71,13 @@ export interface Photo {
 
   private: boolean
   exif?: PhotoExif
+  reactions: PhotoReactionCounts
+}
+
+export type PhotoReactionCounts = Record<PhotoReactionType, number>
+
+export interface PhotoReactionResponse {
+  counts: PhotoReactionCounts
 }
 
 export interface PhotoListResponse {

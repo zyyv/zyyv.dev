@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
+import PhotosPhotoDetail from './PhotoDetail.vue'
 
 const props = withDefaults(
   defineProps<{

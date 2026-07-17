@@ -2,6 +2,7 @@
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo } from '~/types'
 import dayjs from 'dayjs'
+import { PHOTO_REACTIONS } from '#shared/constants/photo-reactions'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
 
 interface Props {
@@ -35,8 +36,17 @@ const currentIndex = computed(() => {
   return props.photos.findIndex((photo) => photo.id === props.photo?.id)
 })
 const detailPhoto = computed(() => displayedPhoto.value ?? props.photo)
+const {
+  counts: reactionCounts,
+  saving: reactionSaving,
+  error: reactionError,
+  react,
+} = usePhotoReactions(detailPhoto)
 const hasPrev = computed(() => currentIndex.value > 0)
 const hasNext = computed(() => currentIndex.value < props.photos.length - 1)
+const activeReactions = computed(() =>
+  PHOTO_REACTIONS.filter((reaction) => reactionCounts.value[reaction.type] > 0),
+)
 const basicDetails = computed<DetailRow[]>(() => {
   if (!detailPhoto.value) return []
 
@@ -168,17 +178,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
             </div>
 
             <div class="photo-dialog__actions">
-              <a
-                v-if="detailPhoto"
-                class="photo-dialog__text-action"
-                :href="detailPhoto.origin"
-                :download="detailPhoto.filename"
-                title="Download original image"
-              >
-                <span>Download</span>
-                <i class="i-hugeicons:download-04" aria-hidden="true" />
-              </a>
-
               <button
                 type="button"
                 class="photo-dialog__close"
@@ -206,7 +205,10 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               <PhotoDetailCanvas
                 :photo="photo"
                 :photos="photos"
+                :reaction-error="reactionError"
+                :reaction-saving="reactionSaving"
                 @displayed-change="handleDisplayedChange"
+                @react="react"
               />
 
               <button
@@ -245,6 +247,20 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                     <dd>{{ detail.value }}</dd>
                   </div>
                 </dl>
+              </section>
+
+              <section class="photo-dialog__detail-group" aria-live="polite">
+                <h3>Reactions</h3>
+                <dl v-if="activeReactions.length" class="photo-dialog__reaction-list">
+                  <div v-for="reaction in activeReactions" :key="reaction.type">
+                    <dt>
+                      <i :class="reaction.icon" aria-hidden="true" />
+                      <span>{{ reaction.label }}</span>
+                    </dt>
+                    <dd>{{ reactionCounts[reaction.type] }}</dd>
+                  </div>
+                </dl>
+                <p v-else class="photo-dialog__empty-reactions">No reactions yet.</p>
               </section>
             </aside>
           </div>
@@ -339,6 +355,21 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   margin: 0;
 }
 
+.photo-dialog__reaction-list dd {
+  font-variant-numeric: tabular-nums;
+}
+
+.photo-dialog__reaction-list dt i {
+  font-size: 1rem;
+}
+
+.photo-dialog__empty-reactions {
+  margin: 0;
+  color: var(--dialog-muted);
+  font-size: 0.66rem;
+  line-height: 1.45;
+}
+
 .photo-dialog__identity p {
   flex: 0 0 auto;
   color: var(--dialog-muted);
@@ -360,7 +391,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   gap: clamp(1rem, 2.4vw, 2.5rem);
 }
 
-.photo-dialog__text-action,
 .photo-dialog__close,
 .photo-dialog__nav {
   padding: 0;
@@ -369,37 +399,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   color: inherit;
   font: inherit;
   cursor: pointer;
-}
-
-.photo-dialog__text-action {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  min-height: 2.4rem;
-  color: var(--dialog-text);
-  font-size: 0.67rem;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.photo-dialog__text-action::after {
-  position: absolute;
-  right: 0;
-  bottom: 0.32rem;
-  left: 0;
-  height: 1px;
-  background: currentColor;
-  content: '';
-  opacity: 0.32;
-  transform-origin: right;
-  transition:
-    opacity 220ms ease,
-    transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.photo-dialog__text-action i {
-  font-size: 0.9rem;
 }
 
 .photo-dialog__close {
@@ -573,11 +572,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .photo-dialog__text-action:hover::after {
-    opacity: 0.8;
-    transform: scaleX(0.45);
-  }
-
   .photo-dialog__close:hover,
   .photo-dialog__nav:hover {
     color: var(--dialog-text);
@@ -598,13 +592,11 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   }
 }
 
-.photo-dialog__text-action:active,
 .photo-dialog__close:active,
 .photo-dialog__filmstrip button:active {
   transform: scale(0.97);
 }
 
-.photo-dialog__text-action:focus-visible,
 .photo-dialog__close:focus-visible,
 .photo-dialog__nav:focus-visible,
 .photo-dialog__filmstrip button:focus-visible {
@@ -661,10 +653,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
     gap: 0.8rem;
   }
 
-  .photo-dialog__text-action {
-    font-size: 0.6rem;
-  }
-
   .photo-dialog__body {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(46dvh, 1fr) minmax(0, 31dvh);
@@ -691,8 +679,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   .photo-dialog-leave-active,
   .photo-dialog-enter-active .photo-detail-canvas,
   .photo-dialog-leave-active .photo-detail-canvas,
-  .photo-dialog__text-action,
-  .photo-dialog__text-action::after,
   .photo-dialog__close,
   .photo-dialog__nav,
   .photo-dialog__filmstrip button,

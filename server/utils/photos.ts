@@ -1,4 +1,5 @@
-import type { Photo, PhotoExif } from '~/types'
+import type { Photo, PhotoExif, PhotoReactionCounts } from '~/types'
+import { createEmptyPhotoReactionCounts } from '#shared/constants/photo-reactions'
 import { imageCdnUrl } from '#shared/constants/images'
 import type { D1DatabaseBinding } from '../types/cloudflare'
 
@@ -35,7 +36,10 @@ function parseExif(value: string | null): PhotoExif | undefined {
   }
 }
 
-export function rowToPhoto(row: PhotoRow): Photo {
+export function rowToPhoto(
+  row: PhotoRow,
+  reactions: PhotoReactionCounts = createEmptyPhotoReactionCounts(),
+): Photo {
   const origin = imageCdnUrl(row.origin_key)
   return {
     id: row.id,
@@ -56,6 +60,7 @@ export function rowToPhoto(row: PhotoRow): Photo {
     createdAt: row.created_at,
     modifiedAt: row.modified_at,
     exif: parseExif(row.exif_json),
+    reactions,
   }
 }
 
@@ -64,10 +69,31 @@ export async function getPhotoRow(database: D1DatabaseBinding, id: string) {
 }
 
 export async function listPublicPhotos(database: D1DatabaseBinding) {
-  const result = await database
-    .prepare(
+  const [photosResult, reactionsResult] = await database.batch([
+    database.prepare(
       "SELECT * FROM photos WHERE is_private = 0 ORDER BY COALESCE(json_extract(exif_json, '$.dateTime'), created_at) DESC",
-    )
-    .all<PhotoRow>()
-  return (result.results || []).map(rowToPhoto)
+    ),
+    database.prepare(
+      `SELECT photo_reactions.photo_id, photo_reactions.reaction, COUNT(*) AS count
+       FROM photo_reactions
+       INNER JOIN photos ON photos.id = photo_reactions.photo_id
+       WHERE photos.is_private = 0
+       GROUP BY photo_reactions.photo_id, photo_reactions.reaction`,
+    ),
+  ])
+  const reactionsByPhoto = new Map<string, PhotoReactionCounts>()
+
+  for (const row of reactionsResult.results as unknown as Array<{
+    photo_id: string
+    reaction: keyof PhotoReactionCounts
+    count: number
+  }>) {
+    const counts = reactionsByPhoto.get(row.photo_id) || createEmptyPhotoReactionCounts()
+    counts[row.reaction] = Number(row.count)
+    reactionsByPhoto.set(row.photo_id, counts)
+  }
+
+  return (photosResult.results as unknown as PhotoRow[]).map((row) =>
+    rowToPhoto(row, reactionsByPhoto.get(row.id)),
+  )
 }
