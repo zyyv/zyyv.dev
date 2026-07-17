@@ -6,6 +6,7 @@ const navigation = [
   { label: 'Photos', to: '/photos', icon: 'i-hugeicons:image-03' },
   { label: 'Projects', to: '/projects', icon: 'i-hugeicons:package-search' },
   { label: 'Posts', to: '/posts', icon: 'i-hugeicons:note-edit' },
+  { label: 'About', to: '/about', icon: 'i-hugeicons:user-circle' },
 ] as const
 
 const isHome = computed(() => route.path === '/')

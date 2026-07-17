@@ -13,6 +13,13 @@ const commitUrl = computed(() =>
     : `https://github.com/zyyv/zyyv.dev/commit/${commitHash.value}`,
 )
 
+const socialLinks = [
+  { label: 'GitHub', href: 'https://github.com/zyyv', external: true },
+  { label: 'Bluesky', href: 'https://bsky.app/profile/zyyv.dev', external: true },
+  { label: 'X', href: 'https://x.com/chris_zyyv', external: true },
+  { label: 'Email', href: 'mailto:hizyyv@gmail.com', external: false },
+] as const
+
 function backToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -31,7 +38,20 @@ function backToTop() {
     </p>
 
     <div class="site-footer__base">
-      <p>© {{ year }} Chris</p>
+      <div class="site-footer__identity">
+        <p>© {{ year }} Chris</p>
+        <nav class="site-footer__links" aria-label="Social links">
+          <a
+            v-for="link in socialLinks"
+            :key="link.label"
+            :href="link.href"
+            :target="link.external ? '_blank' : undefined"
+            :rel="link.external ? 'noreferrer' : undefined"
+          >
+            {{ link.label }}
+          </a>
+        </nav>
+      </div>
 
       <div class="site-footer__actions">
         <a :href="commitUrl" target="_blank" rel="noreferrer" :title="`Open commit ${commitHash}`">
@@ -123,6 +143,41 @@ function backToTop() {
   gap: clamp(1.25rem, 3vw, 3rem);
 }
 
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem clamp(0.85rem, 1.8vw, 1.5rem);
+}
+
+.site-footer__links a {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    opacity 240ms ease,
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-footer__links a:hover {
+  opacity: 0.5;
+  transform: translateY(-1px);
+}
+
+.site-footer__links a:active {
+  transform: translateY(1px);
+}
+
+.site-footer__links a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 0.35rem;
+}
+
+.site-footer__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem clamp(1rem, 2.5vw, 2rem);
+}
+
 .site-footer__actions a,
 .site-footer__actions button {
   display: inline-flex;
@@ -193,12 +248,12 @@ function backToTop() {
   }
 
   .site-footer__base {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
   }
 
   .site-footer__actions {
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 1rem;
   }
 
@@ -206,11 +261,20 @@ function backToTop() {
   .site-footer__actions button span {
     display: none;
   }
+
+  .site-footer__identity {
+    gap: 0.75rem 1rem;
+  }
+
+  .site-footer__links {
+    gap: 0.45rem 0.85rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .site-footer__actions a,
-  .site-footer__actions button {
+  .site-footer__actions button,
+  .site-footer__links a {
     transition: none;
   }
 }
