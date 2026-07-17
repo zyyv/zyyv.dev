@@ -62,16 +62,19 @@ const fileFactsLine = computed(() => summary.value.fileFacts.join(' · '))
 
 .photo-hover-info__identity {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   min-width: 0;
   gap: 0.55rem;
+  white-space: nowrap;
 }
 
 .photo-hover-info__device {
   display: flex;
+  flex: 0 1 auto;
   align-items: center;
   min-width: 0;
+  overflow: hidden;
   gap: 0.42rem;
   font-size: 0.68rem;
   font-weight: 560;
@@ -79,6 +82,7 @@ const fileFactsLine = computed(() => summary.value.fileFacts.join(' · '))
 }
 
 .photo-hover-info__device::after {
+  flex: 0 0 auto;
   width: 1px;
   height: 0.75rem;
   margin-left: 0.15rem;
@@ -101,7 +105,7 @@ const fileFactsLine = computed(() => summary.value.fileFacts.join(' · '))
 
 .photo-hover-info__file {
   flex: 0 0 auto;
-  min-width: 0;
+  min-width: max-content;
   color: rgb(250 250 247 / 70%);
   font-size: 0.58rem;
   font-variant-numeric: tabular-nums;
@@ -127,18 +131,6 @@ const fileFactsLine = computed(() => summary.value.fileFacts.join(' · '))
   color: rgb(250 250 247 / 58%);
   font: inherit;
   text-transform: uppercase;
-}
-
-@media (max-width: 479.9px) {
-  .photo-hover-info__identity {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .photo-hover-info__device::after {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
