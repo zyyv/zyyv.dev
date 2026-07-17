@@ -7,6 +7,7 @@ const props = defineProps<{
 }>()
 
 const summary = computed(() => getPhotoCaptureSummary(props.photo))
+const fileFactsLine = computed(() => summary.value.fileFacts.join(' · '))
 </script>
 
 <template>
@@ -22,9 +23,7 @@ const summary = computed(() => getPhotoCaptureSummary(props.photo))
         <span>{{ summary.deviceName }}</span>
       </div>
 
-      <div class="photo-hover-info__file">
-        <span v-for="fact in summary.fileFacts" :key="fact">{{ fact }}</span>
-      </div>
+      <div class="photo-hover-info__file">{{ fileFactsLine }}</div>
     </div>
 
     <div v-if="summary.items.length" class="photo-hover-info__parameters">
@@ -101,29 +100,13 @@ const summary = computed(() => getPhotoCaptureSummary(props.photo))
 }
 
 .photo-hover-info__file {
-  display: flex;
-  flex: 0 1 auto;
-  align-items: center;
+  flex: 0 0 auto;
   min-width: 0;
-  gap: 0.45rem;
   color: rgb(250 250 247 / 70%);
   font-size: 0.58rem;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   white-space: nowrap;
-}
-
-.photo-hover-info__file span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.photo-hover-info__file span + span::before {
-  width: 1px;
-  height: 0.58rem;
-  background: rgb(255 255 255 / 22%);
-  content: '';
 }
 
 .photo-hover-info__parameters {

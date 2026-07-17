@@ -14,7 +14,10 @@ interface PhotosPayload {
 }
 
 export function usePublicPhotos() {
-  return useFetch<PhotoListResponse>('/api/photos', {
+  const endpoint =
+    import.meta.dev && import.meta.server ? 'https://zyyv.dev/api/photos' : '/api/photos'
+
+  return useFetch<PhotoListResponse>(endpoint, {
     key: 'public-photos',
     query: { all: '1' },
     default: () => ({
