@@ -21,6 +21,7 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const preferredMotion = usePreferredReducedMotion()
+const { copy, copied } = useClipboard({ legacy: true })
 const displayedPhoto = shallowRef<Photo | null>(null)
 const previousPhoto = shallowRef<Photo | null>(null)
 const previousImageStyle = shallowRef<CSSProperties>()
@@ -92,6 +93,12 @@ function preloadNeighbors(photo: Photo) {
   for (const neighbor of neighbors) {
     if (neighbor) void preloadImage(neighbor.compressed)
   }
+}
+
+function shareDisplayedPhoto() {
+  if (!displayedPhoto.value) return
+  const path = `/photos/${encodeURIComponent(displayedPhoto.value.id)}`
+  void copy(new URL(path, window.location.origin).href)
 }
 
 function stopLoadingIndicator() {
@@ -318,6 +325,18 @@ onBeforeUnmount(() => {
         </button>
         <button type="button" aria-label="Zoom in" title="Zoom in" @click.stop="zoomIn">
           <i class="i-hugeicons:zoom-in-area" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          aria-label="Copy link to this photo"
+          :aria-live="copied ? 'polite' : undefined"
+          :title="copied ? 'Link copied' : 'Copy link to this photo'"
+          @click.stop="shareDisplayedPhoto"
+        >
+          <i
+            :class="copied ? 'i-hugeicons:checkmark-circle-02' : 'i-hugeicons:share-08'"
+            aria-hidden="true"
+          />
         </button>
         <a
           v-if="displayedPhoto"

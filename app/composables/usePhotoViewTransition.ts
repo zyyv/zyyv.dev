@@ -1,17 +1,54 @@
-import type { MaybeRefOrGetter } from 'vue'
+import type { Photo } from '~/types'
 import { preloadImage } from '~/utils/preloadImage'
-
-type ViewUpdate = () => void | Promise<void>
-
-interface PhotoViewTransitionOptions {
-  sourceRoot: MaybeRefOrGetter<HTMLElement | null>
-}
 
 const PHOTO_IMAGE_TRANSITION_NAME = 'photo-detail-image'
 
-export function usePhotoViewTransition(options: PhotoViewTransitionOptions) {
+interface GallerySnapshot {
+  photoId: string
+  page: number
+  scrollTop: number
+}
+
+// The element currently owning the shared `photo-detail-image` transition
+// name. Module-scoped so the cleanup hook can always reach it, even after the
+// owning page has unmounted.
+let transitionImage: HTMLElement | null = null
+
+function nameTransitionImage(element: HTMLElement | null) {
+  if (transitionImage && transitionImage !== element) transitionImage.style.viewTransitionName = ''
+  transitionImage = element
+  if (element) element.style.viewTransitionName = PHOTO_IMAGE_TRANSITION_NAME
+}
+
+/**
+ * Drives the shared-element view transition between the gallery and the photo
+ * detail page. The actual `document.startViewTransition` call is owned by
+ * Nuxt's route transition (`experimental.viewTransition`) — calling it manually
+ * around `router.push` would skip Nuxt's transition. This composable only
+ * prepares the transition names/flags before navigating and cleans up once the
+ * route transition finishes.
+ */
+export function usePhotoViewTransition() {
+  const router = useRouter()
+  const nuxtApp = useNuxtApp()
   const preferredMotion = usePreferredReducedMotion()
-  const isTransitioning = shallowRef(false)
+  const isTransitioning = useState<boolean>('photo-view-transitioning', () => false)
+  const gallerySnapshot = useState<GallerySnapshot | null>('photo-gallery-snapshot', () => null)
+
+  if (import.meta.client && !(nuxtApp as Record<string, unknown>).__photoTransitionCleanup) {
+    ;(nuxtApp as Record<string, unknown>).__photoTransitionCleanup = true
+    nuxtApp.hook('page:view-transition:start', (transition) => {
+      if (!document.documentElement.dataset.photoTransition) return
+
+      const cleanup = () => {
+        nameTransitionImage(null)
+        delete document.documentElement.dataset.photoTransition
+        isTransitioning.value = false
+      }
+
+      void transition.finished.then(cleanup, cleanup)
+    })
+  }
 
   function canTransition() {
     return (
@@ -21,22 +58,6 @@ export function usePhotoViewTransition(options: PhotoViewTransitionOptions) {
     )
   }
 
-  function findSourceImage(photoId: string) {
-    const sourceRoot = toValue(options.sourceRoot)
-    if (!sourceRoot) return null
-
-    const source = Array.from(
-      sourceRoot.querySelectorAll<HTMLElement>('[data-photo-transition-id]'),
-    ).find((element) => element.dataset.photoTransitionId === photoId)
-
-    return source?.querySelector<HTMLElement>('img') ?? null
-  }
-
-  async function updateWithoutTransition(update: ViewUpdate) {
-    await update()
-    await nextTick()
-  }
-
   function setTransitionPhase(phase: 'open' | 'close') {
     document.documentElement.dataset.photoTransition = phase
     isTransitioning.value = true
@@ -44,64 +65,62 @@ export function usePhotoViewTransition(options: PhotoViewTransitionOptions) {
     document.documentElement.getBoundingClientRect()
   }
 
-  function cleanupTransition(element?: HTMLElement | null) {
-    if (element) element.style.viewTransitionName = ''
-    delete document.documentElement.dataset.photoTransition
-    isTransitioning.value = false
-  }
+  // Gallery -> detail page. The source thumbnail morphs into the detail image.
+  async function openPhoto(
+    photo: Photo,
+    source: HTMLElement | null,
+    snapshot: { page: number; scrollTop: number },
+  ) {
+    gallerySnapshot.value = { photoId: photo.id, ...snapshot }
 
-  async function openPhoto(detailSrc: string, source: HTMLElement | null, update: ViewUpdate) {
-    const sourceImage = source?.querySelector<HTMLElement>('img') ?? source
+    const sourceImage = source?.querySelector<HTMLElement>('img') ?? null
     if (!canTransition() || !sourceImage) {
-      await updateWithoutTransition(update)
+      await router.push(`/photos/${photo.id}`)
       return
     }
 
-    await preloadImage(detailSrc)
-    sourceImage.style.viewTransitionName = PHOTO_IMAGE_TRANSITION_NAME
+    // Make sure the detail image is decoded before the new view is captured.
+    await preloadImage(photo.compressed)
+    nameTransitionImage(sourceImage)
     setTransitionPhase('open')
-
-    const transition = document.startViewTransition(async () => {
-      await update()
-      await nextTick()
-
-      // The source stays mounted behind the dialog. Remove its name from the
-      // new snapshot so only the detail image owns the shared transition.
-      sourceImage.style.viewTransitionName = ''
-    })
-
-    void transition.finished.then(
-      () => cleanupTransition(sourceImage),
-      () => cleanupTransition(sourceImage),
-    )
+    await router.push(`/photos/${photo.id}`)
   }
 
-  async function closePhoto(photoId: string, update: ViewUpdate) {
-    if (!canTransition()) {
-      await updateWithoutTransition(update)
-      return
+  // Detail page -> gallery. The detail image morphs back to its thumbnail.
+  async function closePhoto(photoId: string) {
+    if (canTransition()) {
+      // Keep the pagination/scroll snapshot from the open navigation, but aim
+      // the morph at the photo being viewed right now.
+      const previous = gallerySnapshot.value
+      gallerySnapshot.value = {
+        photoId,
+        page: previous?.page ?? 1,
+        scrollTop: previous?.scrollTop ?? 0,
+      }
+      setTransitionPhase('close')
     }
 
-    setTransitionPhase('close')
-    let targetImage: HTMLElement | null = null
+    const back = router.options.history.state.back
+    if (typeof back === 'string' && back.startsWith('/photos')) {
+      router.back()
+    } else {
+      await router.push('/photos')
+    }
+  }
 
-    const transition = document.startViewTransition(async () => {
-      await update()
-      await nextTick()
-
-      targetImage = findSourceImage(photoId)
-      if (targetImage) targetImage.style.viewTransitionName = PHOTO_IMAGE_TRANSITION_NAME
-    })
-
-    void transition.finished.then(
-      () => cleanupTransition(targetImage),
-      () => cleanupTransition(targetImage),
-    )
+  // Called by the gallery after a close navigation: returns the snapshot to
+  // restore (pagination + scroll) and the photo to morph back to. Consumed once.
+  function consumeGallerySnapshot() {
+    const snapshot = gallerySnapshot.value
+    gallerySnapshot.value = null
+    return snapshot
   }
 
   return {
     isTransitioning: readonly(isTransitioning),
     openPhoto,
     closePhoto,
+    consumeGallerySnapshot,
+    nameTransitionImage,
   }
 }

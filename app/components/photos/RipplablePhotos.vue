@@ -17,10 +17,7 @@ const items = computed<RipplableListItem[]>(() =>
   })),
 )
 
-const currentPhoto = shallowRef<Photo | null>(null)
-const currentIndex = computed(() =>
-  currentPhoto.value ? props.photos.findIndex((photo) => photo.id === currentPhoto.value?.id) : -1,
-)
+const router = useRouter()
 
 const preferredMotion = usePreferredReducedMotion()
 const motionConfig = computed<Partial<RipplableConfig>>(() =>
@@ -42,28 +39,8 @@ function openPreview(item: RipplableListItem | null) {
   const photoId = getPhotoId(item)
   if (!photoId) return
 
-  currentPhoto.value = props.photos.find((candidate) => candidate.id === photoId) ?? null
-  if (currentPhoto.value) document.body.style.overflow = 'hidden'
+  void router.push(`/photos/${photoId}`)
 }
-
-function closePreview() {
-  currentPhoto.value = null
-  document.body.style.overflow = ''
-}
-
-function showPreviousPhoto() {
-  if (currentIndex.value <= 0) return
-  currentPhoto.value = props.photos[currentIndex.value - 1] ?? null
-}
-
-function showNextPhoto() {
-  if (currentIndex.value < 0 || currentIndex.value >= props.photos.length - 1) return
-  currentPhoto.value = props.photos[currentIndex.value + 1] ?? null
-}
-
-onBeforeUnmount(() => {
-  document.body.style.overflow = ''
-})
 </script>
 
 <template>
@@ -101,16 +78,6 @@ onBeforeUnmount(() => {
         </template>
       </Ripplable>
     </ClientOnly>
-
-    <PhotosPhotoDetail
-      :photo="currentPhoto"
-      :photos="photos"
-      :visible="currentPhoto !== null"
-      @close="closePreview"
-      @prev="showPreviousPhoto"
-      @next="showNextPhoto"
-      @select="currentPhoto = $event"
-    />
   </div>
 </template>
 

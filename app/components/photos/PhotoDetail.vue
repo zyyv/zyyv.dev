@@ -171,7 +171,9 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
         >
           <header class="photo-dialog__header">
             <div class="photo-dialog__identity">
-              <p>{{ String(currentIndex + 1).padStart(2, '0') }} / {{ photos.length }}</p>
+              <p v-if="currentIndex >= 0">
+                {{ String(currentIndex + 1).padStart(2, '0') }} / {{ photos.length }}
+              </p>
               <h2 id="photo-dialog-title">
                 {{ detailPhoto?.filename || detailPhoto?.id }}
               </h2>

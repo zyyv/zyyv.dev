@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
-import PhotosPhotoDetail from './PhotoDetail.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -20,72 +19,54 @@ const {
   error,
   allPhotos,
   hasMore,
+  currentPage,
   totalPhotos,
   isEmpty,
   scrollContainer,
   handleScroll,
   calcItemHeight,
   initPhotos,
+  restorePhotos,
   refreshPhotos,
 } = usePhotos(props.photos)
 
-// 图片预览状态
-const showPreview = ref(false)
-const currentPhoto = shallowRef<Photo | null>(null)
-const { isTransitioning, openPhoto, closePhoto } = usePhotoViewTransition({
-  sourceRoot: galleryRef,
-})
+const { openPhoto, consumeGallerySnapshot, nameTransitionImage } = usePhotoViewTransition()
 
-// 打开图片预览
+// 打开图片详情页（保持共享元素的 view transition）
 async function openPreview(photo: Photo, event: MouseEvent) {
-  await openPhoto(photo.compressed, event.currentTarget as HTMLElement, () => {
-    currentPhoto.value = photo
-    showPreview.value = true
-    document.body.style.overflow = 'hidden'
+  await openPhoto(photo, event.currentTarget as HTMLElement, {
+    page: currentPage.value,
+    scrollTop: scrollContainer.value?.scrollTop ?? 0,
   })
 }
 
-// 关闭图片预览
-async function closePreview() {
-  if (!currentPhoto.value) return
+function findPhotoImage(photoId: string) {
+  const source = Array.from(
+    galleryRef.value?.querySelectorAll<HTMLElement>('[data-photo-transition-id]') ?? [],
+  ).find((element) => element.dataset.photoTransitionId === photoId)
 
-  await closePhoto(currentPhoto.value.id, () => {
-    showPreview.value = false
-    currentPhoto.value = null
-    document.body.style.overflow = ''
-  })
+  return source?.querySelector<HTMLElement>('img') ?? null
 }
 
-onBeforeUnmount(() => {
-  document.body.style.overflow = ''
-})
-
-// 显示上一张图片
-function showPrevPhoto() {
-  if (!currentPhoto.value) return
-
-  const currentIndex = allPhotos.value.findIndex((p) => p.id === currentPhoto.value?.id)
-  if (currentIndex > 0) {
-    currentPhoto.value = allPhotos.value[currentIndex - 1]!
+onMounted(async () => {
+  // 从详情页返回时恢复分页与滚动位置，让关闭的 view transition 能找回原缩略图
+  const snapshot = consumeGallerySnapshot()
+  if (snapshot) {
+    restorePhotos(snapshot.page)
+  } else {
+    initPhotos()
   }
-}
 
-// 显示下一张图片
-function showNextPhoto() {
-  if (!currentPhoto.value) return
+  await nextTick()
 
-  const currentIndex = allPhotos.value.findIndex((p) => p.id === currentPhoto.value?.id)
-  if (currentIndex < allPhotos.value.length - 1) {
-    currentPhoto.value = allPhotos.value[currentIndex + 1]!
+  if (snapshot && scrollContainer.value) {
+    scrollContainer.value.scrollTop = snapshot.scrollTop
+    await nextTick()
+
+    if (document.documentElement.dataset.photoTransition === 'close') {
+      nameTransitionImage(findPhotoImage(snapshot.photoId))
+    }
   }
-}
-
-function selectPhoto(photo: Photo) {
-  currentPhoto.value = photo
-}
-
-onMounted(() => {
-  initPhotos()
 })
 </script>
 
@@ -181,18 +162,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
-    <!-- 图片预览组件 -->
-    <PhotosPhotoDetail
-      :photo="currentPhoto"
-      :photos="allPhotos"
-      :visible="showPreview"
-      :transitioning="isTransitioning"
-      @close="closePreview"
-      @prev="showPrevPhoto"
-      @next="showNextPhoto"
-      @select="selectPhoto"
-    />
   </div>
 </template>
 

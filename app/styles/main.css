@@ -106,6 +106,12 @@ html[data-photo-transition] {
   view-transition-name: none;
 }
 
+html[data-photo-transition]::view-transition-old(root),
+html[data-photo-transition]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 html[data-photos-view-transition] .photos-page {
   view-transition-name: photos-gallery-view;
 }
