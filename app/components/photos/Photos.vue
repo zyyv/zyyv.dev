@@ -12,70 +12,35 @@ const props = withDefaults(
     pageScroll: false,
   },
 )
-const galleryRef = useTemplateRef<HTMLElement>('gallery')
+const emit = defineEmits<{
+  open: [photo: Photo, source: HTMLElement]
+}>()
 
 const {
   loading,
   error,
   allPhotos,
   hasMore,
-  currentPage,
   totalPhotos,
   isEmpty,
   scrollContainer,
   handleScroll,
   calcItemHeight,
   initPhotos,
-  restorePhotos,
   refreshPhotos,
 } = usePhotos(props.photos)
 
-const { openPhoto, consumeGallerySnapshot, nameTransitionImage } = usePhotoViewTransition()
-
-// 打开图片详情页（保持共享元素的 view transition）
-async function openPreview(photo: Photo, event: MouseEvent) {
-  await openPhoto(photo, event.currentTarget as HTMLElement, {
-    page: currentPage.value,
-    scrollTop: scrollContainer.value?.scrollTop ?? 0,
-  })
+function openPreview(photo: Photo, event: MouseEvent) {
+  emit('open', photo, event.currentTarget as HTMLElement)
 }
 
-function findPhotoImage(photoId: string) {
-  const source = Array.from(
-    galleryRef.value?.querySelectorAll<HTMLElement>('[data-photo-transition-id]') ?? [],
-  ).find((element) => element.dataset.photoTransitionId === photoId)
-
-  return source?.querySelector<HTMLElement>('img') ?? null
-}
-
-onMounted(async () => {
-  // 从详情页返回时恢复分页与滚动位置，让关闭的 view transition 能找回原缩略图
-  const snapshot = consumeGallerySnapshot()
-  if (snapshot) {
-    restorePhotos(snapshot.page)
-  } else {
-    initPhotos()
-  }
-
-  await nextTick()
-
-  if (snapshot && scrollContainer.value) {
-    scrollContainer.value.scrollTop = snapshot.scrollTop
-    await nextTick()
-
-    if (document.documentElement.dataset.photoTransition === 'close') {
-      nameTransitionImage(findPhotoImage(snapshot.photoId))
-    }
-  }
+onMounted(() => {
+  initPhotos()
 })
 </script>
 
 <template>
-  <div
-    ref="gallery"
-    class="photos-gallery flex h-full min-h-0 w-full flex-col"
-    :class="{ 'h-auto': pageScroll }"
-  >
+  <div class="photos-gallery flex h-full min-h-0 w-full flex-col" :class="{ 'h-auto': pageScroll }">
     <!-- 错误状态 -->
     <div v-if="error" class="flex flex-col justify-center items-center h-64 p-4">
       <div class="text-red-500 text-lg mb-4">

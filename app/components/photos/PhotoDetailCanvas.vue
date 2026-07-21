@@ -23,12 +23,17 @@ const emit = defineEmits<Emits>()
 const preferredMotion = usePreferredReducedMotion()
 const { copy, copied } = useClipboard({ legacy: true })
 const displayedPhoto = shallowRef<Photo | null>(null)
+const displayedImageSrc = shallowRef('')
+const compressedImageSrc = shallowRef('')
+const isFullImageLoaded = shallowRef(false)
 const previousPhoto = shallowRef<Photo | null>(null)
+const previousImageSrc = shallowRef('')
 const previousImageStyle = shallowRef<CSSProperties>()
 const direction = shallowRef<SwitchDirection>('direct')
 const isAnimating = shallowRef(false)
-const isLoading = shallowRef(false)
 const showLoading = shallowRef(false)
+const loadProgress = shallowRef(0)
+const loadFailed = shallowRef(false)
 const useCheckerboard = shallowRef(false)
 const showReactions = shallowRef(false)
 const reactionControl = useTemplateRef<HTMLElement>('reactionControl')
@@ -46,7 +51,6 @@ const {
 } = useImageCanvas()
 
 let requestId = 0
-let loadingTimer: ReturnType<typeof setTimeout> | undefined
 let transitionTimer: ReturnType<typeof setTimeout> | undefined
 
 const canvasClasses = computed(() => ({
@@ -55,6 +59,9 @@ const canvasClasses = computed(() => ({
   'is-checkerboard': useCheckerboard.value,
   'is-dragging': isDragging.value,
   [`is-${direction.value}`]: true,
+}))
+const progressStyle = computed<CSSProperties>(() => ({
+  transform: `scaleX(${loadProgress.value / 100})`,
 }))
 onClickOutside(reactionControl, () => {
   showReactions.value = false
@@ -91,21 +98,32 @@ function preloadNeighbors(photo: Photo) {
 
   const neighbors = [props.photos[index - 1], props.photos[index + 1]]
   for (const neighbor of neighbors) {
-    if (neighbor) void preloadImage(neighbor.compressed)
+    if (neighbor) {
+      void preloadImage(getCompressedAssetUrl(neighbor), {
+        expectedBytes: neighbor.compressedSize,
+      })
+    }
   }
+}
+
+function getCompressedAssetUrl(photo: Photo): string {
+  return `/api/photo-assets/${encodeURIComponent(photo.id)}/compressed`
 }
 
 function shareDisplayedPhoto() {
   if (!displayedPhoto.value) return
-  const path = `/photos/${encodeURIComponent(displayedPhoto.value.id)}`
+  const path = `/photos?photo=${encodeURIComponent(displayedPhoto.value.id)}`
   void copy(new URL(path, window.location.origin).href)
 }
 
 function stopLoadingIndicator() {
-  if (loadingTimer) clearTimeout(loadingTimer)
-  loadingTimer = undefined
-  isLoading.value = false
   showLoading.value = false
+}
+
+function startLoadingIndicator() {
+  loadProgress.value = 0
+  loadFailed.value = false
+  showLoading.value = true
 }
 
 function scheduleTransitionCleanup(photoId: string) {
@@ -115,6 +133,7 @@ function scheduleTransitionCleanup(photoId: string) {
   transitionTimer = setTimeout(() => {
     if (displayedPhoto.value?.id !== photoId) return
     previousPhoto.value = null
+    previousImageSrc.value = ''
     previousImageStyle.value = undefined
     isAnimating.value = false
   }, duration)
@@ -122,73 +141,89 @@ function scheduleTransitionCleanup(photoId: string) {
 
 async function displayPhoto(photo: Photo) {
   const currentRequest = ++requestId
-
-  if (!displayedPhoto.value) {
-    displayedPhoto.value = photo
-    resetCanvas()
-    emit('displayedChange', photo)
-    preloadNeighbors(photo)
-    return
-  }
-
-  if (displayedPhoto.value.id === photo.id) {
-    stopLoadingIndicator()
-    return
-  }
+  const outgoingPhoto = displayedPhoto.value
+  if (outgoingPhoto?.id === photo.id) return
 
   if (previousPhoto.value) {
     previousPhoto.value = null
+    previousImageSrc.value = ''
     previousImageStyle.value = undefined
     isAnimating.value = false
   }
 
-  isLoading.value = true
-  showLoading.value = false
-  if (loadingTimer) clearTimeout(loadingTimer)
-  loadingTimer = setTimeout(() => {
-    if (isLoading.value && currentRequest === requestId) showLoading.value = true
-  }, 250)
+  if (transitionTimer) clearTimeout(transitionTimer)
 
-  const loaded = await preloadImage(photo.compressed)
-  if (currentRequest !== requestId || !loaded) {
-    if (currentRequest === requestId) stopLoadingIndicator()
+  direction.value = getDirection(outgoingPhoto, photo)
+  previousPhoto.value = outgoingPhoto
+  previousImageSrc.value =
+    (isFullImageLoaded.value ? compressedImageSrc.value : displayedImageSrc.value) ||
+    outgoingPhoto?.thumbnail ||
+    ''
+  previousImageStyle.value = outgoingPhoto ? { ...imageStyle.value } : undefined
+  isAnimating.value = false
+  displayedPhoto.value = photo
+  displayedImageSrc.value = photo.thumbnail
+  compressedImageSrc.value = ''
+  isFullImageLoaded.value = false
+  resetCanvas()
+  emit('displayedChange', photo)
+  startLoadingIndicator()
+
+  const compressedSrc = getCompressedAssetUrl(photo)
+  const loadingPromise = preloadImage(compressedSrc, {
+    expectedBytes: photo.compressedSize,
+    onProgress(progress) {
+      if (currentRequest === requestId) loadProgress.value = progress.percentage
+    },
+  })
+  preloadNeighbors(photo)
+
+  await nextTick()
+  if (currentRequest !== requestId) return
+
+  if (!outgoingPhoto || preferredMotion.value === 'reduce') {
+    previousPhoto.value = null
+    previousImageSrc.value = ''
+    previousImageStyle.value = undefined
+  } else {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (currentRequest !== requestId) return
+        isAnimating.value = true
+        scheduleTransitionCleanup(photo.id)
+      })
+    })
+  }
+
+  const loaded = await loadingPromise
+  if (currentRequest !== requestId) return
+
+  stopLoadingIndicator()
+  if (!loaded) {
+    loadFailed.value = true
     return
   }
 
-  stopLoadingIndicator()
-  if (transitionTimer) clearTimeout(transitionTimer)
-
-  direction.value = getDirection(displayedPhoto.value, photo)
-  previousPhoto.value = displayedPhoto.value
-  previousImageStyle.value = { ...imageStyle.value }
-  isAnimating.value = false
-  displayedPhoto.value = photo
-  resetCanvas()
-  emit('displayedChange', photo)
+  loadProgress.value = 100
+  compressedImageSrc.value = compressedSrc
 
   await nextTick()
   if (currentRequest !== requestId) return
 
   if (preferredMotion.value === 'reduce') {
-    previousPhoto.value = null
-    previousImageStyle.value = undefined
-    preloadNeighbors(photo)
+    isFullImageLoaded.value = true
     return
   }
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      if (currentRequest !== requestId) return
-      isAnimating.value = true
-      scheduleTransitionCleanup(photo.id)
-      preloadNeighbors(photo)
+      if (currentRequest === requestId) isFullImageLoaded.value = true
     })
   })
 }
 
 onBeforeUnmount(() => {
   requestId += 1
-  if (loadingTimer) clearTimeout(loadingTimer)
   if (transitionTimer) clearTimeout(transitionTimer)
 })
 </script>
@@ -209,13 +244,7 @@ onBeforeUnmount(() => {
         v-if="previousPhoto"
         class="photo-detail-canvas__background photo-detail-canvas__background--previous"
       >
-        <img
-          :src="previousPhoto.compressed"
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          draggable="false"
-        />
+        <img :src="previousImageSrc" alt="" aria-hidden="true" decoding="async" draggable="false" />
       </div>
 
       <div
@@ -223,7 +252,19 @@ onBeforeUnmount(() => {
         class="photo-detail-canvas__background photo-detail-canvas__background--current"
       >
         <img
-          :src="displayedPhoto.compressed"
+          class="photo-detail-canvas__background-image photo-detail-canvas__background-image--thumbnail"
+          :class="{ 'is-hidden': isFullImageLoaded }"
+          :src="displayedImageSrc"
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          draggable="false"
+        />
+        <img
+          v-if="compressedImageSrc"
+          class="photo-detail-canvas__background-image photo-detail-canvas__background-image--compressed"
+          :class="{ 'is-visible': isFullImageLoaded }"
+          :src="compressedImageSrc"
           alt=""
           aria-hidden="true"
           decoding="async"
@@ -238,8 +279,10 @@ onBeforeUnmount(() => {
     >
       <img
         class="photo-detail-canvas__image"
-        :src="previousPhoto.compressed"
+        :src="previousImageSrc"
         :alt="previousPhoto.filename"
+        :width="previousPhoto.width"
+        :height="previousPhoto.height"
         decoding="async"
         draggable="false"
         :style="previousImageStyle"
@@ -253,9 +296,31 @@ onBeforeUnmount(() => {
       <img
         :key="displayedPhoto.id"
         ref="canvasImage"
-        class="photo-detail-canvas__image photo-detail-canvas__image--current"
-        :src="displayedPhoto.compressed"
+        class="photo-detail-canvas__image photo-detail-canvas__image--current photo-detail-canvas__image--thumbnail"
+        :class="{
+          'is-hidden': isFullImageLoaded,
+          'is-transition-source': !isFullImageLoaded,
+        }"
+        :src="displayedImageSrc"
         :alt="displayedPhoto.filename"
+        :width="displayedPhoto.width"
+        :height="displayedPhoto.height"
+        decoding="async"
+        draggable="false"
+        :style="imageStyle"
+      />
+      <img
+        v-if="compressedImageSrc"
+        class="photo-detail-canvas__image photo-detail-canvas__image--current photo-detail-canvas__image--compressed"
+        :class="{
+          'is-visible': isFullImageLoaded,
+          'is-transition-source': isFullImageLoaded,
+        }"
+        :src="compressedImageSrc"
+        alt=""
+        aria-hidden="true"
+        :width="displayedPhoto.width"
+        :height="displayedPhoto.height"
         decoding="async"
         draggable="false"
         :style="imageStyle"
@@ -264,8 +329,26 @@ onBeforeUnmount(() => {
 
     <figcaption>
       <span>Scroll to zoom · Drag to move</span>
-      <span v-if="showLoading" class="photo-detail-canvas__loading" aria-live="polite">
-        Loading
+      <span
+        v-if="showLoading"
+        class="photo-detail-canvas__loading"
+        role="status"
+        aria-live="polite"
+      >
+        <span>Loading full image · {{ loadProgress }}%</span>
+        <span
+          class="photo-detail-canvas__progress"
+          role="progressbar"
+          aria-label="Loading compressed image"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="loadProgress"
+        >
+          <span :style="progressStyle" />
+        </span>
+      </span>
+      <span v-else-if="loadFailed" class="photo-detail-canvas__load-error" role="status">
+        Compressed image unavailable · showing thumbnail
       </span>
     </figcaption>
 
@@ -334,7 +417,7 @@ onBeforeUnmount(() => {
           @click.stop="shareDisplayedPhoto"
         >
           <i
-            :class="copied ? 'i-hugeicons:checkmark-circle-02' : 'i-hugeicons:share-08'"
+            :class="copied ? 'i-hugeicons:checkmark-circle-02 text-green' : 'i-hugeicons:share-08'"
             aria-hidden="true"
           />
         </button>
@@ -449,7 +532,22 @@ onBeforeUnmount(() => {
   object-fit: cover;
   opacity: 0.72;
   filter: blur(2rem) saturate(0.72);
+  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
   user-select: none;
+  will-change: opacity;
+}
+
+.photo-detail-canvas__background-image--thumbnail.is-hidden {
+  opacity: 0;
+}
+
+.photo-detail-canvas__background-image--compressed {
+  z-index: 1;
+  opacity: 0;
+}
+
+.photo-detail-canvas__background-image--compressed.is-visible {
+  opacity: 0.72;
 }
 
 .photo-detail-canvas__media {
@@ -499,7 +597,26 @@ onBeforeUnmount(() => {
   will-change: transform;
 }
 
-.photo-detail-canvas__image--current {
+.photo-detail-canvas__image--thumbnail,
+.photo-detail-canvas__image--compressed {
+  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.photo-detail-canvas__image--thumbnail.is-hidden {
+  opacity: 0;
+}
+
+.photo-detail-canvas__image--compressed {
+  z-index: 1;
+  opacity: 0;
+}
+
+.photo-detail-canvas__image--compressed.is-visible {
+  opacity: 1;
+}
+
+.photo-detail-canvas__image--current.is-transition-source {
   view-transition-name: photo-detail-image;
 }
 
@@ -523,16 +640,29 @@ onBeforeUnmount(() => {
 .photo-detail-canvas__loading {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.45rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.photo-detail-canvas__loading::before {
-  width: 0.25rem;
-  height: 0.25rem;
-  border-radius: 50%;
+.photo-detail-canvas__progress {
+  position: relative;
+  width: 3.5rem;
+  height: 1px;
+  overflow: hidden;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.photo-detail-canvas__progress span {
+  position: absolute;
+  inset: 0;
   background: currentColor;
-  content: '';
-  animation: photo-detail-loading 900ms ease-in-out infinite alternate;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 120ms linear;
+}
+
+.photo-detail-canvas__load-error {
+  color: color-mix(in srgb, #d64545 78%, var(--dialog-text));
 }
 
 .photo-detail-canvas__control-stack {
@@ -592,13 +722,6 @@ onBeforeUnmount(() => {
   user-select: none;
 }
 
-@keyframes photo-detail-loading {
-  to {
-    opacity: 0.25;
-    transform: scale(0.72);
-  }
-}
-
 .reaction-popover-enter-active,
 .reaction-popover-leave-active {
   transition:
@@ -652,7 +775,10 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .photo-detail-canvas__background,
+  .photo-detail-canvas__background img,
   .photo-detail-canvas__media,
+  .photo-detail-canvas__image--thumbnail,
+  .photo-detail-canvas__image--compressed,
   .photo-detail-canvas__controls button {
     transition-duration: 1ms;
   }
@@ -662,8 +788,8 @@ onBeforeUnmount(() => {
     transition-duration: 1ms;
   }
 
-  .photo-detail-canvas__loading::before {
-    animation: none;
+  .photo-detail-canvas__progress span {
+    transition-duration: 1ms;
   }
 }
 </style>

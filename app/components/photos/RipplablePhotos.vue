@@ -7,6 +7,9 @@ import 'ripplable/styles.css'
 const props = defineProps<{
   photos: Photo[]
 }>()
+const emit = defineEmits<{
+  open: [photo: Photo, source: HTMLElement]
+}>()
 
 const items = computed<RipplableListItem[]>(() =>
   props.photos.map((photo) => ({
@@ -16,8 +19,6 @@ const items = computed<RipplableListItem[]>(() =>
     alt: photo.filename,
   })),
 )
-
-const router = useRouter()
 
 const preferredMotion = usePreferredReducedMotion()
 const motionConfig = computed<Partial<RipplableConfig>>(() =>
@@ -35,11 +36,17 @@ function getPhotoId(item: RipplableListItem | null) {
   return item.photoId
 }
 
-function openPreview(item: RipplableListItem | null) {
+function getPhoto(item: RipplableListItem | null) {
   const photoId = getPhotoId(item)
-  if (!photoId) return
+  if (!photoId) return undefined
+  return props.photos.find((photo) => photo.id === photoId)
+}
 
-  void router.push(`/photos/${photoId}`)
+function openPreview(item: RipplableListItem | null, event: Event) {
+  const photo = getPhoto(item)
+  if (!photo) return
+
+  emit('open', photo, event.currentTarget as HTMLElement)
 }
 </script>
 
@@ -59,10 +66,11 @@ function openPreview(item: RipplableListItem | null) {
             role="button"
             tabindex="0"
             data-ripplable-interactive
+            :data-photo-transition-id="getPhotoId(item)"
             :aria-label="`查看 ${alt}`"
-            @click="openPreview(item)"
-            @keydown.enter="openPreview(item)"
-            @keydown.space.prevent="openPreview(item)"
+            @click="openPreview(item, $event)"
+            @keydown.enter="openPreview(item, $event)"
+            @keydown.space.prevent="openPreview(item, $event)"
           >
             <div class="ripplable-photo__media">
               <img

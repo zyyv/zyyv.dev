@@ -14,11 +14,8 @@ interface PhotosPayload {
 }
 
 interface PublicPhotosOptions {
-  // Do not block client-side navigation while the full gallery is loading.
+  // Allow callers to opt into non-blocking or client-only fetching.
   lazy?: boolean
-  // The detail page disables this in production so SSR only waits for the
-  // single-photo endpoint. Existing gallery data is still reused from Nuxt's
-  // async-data cache when the user navigates from /photos.
   server?: boolean
 }
 
@@ -159,15 +156,6 @@ export function usePhotos(initialPhotos: Photo[] = []) {
     loadPhotos(1)
   }
 
-  // 从详情页返回时恢复之前的分页进度（数据来自本地切片，无网络请求）
-  function restorePhotos(page: number) {
-    const targetPage = Math.max(1, Math.floor(page))
-    currentPage.value = targetPage
-    allPhotos.value = sourcePhotos.value.slice(0, targetPage * pageSize.value)
-    hasMore.value = allPhotos.value.length < sourcePhotos.value.length
-    error.value = null
-  }
-
   // 刷新照片列表
   async function refreshPhotos() {
     resetPhotos()
@@ -186,7 +174,6 @@ export function usePhotos(initialPhotos: Photo[] = []) {
     error: readonly(error),
     allPhotos,
     hasMore: readonly(hasMore),
-    currentPage: readonly(currentPage),
     totalPhotos: readonly(totalPhotos),
     isEmpty: readonly(isEmpty),
     scrollContainer,
@@ -198,7 +185,6 @@ export function usePhotos(initialPhotos: Photo[] = []) {
     calcItemHeight,
     resetPhotos,
     initPhotos,
-    restorePhotos,
     refreshPhotos,
   }
 }

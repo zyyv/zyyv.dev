@@ -102,12 +102,12 @@ html[data-photos-view-transition]::view-transition-new(root) {
   mix-blend-mode: normal;
 }
 
-html[data-photo-transition] {
+html[data-photo-dialog-transition] {
   view-transition-name: none;
 }
 
-html[data-photo-transition]::view-transition-old(root),
-html[data-photo-transition]::view-transition-new(root) {
+html[data-photo-dialog-transition]::view-transition-old(root),
+html[data-photo-dialog-transition]::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
@@ -137,14 +137,14 @@ html[data-photos-view-transition='waterfall']::view-transition-new(photos-galler
   animation: photos-view-to-waterfall-in 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-html[data-photo-transition]::view-transition-group(photo-detail-image) {
+html[data-photo-dialog-transition]::view-transition-group(photo-detail-image) {
   z-index: 2147483647;
   animation-duration: 620ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-html[data-photo-transition]::view-transition-old(photo-detail-image),
-html[data-photo-transition]::view-transition-new(photo-detail-image) {
+html[data-photo-dialog-transition]::view-transition-old(photo-detail-image),
+html[data-photo-dialog-transition]::view-transition-new(photo-detail-image) {
   height: 100%;
   overflow: clip;
   animation: none;
@@ -153,18 +153,18 @@ html[data-photo-transition]::view-transition-new(photo-detail-image) {
   opacity: 1;
 }
 
-html[data-photo-transition]::view-transition-group(photo-detail-surface) {
+html[data-photo-dialog-transition]::view-transition-group(photo-detail-surface) {
   z-index: 2147483646;
   animation-duration: 380ms;
   animation-timing-function: ease;
 }
 
-html[data-photo-transition='open']::view-transition-new(photo-detail-surface),
-html[data-photo-transition='close']::view-transition-old(photo-detail-surface) {
+html[data-photo-dialog-transition='open']::view-transition-new(photo-detail-surface),
+html[data-photo-dialog-transition='close']::view-transition-old(photo-detail-surface) {
   animation: photo-detail-surface-in 380ms ease both;
 }
 
-html[data-photo-transition='close']::view-transition-old(photo-detail-surface) {
+html[data-photo-dialog-transition='close']::view-transition-old(photo-detail-surface) {
   animation-direction: reverse;
 }
 
@@ -246,8 +246,8 @@ html[data-page-transition='active']::view-transition-new(root) {
   }
 
   html[data-photos-view-transition]::view-transition-group(photos-gallery-view),
-  html[data-photo-transition]::view-transition-group(photo-detail-image),
-  html[data-photo-transition]::view-transition-group(photo-detail-surface) {
+  html[data-photo-dialog-transition]::view-transition-group(photo-detail-image),
+  html[data-photo-dialog-transition]::view-transition-group(photo-detail-surface) {
     animation-duration: 1ms;
   }
 }
