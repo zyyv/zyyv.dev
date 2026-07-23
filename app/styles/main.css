@@ -20,7 +20,7 @@ body {
 }
 
 main {
-  --uno: min-h-[100dvh] flex flex-col font-dm;
+  --uno: min-h-[100dvh] flex flex-col;
 }
 
 .interior-shell {

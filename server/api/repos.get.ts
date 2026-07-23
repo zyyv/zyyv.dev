@@ -17,6 +17,7 @@ function filterRepos(repos: RepoWithTopics[], key: string) {
   return repos
     .filter((repo) => repo.topics?.includes(key))
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .slice(0, 6)
 }
 
 function toRepo(repo: BaseRepo): RepoWithTopics {

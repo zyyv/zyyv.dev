@@ -76,6 +76,9 @@ importers:
       '@unocss/nuxt':
         specifier: ^66.7.5
         version: 66.7.5(esbuild@0.28.1)(magicast@0.5.3)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19))
+      '@unocss/preset-wind4':
+        specifier: ^66.7.5
+        version: 66.7.5
       esno:
         specifier: ^4.8.0
         version: 4.8.0
@@ -106,9 +109,6 @@ importers:
       unocss:
         specifier: ^66.7.5
         version: 66.7.5(@unocss/webpack@66.7.5(esbuild@0.28.1)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))
-      unocss-preset-zyyv:
-        specifier: ^2.0.2
-        version: 2.0.2(unocss@66.7.5(@unocss/webpack@66.7.5(esbuild@0.28.1)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0)))
       vue-tsc:
         specifier: ^3.3.7
         version: 3.3.7(typescript@6.0.3)
@@ -4543,12 +4543,6 @@ packages:
     peerDependencies:
       postcss: ^8.5.15
 
-  postcss-js@5.1.0:
-    resolution: {integrity: sha512-glrtXSrLt3eH/mgceNgP6u/6jHodqRQ/ToFht+yqwquw0KBf6Zue5qJQFgcIEfQQyYl+BCPN/TYdWyeOQh3c5Q==}
-    engines: {node: ^20 || ^22 || >= 24}
-    peerDependencies:
-      postcss: ^8.4.21
-
   postcss-merge-longhand@8.0.1:
     resolution: {integrity: sha512-huTfSYgQ13O81SFvAuOi7GWnO48vvybjj3xF+X3qUoPjzvvaLpJH5DcUqqXcwOEulZUcvaV4s0V9WtWs+IAQPA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
@@ -5331,23 +5325,6 @@ packages:
 
   universal-user-agent@7.0.3:
     resolution: {integrity: sha512-TmnEAEAsBJVZM/AADELsK76llnwcf9vMKuPz8JflO1frO8Lchitr0fNaN9d+Ap0BjKtqWqd/J17qeDnXh8CL2A==}
-
-  unocss-preset-magicss@1.0.1:
-    resolution: {integrity: sha512-7XksY1mcK4zv0u4TYfIxHOBZ1w2YXHoYMfCElnJarq0TdZ6auMkR5KlyX6RCz9T8gQjwelfb60TxPSu+Lr/aqg==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-    peerDependencies:
-      unocss: ^0.64.1 || >=65.4.0
-    peerDependenciesMeta:
-      unocss:
-        optional: true
-
-  unocss-preset-zyyv@2.0.2:
-    resolution: {integrity: sha512-nPZQEWvSy0u0WlZiSVRx/VK7CEvvg8whoZyegTTggy4SBiSp3g9HME+xZlrghh3d9NTBMgJBpuTjHv1Pr5H4NQ==}
-    peerDependencies:
-      unocss: ^0.65.0 || >=65.4.0
-    peerDependenciesMeta:
-      unocss:
-        optional: true
 
   unocss@66.7.5:
     resolution: {integrity: sha512-nAdmU8TwnQoiLnQjZ6Hm1GmHy9lTexKsAZNEJtZnxN9wyFRc1eLjQgmh9r7UEGxBQMQLD8OZOgmk5HpwObbh0Q==}
@@ -10741,10 +10718,6 @@ snapshots:
     dependencies:
       postcss: 8.5.19
 
-  postcss-js@5.1.0(postcss@8.5.19):
-    dependencies:
-      postcss: 8.5.19
-
   postcss-merge-longhand@8.0.1(postcss@8.5.19):
     dependencies:
       postcss: 8.5.19
@@ -11744,19 +11717,6 @@ snapshots:
   universal-github-app-jwt@2.2.2: {}
 
   universal-user-agent@7.0.3: {}
-
-  unocss-preset-magicss@1.0.1(unocss@66.7.5(@unocss/webpack@66.7.5(esbuild@0.28.1)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))):
-    optionalDependencies:
-      unocss: 66.7.5(@unocss/webpack@66.7.5(esbuild@0.28.1)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))
-
-  unocss-preset-zyyv@2.0.2(unocss@66.7.5(@unocss/webpack@66.7.5(esbuild@0.28.1)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))):
-    dependencies:
-      '@unocss/core': 66.7.5
-      postcss: 8.5.19
-      postcss-js: 5.1.0(postcss@8.5.19)
-      unocss-preset-magicss: 1.0.1(unocss@66.7.5(@unocss/webpack@66.7.5(esbuild@0.28.1)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0)))
-    optionalDependencies:
-      unocss: 66.7.5(@unocss/webpack@66.7.5(esbuild@0.28.1)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))
 
   unocss@66.7.5(@unocss/webpack@66.7.5(esbuild@0.28.1)(rolldown@1.0.3)(rollup@4.62.2)(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(webpack@5.108.4(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.19)))(vite@8.0.16(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0)):
     dependencies:
