@@ -2,6 +2,7 @@ import type { BaseRepo, Repo } from '~/types'
 import { githubUsername, hasGitHubToken, useOctokit, usePublicOctokit } from '../utils/github'
 
 const CACHE_TTL = 10 * 60 * 1000
+const githubOrganizations = ['unocss', 'unocss-community'] as const
 let reposCache:
   | {
       expiresAt: number
@@ -13,11 +14,23 @@ type RepoWithTopics = Repo & {
   topics?: string[]
 }
 
+function rankRepos(repos: RepoWithTopics[]) {
+  return repos.sort((a, b) => b.stargazers_count - a.stargazers_count).slice(0, 6)
+}
+
 function filterRepos(repos: RepoWithTopics[], key: string) {
-  return repos
-    .filter((repo) => repo.topics?.includes(key))
-    .sort((a, b) => b.stargazers_count - a.stargazers_count)
-    .slice(0, 6)
+  return rankRepos(repos.filter((repo) => repo.topics?.includes(key)))
+}
+
+function filterUnoCSSRepos(repos: RepoWithTopics[]) {
+  return rankRepos(
+    repos.filter(
+      (repo) =>
+        repo.full_name !== 'unocss/.github' &&
+        (repo.full_name.startsWith('unocss/') || repo.topics?.includes('unocss')) &&
+        !repo.topics?.includes('unocss-community'),
+    ),
+  )
 }
 
 function toRepo(repo: BaseRepo): RepoWithTopics {
@@ -45,15 +58,46 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   ])
 }
 
+async function fetchUserRepos(client: ReturnType<typeof useOctokit>): Promise<BaseRepo[]> {
+  return (await client.paginate('GET /users/{username}/repos', {
+    username: githubUsername,
+    per_page: 100,
+    sort: 'updated',
+    type: 'owner',
+  })) as BaseRepo[]
+}
+
+async function fetchOrganizationRepos(
+  client: ReturnType<typeof useOctokit>,
+  organization: (typeof githubOrganizations)[number],
+): Promise<BaseRepo[]> {
+  return (await client.paginate('GET /orgs/{org}/repos', {
+    org: organization,
+    per_page: 100,
+    sort: 'updated',
+    type: 'public',
+  })) as BaseRepo[]
+}
+
+async function fetchScopedRepos(client: ReturnType<typeof useOctokit>): Promise<BaseRepo[]> {
+  const [userRepos, ...organizationRepos] = await Promise.all([
+    fetchUserRepos(client),
+    ...githubOrganizations.map((organization) => fetchOrganizationRepos(client, organization)),
+  ])
+
+  return [
+    ...new Map(
+      [...userRepos, ...organizationRepos.flat()].map((repository) => [repository.id, repository]),
+    ).values(),
+  ]
+}
+
 async function fetchReposFromGitHub() {
   let data: BaseRepo[] | undefined
 
   if (hasGitHubToken()) {
     try {
-      const response = (await useOctokit().request('GET /user/repos', {
-        per_page: 100,
-      })) as unknown as { data: BaseRepo[] }
-      data = response.data
+      data = await fetchScopedRepos(useOctokit())
     } catch (error) {
       console.warn(
         'Failed to fetch authenticated GitHub repos, falling back to public repos.',
@@ -63,12 +107,7 @@ async function fetchReposFromGitHub() {
   }
 
   if (!data) {
-    const response = (await usePublicOctokit().request('GET /users/{username}/repos', {
-      username: githubUsername,
-      per_page: 100,
-      sort: 'updated',
-    })) as unknown as { data: BaseRepo[] }
-    data = response.data
+    data = await fetchScopedRepos(usePublicOctokit())
   }
 
   const publicRepos: RepoWithTopics[] = data
@@ -77,16 +116,14 @@ async function fetchReposFromGitHub() {
 
   const repoGroups: Record<string, RepoWithTopics[]> = {
     UI: filterRepos(publicRepos, 'ui'),
-    UnoCSS: filterRepos(publicRepos, 'unocss').filter(
-      (repo) => !repo.topics?.includes('unocss-community'),
-    ),
+    UnoCSS: filterUnoCSSRepos(publicRepos),
     'UnoCSS Community': filterRepos(publicRepos, 'unocss-community'),
-    'Vite Ecosystem': filterRepos(publicRepos, 'vite'),
+    // 'Vite Ecosystem': filterRepos(publicRepos, 'vite'),
     Plugins: filterRepos(publicRepos, 'plugin'),
     Utils: filterRepos(publicRepos, 'util'),
-    Config: filterRepos(publicRepos, 'config'),
+    // Config: filterRepos(publicRepos, 'config'),
     Component: filterRepos(publicRepos, 'component'),
-    Templates: filterRepos(publicRepos, 'template'),
+    // Templates: filterRepos(publicRepos, 'template'),
     Games: filterRepos(publicRepos, 'game'),
     Me: filterRepos(publicRepos, 'me'),
   }
