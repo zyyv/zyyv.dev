@@ -20,6 +20,11 @@ interface CachedImage {
 }
 
 const imageCache = new Map<string, CachedImage>()
+const loadedImageSources = new Set<string>()
+
+export function isImagePreloaded(src: string): boolean {
+  return import.meta.client && loadedImageSources.has(src)
+}
 
 function touchCache(src: string, entry: CachedImage) {
   imageCache.delete(src)
@@ -124,6 +129,9 @@ export function preloadImage(src: string, options: PreloadImageOptions = {}): Pr
   entry.promise = fetchAndDecodeImage(src, expectedBytes, image, entry).then((loaded) => {
     entry.settled = true
     entry.listeners.clear()
+    if (loaded) loadedImageSources.add(src)
+    else loadedImageSources.delete(src)
+
     if (!loaded && imageCache.get(src) === entry) imageCache.delete(src)
     else if (imageCache.get(src) === entry) touchCache(src, entry)
     return loaded

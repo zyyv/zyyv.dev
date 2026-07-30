@@ -36,8 +36,8 @@ const emit = defineEmits<{
 
 <style scoped>
 .photo-reactions {
-  width: min(23rem, calc(100vw - 2rem));
-  padding: 0.8rem;
+  width: min(20.5rem, calc(100vw - 2rem));
+  padding: 0.42rem;
   box-sizing: border-box;
   border: 1px dashed var(--dialog-line);
   background: var(--dialog-control);
@@ -52,14 +52,15 @@ const emit = defineEmits<{
 .photo-reactions__options {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.35rem;
+  column-gap: 0.12rem;
+  row-gap: 0.08rem;
 }
 
 .photo-reactions__button {
   position: relative;
   display: grid;
   min-width: 0;
-  height: 2.55rem;
+  height: 2.1rem;
   padding: 0;
   /* border: 1px solid transparent; */
   /* border-radius: 0.2rem; */
@@ -73,7 +74,7 @@ const emit = defineEmits<{
 }
 
 .photo-reactions__button i {
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   filter: saturate(0.82);
   transition:
     filter 180ms ease,
@@ -121,11 +122,16 @@ const emit = defineEmits<{
 
 @media (max-width: 479.9px) {
   .photo-reactions {
-    width: min(20rem, calc(100vw - 1.5rem));
+    width: min(17rem, calc(100vw - 1.5rem));
+    padding: 0.35rem;
   }
 
   .photo-reactions__options {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .photo-reactions__button {
+    height: 2rem;
   }
 }
 </style>
