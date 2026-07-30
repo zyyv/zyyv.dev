@@ -3,6 +3,7 @@ import type { PhotoReactionType } from '~/types'
 import { PHOTO_REACTIONS } from '#shared/constants/photo-reactions'
 
 defineProps<{
+  busy?: boolean
   disabled?: boolean
   error?: string | null
 }>()
@@ -12,7 +13,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="photo-reactions" role="dialog" aria-label="Choose a reaction">
+  <section class="photo-reactions" role="dialog" aria-label="Choose a reaction" :aria-busy="busy">
     <div class="photo-reactions__options">
       <button
         v-for="reaction in PHOTO_REACTIONS"
@@ -39,10 +40,13 @@ const emit = defineEmits<{
   width: min(20.5rem, calc(100vw - 2rem));
   padding: 0.42rem;
   box-sizing: border-box;
-  border: 1px dashed var(--dialog-line);
-  background: var(--dialog-control);
-  backdrop-filter: blur(1rem);
-  box-shadow: 0 0.8rem 2.4rem color-mix(in srgb, var(--dialog-canvas) 55%, transparent);
+  background: color-mix(in srgb, var(--dialog-control) 62%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--dialog-text) 4%, transparent),
+    0 0.8rem 2.4rem color-mix(in srgb, var(--dialog-canvas) 48%, transparent);
+  -webkit-backdrop-filter: blur(1.15rem) saturate(1.18);
+  backdrop-filter: blur(1.15rem) saturate(1.18);
 }
 
 .photo-reactions__error {
@@ -62,9 +66,9 @@ const emit = defineEmits<{
   min-width: 0;
   height: 2.1rem;
   padding: 0;
-  /* border: 1px solid transparent; */
-  /* border-radius: 0.2rem; */
-  /* background: color-mix(in srgb, var(--dialog-text) 4%, transparent); */
+  border: 1px solid transparent;
+  border-radius: 0.18rem;
+  background: transparent;
   cursor: pointer;
   place-items: center;
   transition:
@@ -82,8 +86,7 @@ const emit = defineEmits<{
 }
 
 .photo-reactions__button:disabled {
-  cursor: wait;
-  opacity: 0.66;
+  cursor: not-allowed;
 }
 
 .photo-reactions__error {
@@ -95,6 +98,8 @@ const emit = defineEmits<{
 
 @media (hover: hover) and (pointer: fine) {
   .photo-reactions__button:not(:disabled):hover {
+    /* border-color: color-mix(in srgb, var(--dialog-text) 8%, transparent); */
+    /* background: color-mix(in srgb, var(--dialog-text) 6%, transparent); */
     transform: translateY(-0.08rem);
   }
 

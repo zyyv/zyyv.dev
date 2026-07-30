@@ -333,9 +333,10 @@ onBeforeUnmount(() => {
     <div ref="reactionControl" class="photo-detail-canvas__control-stack" @pointerdown.stop>
       <Transition name="reaction-popover">
         <PhotoReactions
-          v-if="showReactions"
+          v-show="showReactions"
           class="photo-detail-canvas__reactions"
-          :disabled="!displayedPhoto || reactionSaving"
+          :busy="reactionSaving"
+          :disabled="!displayedPhoto"
           :error="reactionError"
           @react="emit('react', $event)"
         />
@@ -573,10 +574,12 @@ onBeforeUnmount(() => {
 
 .photo-detail-canvas__image {
   position: absolute;
-  inset: clamp(2.75rem, 7.5vh, 4rem) clamp(2.5rem, 6vw, 5rem);
+  inset: 0;
   display: block;
-  width: calc(100% - clamp(5rem, 12vw, 10rem));
-  height: calc(100% - clamp(5.5rem, 15vh, 8rem));
+  width: auto;
+  height: auto;
+  max-width: calc(100% - clamp(5rem, 12vw, 10rem));
+  max-height: calc(100% - clamp(5.5rem, 15vh, 8rem));
   margin: auto;
   object-fit: contain;
   pointer-events: none;
@@ -747,9 +750,8 @@ onBeforeUnmount(() => {
   }
 
   .photo-detail-canvas__image {
-    inset: 2.25rem 2rem;
-    width: calc(100% - 4rem);
-    height: calc(100% - 4.5rem);
+    max-width: calc(100% - 4rem);
+    max-height: calc(100% - 4.5rem);
   }
 
   .photo-detail-canvas figcaption {

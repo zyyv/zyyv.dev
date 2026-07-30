@@ -477,7 +477,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 .photo-dialog__detail-group dl > div {
   display: grid;
-  grid-template-columns: minmax(4.8rem, 0.75fr) minmax(0, 1fr);
+  grid-template-columns: minmax(4.8rem, 1fr) minmax(0, 1fr);
   align-items: start;
   gap: 0.75rem;
   padding: 0.45rem 0;
