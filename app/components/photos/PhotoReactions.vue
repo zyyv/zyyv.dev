@@ -40,11 +40,7 @@ const emit = defineEmits<{
   width: min(20.5rem, calc(100vw - 2rem));
   padding: 0.42rem;
   box-sizing: border-box;
-  background: color-mix(in srgb, var(--dialog-control) 62%, transparent);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, var(--dialog-text) 4%, transparent),
-    0 0.8rem 2.4rem color-mix(in srgb, var(--dialog-canvas) 48%, transparent);
+  background: color-mix(in srgb, var(--dialog-control) 20%, transparent);
   -webkit-backdrop-filter: blur(1.15rem) saturate(1.18);
   backdrop-filter: blur(1.15rem) saturate(1.18);
 }
