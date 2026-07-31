@@ -108,6 +108,7 @@ useHead({
         key="ripplable"
         :photos="photos"
         :preview-visible="showPreview"
+        :focused-photo="currentPhoto"
         @open="openPreview"
       />
     </Transition>

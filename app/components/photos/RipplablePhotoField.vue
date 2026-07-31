@@ -1,11 +1,42 @@
 <script setup lang="ts">
+import type { Photo } from '~/types'
+
 const props = defineProps<{
-  photoCount: number
+  photos: readonly Photo[]
+  focusedPhoto?: Photo | null
 }>()
+
+const orbitDefinitions = [
+  { id: 'one', className: 'photo-field__orbit--one' },
+  { id: 'two', className: 'photo-field__orbit--two' },
+  { id: 'three', className: 'photo-field__orbit--three' },
+  { id: 'four', className: 'photo-field__orbit--four' },
+] as const
 
 const fieldRef = useTemplateRef<HTMLButtonElement>('field')
 const pulseId = shallowRef(0)
-const formattedPhotoCount = computed(() => String(props.photoCount).padStart(3, '0'))
+const activePhotoId = shallowRef<string | null>(props.focusedPhoto?.id ?? null)
+const activePhotoIndex = computed(() => {
+  if (!props.photos.length) return -1
+  const index = props.photos.findIndex((photo) => photo.id === activePhotoId.value)
+  return index >= 0 ? index : 0
+})
+const activePhoto = computed(() => {
+  if (activePhotoIndex.value < 0) return undefined
+  return props.photos[activePhotoIndex.value]
+})
+const orbitPhotos = computed(() => {
+  const { length } = props.photos
+  if (!length) return []
+
+  const offsets = Array.from({ length: 5 }, (_, index) =>
+    Math.max(1, Math.round((length / 6) * (index + 1))),
+  )
+  return offsets.map((offset) => props.photos[(activePhotoIndex.value + offset) % length])
+})
+const fieldLabel = computed(() =>
+  activePhoto.value ? `切换焦点照片，当前为 ${activePhoto.value.filename}` : '照片焦点场',
+)
 
 function updateFieldPosition(event: PointerEvent) {
   const field = fieldRef.value
@@ -37,7 +68,21 @@ function resetFieldPosition() {
 
 function pulseFocus() {
   pulseId.value += 1
+  if (!props.photos.length) return
+
+  const nextIndex = (activePhotoIndex.value + 1) % props.photos.length
+  activePhotoId.value = props.photos[nextIndex]?.id ?? null
 }
+
+watch(
+  () => props.focusedPhoto?.id,
+  (photoId) => {
+    if (!photoId || photoId === activePhotoId.value) return
+    activePhotoId.value = photoId
+    pulseId.value += 1
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -46,30 +91,42 @@ function pulseFocus() {
     type="button"
     class="photo-field"
     data-ripplable-interactive
-    :aria-label="`触发对焦脉冲，当前共 ${photoCount} 张照片`"
+    :aria-label="fieldLabel"
     @click="pulseFocus"
     @pointermove="updateFieldPosition"
     @pointerleave="resetFieldPosition"
   >
-    <span class="photo-field__meta">
-      <span>focus field</span>
-      <span>{{ formattedPhotoCount }} frames</span>
-    </span>
-
     <span class="photo-field__stage" aria-hidden="true">
       <span class="photo-field__axis photo-field__axis--horizontal" />
       <span class="photo-field__axis photo-field__axis--vertical" />
-      <span class="photo-field__orbit photo-field__orbit--outer">
-        <span class="photo-field__node photo-field__node--one" />
-      </span>
-      <span class="photo-field__orbit photo-field__orbit--middle">
-        <span class="photo-field__node photo-field__node--two" />
-      </span>
-      <span class="photo-field__orbit photo-field__orbit--inner">
-        <span class="photo-field__node photo-field__node--three" />
+      <span
+        v-for="(orbit, index) in orbitDefinitions"
+        :key="orbit.id"
+        :class="['photo-field__orbit', orbit.className]"
+      >
+        <span class="photo-field__node">
+          <img
+            v-if="orbitPhotos[index]"
+            :src="orbitPhotos[index].thumbnail"
+            alt=""
+            decoding="async"
+            draggable="false"
+          />
+        </span>
       </span>
 
       <span class="photo-field__focus">
+        <Transition name="photo-field-image">
+          <img
+            v-if="activePhoto"
+            :key="activePhoto.id"
+            class="photo-field__preview"
+            :src="activePhoto.thumbnail"
+            alt=""
+            decoding="async"
+            draggable="false"
+          />
+        </Transition>
         <span v-if="pulseId" :key="pulseId" class="photo-field__pulse" />
         <span class="photo-field__bracket photo-field__bracket--top-left" />
         <span class="photo-field__bracket photo-field__bracket--top-right" />
@@ -77,11 +134,6 @@ function pulseFocus() {
         <span class="photo-field__bracket photo-field__bracket--bottom-right" />
         <span class="photo-field__focus-point" />
       </span>
-    </span>
-
-    <span class="photo-field__hint">
-      <span>move to calibrate</span>
-      <span>click to focus</span>
     </span>
   </button>
 </template>
@@ -123,40 +175,16 @@ function pulseFocus() {
 }
 
 .photo-field:focus-visible {
-  outline: 1px solid var(--field-ink);
-  outline-offset: 0.75rem;
+  outline: none;
 }
 
-.photo-field__meta,
-.photo-field__hint {
-  position: absolute;
-  z-index: 4;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  color: var(--field-muted);
-  font-size: 0.6rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  line-height: 1;
-  text-transform: uppercase;
-  transition: color 300ms ease;
-}
-
-.photo-field__meta {
-  top: 0;
-}
-
-.photo-field__hint {
-  bottom: 0;
-  font-size: 0.54rem;
-  letter-spacing: 0.1em;
+.photo-field:focus-visible .photo-field__stage {
+  box-shadow: 0 0 0 1px var(--field-muted);
 }
 
 .photo-field__stage {
   position: absolute;
-  inset: 2rem 1.2rem;
+  inset: 0.8rem;
   border-radius: 50%;
   transform: translate3d(var(--field-stage-x), var(--field-stage-y), 0);
   transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -168,24 +196,6 @@ function pulseFocus() {
   border-radius: 50%;
   content: '';
   pointer-events: none;
-}
-
-.photo-field__stage::before {
-  inset: 8%;
-  border: 1px solid var(--field-faint);
-  mask-image: conic-gradient(
-    #000 0 14%,
-    transparent 14% 20%,
-    #000 20% 62%,
-    transparent 62% 70%,
-    #000 70%
-  );
-}
-
-.photo-field__stage::after {
-  inset: 27%;
-  background: radial-gradient(circle, var(--field-faint), transparent 64%);
-  opacity: 0.5;
 }
 
 .photo-field__axis {
@@ -208,57 +218,91 @@ function pulseFocus() {
 
 .photo-field__orbit {
   position: absolute;
-  top: 50%;
-  left: 50%;
   border: 1px solid var(--field-muted);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
 
-.photo-field__orbit--outer {
-  width: 82%;
-  aspect-ratio: 1;
+.photo-field__orbit--one {
+  top: 46%;
+  left: 47%;
+  width: 88%;
+  height: 67%;
   border-style: dashed;
-  animation: photo-field-orbit 26s linear infinite;
-}
-
-.photo-field__orbit--middle {
-  width: 61%;
-  aspect-ratio: 1;
   border-color: var(--field-faint);
-  animation: photo-field-orbit-reverse 19s linear infinite;
+  animation: photo-field-orbit 31s linear infinite;
 }
 
-.photo-field__orbit--inner {
-  width: 39%;
-  aspect-ratio: 1;
-  border-style: dotted;
-  animation: photo-field-orbit 13s linear infinite;
+.photo-field__orbit--two {
+  top: 53%;
+  left: 55%;
+  width: 72%;
+  height: 89%;
+  border-style: dashed;
+  border-color: var(--field-faint);
+  animation: photo-field-orbit-reverse 27s linear infinite;
+}
+
+.photo-field__orbit--three {
+  top: 45%;
+  left: 52%;
+  width: 59%;
+  height: 43%;
+  border-style: dashed;
+  border-color: var(--field-faint);
+  animation: photo-field-orbit 22s linear infinite;
+}
+
+.photo-field__orbit--four {
+  top: 56%;
+  left: 43%;
+  width: 43%;
+  height: 59%;
+  border-style: dashed;
+  border-color: var(--field-faint);
+  animation: photo-field-orbit-reverse 18s linear infinite;
 }
 
 .photo-field__node {
   position: absolute;
-  width: 0.38rem;
+  width: 1.4rem;
   aspect-ratio: 1;
-  border: 1px solid var(--field-ink);
   border-radius: 50%;
-  background: color-mix(in srgb, currentColor 22%, transparent);
-  box-shadow: 0 0 0 0.22rem color-mix(in srgb, currentColor 6%, transparent);
+  overflow: hidden;
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
-.photo-field__node--one {
-  top: 10%;
-  right: 13%;
+.photo-field__node img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.08);
+  opacity: 0.62;
+  transition:
+    filter 420ms ease,
+    opacity 420ms ease,
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.photo-field__node--two {
-  bottom: 4%;
-  left: 30%;
+.photo-field__orbit--one .photo-field__node {
+  top: 8%;
+  right: 17%;
 }
 
-.photo-field__node--three {
-  top: 42%;
-  left: -0.2rem;
+.photo-field__orbit--two .photo-field__node {
+  right: 1%;
+  bottom: 22%;
+}
+
+.photo-field__orbit--three .photo-field__node {
+  bottom: -0.65rem;
+  left: 27%;
+}
+
+.photo-field__orbit--four .photo-field__node {
+  top: 15%;
+  left: -0.6rem;
 }
 
 .photo-field__focus {
@@ -270,6 +314,43 @@ function pulseFocus() {
   aspect-ratio: 1;
   transform: translate(calc(-50% + var(--field-shift-x)), calc(-50% + var(--field-shift-y)));
   transition: transform 480ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photo-field__preview {
+  position: absolute;
+  inset: 0.55rem;
+  width: calc(100% - 1.1rem);
+  height: calc(100% - 1.1rem);
+  border: 1px solid var(--field-faint);
+  border-radius: 50%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.08);
+  opacity: 0.48;
+  transition:
+    filter 480ms ease,
+    opacity 480ms ease,
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photo-field-image-enter-active,
+.photo-field-image-leave-active {
+  transition:
+    opacity 360ms ease,
+    transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photo-field-image-leave-active {
+  position: absolute;
+}
+
+.photo-field-image-enter-from {
+  opacity: 0;
+  transform: scale(0.78) rotate(-8deg);
+}
+
+.photo-field-image-leave-to {
+  opacity: 0;
+  transform: scale(1.14) rotate(6deg);
 }
 
 .photo-field__bracket {
@@ -343,9 +424,16 @@ function pulseFocus() {
   height: 1.15rem;
 }
 
-.photo-field:hover .photo-field__meta,
-.photo-field:hover .photo-field__hint {
-  color: var(--field-ink);
+.photo-field:hover .photo-field__preview {
+  filter: grayscale(0.15) contrast(1.02);
+  opacity: 0.78;
+  transform: scale(1.08);
+}
+
+.photo-field:hover .photo-field__node img {
+  filter: grayscale(0.35) contrast(1.02);
+  opacity: 0.82;
+  transform: scale(1.12);
 }
 
 .photo-field:active {
@@ -407,7 +495,9 @@ function pulseFocus() {
 @media (prefers-reduced-motion: reduce) {
   .photo-field,
   .photo-field__stage,
-  .photo-field__focus {
+  .photo-field__focus,
+  .photo-field__preview,
+  .photo-field__node img {
     transition: none;
   }
 

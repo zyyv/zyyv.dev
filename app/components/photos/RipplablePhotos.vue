@@ -8,6 +8,7 @@ import 'ripplable/styles.css'
 const props = defineProps<{
   photos: Photo[]
   previewVisible: boolean
+  focusedPhoto?: Photo | null
 }>()
 const emit = defineEmits<{
   open: [photo: Photo, source: HTMLElement]
@@ -58,7 +59,7 @@ function openPreview(item: RipplableListItem | null, event: Event) {
 
 <template>
   <div class="ripplable-photos">
-    <RipplablePhotoField :photo-count="photos.length" />
+    <RipplablePhotoField :photos="photos" :focused-photo="focusedPhoto" />
 
     <ClientOnly>
       <Ripplable
@@ -119,10 +120,6 @@ function openPreview(item: RipplableListItem | null, event: Event) {
 
 .ripplable-photos :deep(.ripplable__fps) {
   padding: 0.55rem 0.65rem;
-  border: 1px solid var(--ripplable-fps-border);
-  border-radius: 0.65rem;
-  background: var(--ripplable-fps-background);
-  box-shadow: 0 0.5rem 1.5rem rgb(17 17 15 / 10%);
   color: var(--ripplable-fps-color) !important;
   font-variant-numeric: tabular-nums;
   text-shadow: none;
