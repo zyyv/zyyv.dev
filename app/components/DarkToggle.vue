@@ -2,10 +2,13 @@
 const mode = useColorMode({
   emitAuto: true,
 })
-const { state, next } = useCycleList(['light', 'dark'] as const, { initialValue: mode })
+const state = computed(() => (mode.value === 'dark' ? 'dark' : 'light'))
+
+function next() {
+  mode.value = state.value === 'dark' ? 'light' : 'dark'
+}
 
 watchEffect(() => {
-  mode.value = state.value
   if (typeof document !== 'undefined') {
     document
       .querySelector('meta[name="theme-color"]')
@@ -56,8 +59,6 @@ const icon = computed(() => {
       return 'i-hugeicons:moon-slow-wind'
     case 'light':
       return 'i-hugeicons:sun-03'
-    case 'auto':
-      return 'i-hugeicons:computer-phone-sync'
     default:
       return ''
   }
