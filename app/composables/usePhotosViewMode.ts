@@ -1,19 +1,32 @@
 export type PhotosViewMode = 'waterfall' | 'ripplable'
 
+function getPhotosViewMode(value: unknown): PhotosViewMode {
+  return value === 'ripplable' ? 'ripplable' : 'waterfall'
+}
+
 export function usePhotosViewMode() {
-  const mode = useState<PhotosViewMode>('photos-view-mode', () => 'waterfall')
+  const route = useRoute()
+  const router = useRouter()
   const isTransitioning = useState('photos-view-transitioning', () => false)
   const preferredMotion = usePreferredReducedMotion()
+  const mode = computed(() => getPhotosViewMode(route.query.mode))
 
   async function togglePhotosView() {
     const nextMode = mode.value === 'waterfall' ? 'ripplable' : 'waterfall'
+    const navigate = () =>
+      router.push({
+        query: {
+          ...route.query,
+          mode: nextMode,
+        },
+      })
 
     if (
       import.meta.server ||
       preferredMotion.value === 'reduce' ||
       typeof document.startViewTransition !== 'function'
     ) {
-      mode.value = nextMode
+      await navigate()
       return
     }
 
@@ -24,7 +37,7 @@ export function usePhotosViewMode() {
     document.documentElement.getBoundingClientRect()
 
     const transition = document.startViewTransition(async () => {
-      mode.value = nextMode
+      await navigate()
       await nextTick()
     })
 
