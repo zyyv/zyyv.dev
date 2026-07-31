@@ -2,10 +2,12 @@
 import type { RipplableConfig, RipplableListItem } from 'ripplable'
 import type { Photo } from '~/types'
 import { Ripplable } from 'ripplable'
+import RipplablePhotoField from './RipplablePhotoField.vue'
 import 'ripplable/styles.css'
 
 const props = defineProps<{
   photos: Photo[]
+  previewVisible: boolean
 }>()
 const emit = defineEmits<{
   open: [photo: Photo, source: HTMLElement]
@@ -21,6 +23,10 @@ const items = computed<RipplableListItem[]>(() =>
 )
 
 const preferredMotion = usePreferredReducedMotion()
+const autoplay = computed(() => {
+  if (preferredMotion.value === 'reduce') return false
+  return props.previewVisible ? 0 : 2
+})
 const motionConfig = computed<Partial<RipplableConfig>>(() =>
   preferredMotion.value === 'reduce'
     ? {
@@ -52,12 +58,14 @@ function openPreview(item: RipplableListItem | null, event: Event) {
 
 <template>
   <div class="ripplable-photos">
+    <RipplablePhotoField :photo-count="photos.length" />
+
     <ClientOnly>
       <Ripplable
         :list="items"
         :config="motionConfig"
         :visible-count="Math.min(36, items.length)"
-        :autoplay="preferredMotion === 'reduce' ? false : 2"
+        :autoplay="autoplay"
         :focus-on-click="false"
         fps
       >
@@ -91,10 +99,34 @@ function openPreview(item: RipplableListItem | null, event: Event) {
 
 <style scoped>
 .ripplable-photos {
+  --ripplable-fps-background: rgb(255 255 255 / 62%);
+  --ripplable-fps-border: rgb(17 17 15 / 12%);
+  --ripplable-fps-color: rgb(17 17 15 / 76%);
+
+  position: relative;
   width: 100vw;
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
+  isolation: isolate;
+}
+
+:global(.dark .ripplable-photos) {
+  --ripplable-fps-background: rgb(17 17 15 / 58%);
+  --ripplable-fps-border: rgb(233 233 229 / 16%);
+  --ripplable-fps-color: rgb(233 233 229 / 82%);
+}
+
+.ripplable-photos :deep(.ripplable__fps) {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--ripplable-fps-border);
+  border-radius: 0.65rem;
+  background: var(--ripplable-fps-background);
+  box-shadow: 0 0.5rem 1.5rem rgb(17 17 15 / 10%);
+  color: var(--ripplable-fps-color) !important;
+  font-variant-numeric: tabular-nums;
+  text-shadow: none;
+  backdrop-filter: blur(0.75rem);
 }
 
 .ripplable-photo {

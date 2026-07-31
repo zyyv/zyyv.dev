@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Photo } from '~/types'
 import PhotoDetail from '~/components/photos/PhotoDetail.vue'
-import PhotoEmptyState from '~/components/photos/PhotoEmptyState.vue'
 import PhotosGallery from '~/components/photos/Photos.vue'
 import RipplablePhotos from '~/components/photos/RipplablePhotos.vue'
 
@@ -93,9 +92,7 @@ useHead({
 
 <template>
   <div ref="photosPage" class="photos-page">
-    <PhotoEmptyState v-if="!photos.length" />
     <Transition
-      v-else
       name="photos-view"
       :mode="isTransitioning ? undefined : 'out-in'"
       :css="!isTransitioning"
@@ -106,7 +103,13 @@ useHead({
         :photos="photos"
         @open="openPreview"
       />
-      <RipplablePhotos v-else key="ripplable" :photos="photos" @open="openPreview" />
+      <RipplablePhotos
+        v-else
+        key="ripplable"
+        :photos="photos"
+        :preview-visible="showPreview"
+        @open="openPreview"
+      />
     </Transition>
 
     <PhotoDetail

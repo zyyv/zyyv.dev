@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
+import PhotoEmptyState from '~/components/photos/PhotoEmptyState.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -23,7 +24,6 @@ const {
   hasMore,
   totalPhotos,
   isEmpty,
-  scrollContainer,
   handleScroll,
   calcItemHeight,
   initPhotos,
@@ -119,12 +119,7 @@ onMounted(() => {
 
       <!-- 空状态 -->
       <div v-else-if="isEmpty" class="flex justify-center items-center py-16">
-        <div class="text-gray-500 text-center">
-          <div class="text-2xl mb-2">
-            <i i-hugeicons:file-edit />
-          </div>
-          <div>No photos available</div>
-        </div>
+        <PhotoEmptyState />
       </div>
     </div>
   </div>
