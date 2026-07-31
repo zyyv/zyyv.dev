@@ -6,6 +6,8 @@ import PhotoReactions from './PhotoReactions.vue'
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
 
+const COMPRESSED_IMAGE_MAX_WIDTH = 2560
+
 interface Props {
   photo: Photo
   photos: Photo[]
@@ -38,6 +40,7 @@ const useCheckerboard = shallowRef(false)
 const showReactions = shallowRef(false)
 const reactionControl = useTemplateRef<HTMLElement>('reactionControl')
 const {
+  canvasRef,
   imageStyle,
   isDragging,
   zoomLabel,
@@ -49,6 +52,8 @@ const {
   handlePointerMove,
   handlePointerEnd,
 } = useImageCanvas()
+const { width: canvasWidth, height: canvasHeight } = useElementSize(canvasRef)
+const { width: viewportWidth, height: viewportHeight } = useWindowSize()
 
 let requestId = 0
 let transitionTimer: ReturnType<typeof setTimeout> | undefined
@@ -63,6 +68,10 @@ const canvasClasses = computed(() => ({
 const progressStyle = computed<CSSProperties>(() => ({
   strokeDashoffset: `${50.27 * (1 - loadProgress.value / 100)}`,
 }))
+const currentImageStyle = computed<CSSProperties>(() => {
+  const photo = displayedPhoto.value
+  return photo ? getCompressedImageStyle(photo, imageStyle.value) : imageStyle.value
+})
 onClickOutside(reactionControl, () => {
   showReactions.value = false
 })
@@ -96,18 +105,40 @@ function preloadNeighbors(photo: Photo) {
   const index = getPhotoIndex(photo)
   if (index < 0) return
 
-  const neighbors = [props.photos[index - 1], props.photos[index + 1]]
-  for (const neighbor of neighbors) {
-    if (neighbor) {
-      void preloadImage(getCompressedAssetUrl(neighbor), {
+  const neighbors = [props.photos[index - 1], props.photos[index + 1]].filter((p) => !!p)
+
+  Promise.all(
+    neighbors.map((neighbor) =>
+      preloadImage(neighbor.compressed, {
         expectedBytes: neighbor.compressedSize,
-      })
-    }
-  }
+      }),
+    ),
+  )
 }
 
-function getCompressedAssetUrl(photo: Photo): string {
-  return `/api/photo-assets/${encodeURIComponent(photo.id)}/compressed`
+function getCompressedImageStyle(photo: Photo, transformStyle: CSSProperties): CSSProperties {
+  const compressedScale = Math.min(1, COMPRESSED_IMAGE_MAX_WIDTH / photo.width)
+  const compressedWidth = Math.max(1, Math.round(photo.width * compressedScale))
+  const compressedHeight = Math.max(1, Math.round(photo.height * compressedScale))
+
+  if (canvasWidth.value <= 0 || canvasHeight.value <= 0) return transformStyle
+
+  const isMobile = viewportWidth.value < 768
+  const horizontalPadding = isMobile ? 64 : Math.min(160, Math.max(80, viewportWidth.value * 0.12))
+  const verticalPadding = isMobile ? 72 : Math.min(128, Math.max(88, viewportHeight.value * 0.15))
+  const availableWidth = Math.max(1, canvasWidth.value - horizontalPadding)
+  const availableHeight = Math.max(1, canvasHeight.value - verticalPadding)
+  const containScale = Math.min(
+    1,
+    availableWidth / compressedWidth,
+    availableHeight / compressedHeight,
+  )
+
+  return {
+    width: `${Math.max(1, Math.round(compressedWidth * containScale))}px`,
+    height: `${Math.max(1, Math.round(compressedHeight * containScale))}px`,
+    ...transformStyle,
+  }
 }
 
 function shareDisplayedPhoto() {
@@ -137,7 +168,7 @@ async function displayPhoto(photo: Photo) {
   const currentRequest = ++requestId
   const outgoingPhoto = displayedPhoto.value
   if (outgoingPhoto?.id === photo.id) return
-  const compressedSrc = getCompressedAssetUrl(photo)
+  const compressedSrc = photo.compressed
   const hasCachedCompressedImage = isImagePreloaded(compressedSrc)
 
   if (previousPhoto.value) {
@@ -155,7 +186,7 @@ async function displayPhoto(photo: Photo) {
     (isFullImageLoaded.value ? compressedImageSrc.value : displayedImageSrc.value) ||
     outgoingPhoto?.thumbnail ||
     ''
-  previousImageStyle.value = outgoingPhoto ? { ...imageStyle.value } : undefined
+  previousImageStyle.value = outgoingPhoto ? { ...currentImageStyle.value } : undefined
   isAnimating.value = false
   displayedPhoto.value = photo
   displayedImageSrc.value = photo.thumbnail
@@ -277,8 +308,6 @@ onBeforeUnmount(() => {
         class="photo-detail-canvas__image"
         :src="previousImageSrc"
         :alt="previousPhoto.filename"
-        :width="previousPhoto.width"
-        :height="previousPhoto.height"
         decoding="async"
         draggable="false"
         :style="previousImageStyle"
@@ -299,11 +328,9 @@ onBeforeUnmount(() => {
         }"
         :src="displayedImageSrc"
         :alt="displayedPhoto.filename"
-        :width="displayedPhoto.width"
-        :height="displayedPhoto.height"
         decoding="async"
         draggable="false"
-        :style="imageStyle"
+        :style="currentImageStyle"
       />
       <img
         v-if="compressedImageSrc"
@@ -315,11 +342,9 @@ onBeforeUnmount(() => {
         :src="compressedImageSrc"
         alt=""
         aria-hidden="true"
-        :width="displayedPhoto.width"
-        :height="displayedPhoto.height"
         decoding="async"
         draggable="false"
-        :style="imageStyle"
+        :style="currentImageStyle"
       />
     </div>
 
@@ -576,10 +601,8 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   display: block;
-  width: auto;
-  height: auto;
-  max-width: calc(100% - clamp(5rem, 12vw, 10rem));
-  max-height: calc(100% - clamp(5.5rem, 15vh, 8rem));
+  max-width: 100%;
+  max-height: 100%;
   margin: auto;
   object-fit: contain;
   pointer-events: none;
@@ -747,11 +770,6 @@ onBeforeUnmount(() => {
 @media (max-width: 767.9px) {
   .photo-detail-canvas {
     min-height: 0;
-  }
-
-  .photo-detail-canvas__image {
-    max-width: calc(100% - 4rem);
-    max-height: calc(100% - 4.5rem);
   }
 
   .photo-detail-canvas figcaption {
