@@ -58,6 +58,7 @@ function openPreview(item: RipplableListItem | null, event: Event) {
         :config="motionConfig"
         :visible-count="Math.min(36, items.length)"
         :autoplay="preferredMotion === 'reduce' ? false : 2"
+        :focus-on-click="false"
         fps
       >
         <template #card="{ item, src, alt }">
@@ -65,7 +66,6 @@ function openPreview(item: RipplableListItem | null, event: Event) {
             class="ripplable-photo"
             role="button"
             tabindex="0"
-            data-ripplable-interactive
             :data-photo-transition-id="getPhotoId(item)"
             :aria-label="`查看 ${alt}`"
             @click="openPreview(item, $event)"

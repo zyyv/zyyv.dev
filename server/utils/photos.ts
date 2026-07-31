@@ -70,9 +70,7 @@ export async function getPhotoRow(database: D1DatabaseBinding, id: string) {
 
 export async function listPublicPhotos(database: D1DatabaseBinding) {
   const [photosResult, reactionsResult] = await database.batch([
-    database.prepare(
-      "SELECT * FROM photos WHERE is_private = 0 ORDER BY COALESCE(json_extract(exif_json, '$.dateTime'), created_at) DESC",
-    ),
+    database.prepare('SELECT * FROM photos WHERE is_private = 0 ORDER BY created_at DESC, id DESC'),
     database.prepare(
       `SELECT photo_reactions.photo_id, photo_reactions.reaction, COUNT(*) AS count
        FROM photo_reactions
