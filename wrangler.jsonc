@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "zyyv-dev",
-  "main": "./.output/server/index.mjs",
+  "main": "./worker.ts",
   "compatibility_date": "2026-07-10",
   "compatibility_flags": ["nodejs_compat", "no_nodejs_compat_v2"],
   "routes": [
@@ -20,6 +20,20 @@
       "database_name": "zyyv_dev",
       "database_id": "a2785b81-734a-4ba6-9d97-b436fdc767b6",
       "migrations_dir": "migrations",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "SITE_PRESENCE",
+        "class_name": "SitePresence",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["SitePresence"],
     },
   ],
   "r2_buckets": [

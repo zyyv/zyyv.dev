@@ -12,6 +12,9 @@ const commitUrl = computed(() =>
     ? 'https://github.com/zyyv/zyyv.dev'
     : `https://github.com/zyyv/zyyv.dev/commit/${commitHash.value}`,
 )
+const { stats } = useSiteStats()
+const totalViews = computed(() => stats.value.totalViews?.toLocaleString('en-US') ?? '—')
+const onlineVisitors = computed(() => stats.value.onlineVisitors?.toLocaleString('en-US') ?? '—')
 
 const socialLinks = [
   { label: 'GitHub', href: 'https://github.com/zyyv', external: true },
@@ -27,11 +30,6 @@ function backToTop() {
 
 <template>
   <footer class="site-footer" :class="{ 'site-footer--home': isHome }">
-    <div class="site-footer__meta">
-      <p>Chris / Front-end developer</p>
-      <p>End of transmission</p>
-    </div>
-
     <p class="site-footer__statement">
       <span>You found the edge</span>
       <span>of the page. Nothing fell off.</span>
@@ -40,6 +38,16 @@ function backToTop() {
     <div class="site-footer__base">
       <div class="site-footer__identity">
         <p>© {{ year }} Chris</p>
+        <dl class="site-footer__stats" aria-label="Site activity">
+          <div>
+            <dt>Views</dt>
+            <dd>{{ totalViews }}</dd>
+          </div>
+          <div>
+            <dt><span class="site-footer__live-dot" aria-hidden="true" /> Online</dt>
+            <dd>{{ onlineVisitors }}</dd>
+          </div>
+        </dl>
         <nav class="site-footer__links" aria-label="Social links">
           <a
             v-for="link in socialLinks"
@@ -72,13 +80,12 @@ function backToTop() {
 <style scoped>
 .site-footer {
   width: 100%;
-  padding: clamp(5rem, 10vw, 10rem) clamp(1rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem);
+  padding: clamp(3.5rem, 6vw, 6rem) clamp(1rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem);
   border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
   color: inherit;
   font-family: 'DM Sans', sans-serif;
 }
 
-.site-footer__meta,
 .site-footer__base {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -88,21 +95,16 @@ function backToTop() {
   text-transform: uppercase;
 }
 
-.site-footer__meta p,
 .site-footer__base p,
 .site-footer__statement {
   margin: 0;
-}
-
-.site-footer__meta p:last-child {
-  text-align: right;
 }
 
 .site-footer__statement {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3em;
-  margin: clamp(3rem, 6vw, 5rem) 0 clamp(3.5rem, 7vw, 6rem);
+  margin: clamp(2.5rem, 4vw, 4rem) 0 clamp(3rem, 5vw, 4.5rem);
   font-size: clamp(1.15rem, 2.2vw, 1.7rem);
   font-weight: 500;
   line-height: 1.15;
@@ -119,15 +121,14 @@ function backToTop() {
 }
 
 .site-footer--home .site-footer__statement {
-  display: grid;
-  margin: clamp(4.5rem, 10vw, 9rem) 0 clamp(5rem, 11vw, 10rem);
-  font-size: clamp(3.9rem, 10.2vw, 10rem);
-  line-height: 0.78;
-  letter-spacing: -0.085em;
+  margin: clamp(2.75rem, 5vw, 4.5rem) 0 clamp(3.25rem, 6vw, 5rem);
+  font-size: clamp(2.1rem, 5vw, 5.25rem);
+  line-height: 0.92;
+  letter-spacing: -0.065em;
 }
 
 .site-footer--home .site-footer__statement span:last-child {
-  margin-left: 8vw;
+  margin-left: clamp(1.5rem, 5vw, 5rem);
 }
 
 .site-footer__base {
@@ -147,6 +148,38 @@ function backToTop() {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem clamp(0.85rem, 1.8vw, 1.5rem);
+}
+
+.site-footer__stats {
+  display: flex;
+  gap: 0.5rem clamp(0.9rem, 1.8vw, 1.5rem);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-footer__stats div {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.site-footer__stats dt,
+.site-footer__stats dd {
+  margin: 0;
+}
+
+.site-footer__stats dt {
+  color: color-mix(in srgb, currentColor 48%, transparent);
+}
+
+.site-footer__live-dot {
+  display: inline-block;
+  width: 0.38rem;
+  height: 0.38rem;
+  margin-right: 0.18rem;
+  border-radius: 50%;
+  background: #4f9a68;
+  box-shadow: 0 0 0 0.18rem color-mix(in srgb, #4f9a68 18%, transparent);
+  vertical-align: 0.04rem;
 }
 
 .site-footer__links a {
@@ -180,12 +213,12 @@ function backToTop() {
 
 .site-footer__actions a,
 .site-footer__actions button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   padding: 0 0 0.2rem;
   border: 0;
-  border-bottom: 1px solid currentColor;
   border-radius: 0;
   background: transparent;
   color: inherit;
@@ -193,9 +226,21 @@ function backToTop() {
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    opacity 240ms ease,
-    transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-footer__actions a::after,
+.site-footer__actions button::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  content: '';
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .site-footer__actions code {
@@ -206,8 +251,15 @@ function backToTop() {
 
 .site-footer__actions a:hover,
 .site-footer__actions button:hover {
-  opacity: 0.55;
   transform: translateY(-1px);
+}
+
+.site-footer__actions a:hover::after,
+.site-footer__actions button:hover::after,
+.site-footer__actions a:focus-visible::after,
+.site-footer__actions button:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left center;
 }
 
 .site-footer__actions a:active,
@@ -223,12 +275,8 @@ function backToTop() {
 
 @media (max-width: 767.9px) {
   .site-footer {
-    padding-top: 5rem;
-    padding-bottom: 5.5rem;
-  }
-
-  .site-footer__meta {
-    font-size: 0.62rem;
+    padding-top: 3.5rem;
+    padding-bottom: 4.5rem;
   }
 
   .site-footer__statement {
@@ -238,9 +286,9 @@ function backToTop() {
   }
 
   .site-footer--home .site-footer__statement {
-    margin: 4.75rem 0 6rem;
-    font-size: clamp(3.65rem, 18.5vw, 6rem);
-    line-height: 0.82;
+    margin: 3rem 0 4rem;
+    font-size: clamp(2.65rem, 13vw, 4.5rem);
+    line-height: 0.9;
   }
 
   .site-footer--home .site-footer__statement span:last-child {
@@ -266,6 +314,11 @@ function backToTop() {
     gap: 0.75rem 1rem;
   }
 
+  .site-footer__stats {
+    order: 3;
+    width: 100%;
+  }
+
   .site-footer__links {
     gap: 0.45rem 0.85rem;
   }
@@ -274,6 +327,8 @@ function backToTop() {
 @media (prefers-reduced-motion: reduce) {
   .site-footer__actions a,
   .site-footer__actions button,
+  .site-footer__actions a::after,
+  .site-footer__actions button::after,
   .site-footer__links a {
     transition: none;
   }

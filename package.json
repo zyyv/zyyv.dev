@@ -18,6 +18,12 @@
     "url": "git+https://github.com/zyyv/zyyv.dev.git"
   },
   "type": "module",
+  "imports": {
+    "#nitro-output": {
+      "types": "./worker/nitro-handler.d.ts",
+      "default": "./.output/server/index.mjs"
+    }
+  },
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
