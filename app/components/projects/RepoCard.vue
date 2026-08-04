@@ -12,6 +12,10 @@ const previewUrl = computed(() => {
 })
 
 const primaryUrl = computed(() => previewUrl.value || props.repo.html_url)
+const repoCoverStyle = computed(() => ({
+  '--repo-accent': props.repo.language ? getLanguageColor(props.repo.language) : '#718975',
+}))
+const repoCoverWord = computed(() => props.repo.name.split(/[-_]/)[0] || props.repo.name)
 const previewDomain = computed(() => {
   if (!previewUrl.value) return ''
 
@@ -68,14 +72,16 @@ function resetTilt(event: PointerEvent) {
             @load="previewLoaded = true"
           />
           <span class="project-card__domain" aria-hidden="true">
-            <i />
+            <StatusDot color="#718975" pulse />
             {{ previewDomain }}
           </span>
         </template>
 
-        <div v-else class="project-card__repo-cover" aria-hidden="true">
-          <span>{{ repo.name.split('-')[0] }}</span>
-          <i i-hugeicons:repository op-50 />
+        <div v-else class="project-card__repo-cover" :style="repoCoverStyle" aria-hidden="true">
+          <strong class="font-londrina">{{ repoCoverWord }}</strong>
+          <div class="project-card__repo-mark">
+            <i i-hugeicons:repository />
+          </div>
         </div>
       </div>
 
@@ -85,7 +91,7 @@ function resetTilt(event: PointerEvent) {
 
         <div class="project-card__meta">
           <span v-if="repo.language" class="project-card__language">
-            <i :style="{ backgroundColor: getLanguageColor(repo.language) }" />
+            <StatusDot :color="getLanguageColor(repo.language)" />
             {{ repo.language }}
           </span>
           <span v-if="repo.stargazers_count" title="GitHub stars">
@@ -123,6 +129,21 @@ function resetTilt(event: PointerEvent) {
 
 <style scoped>
 .project-card {
+  --project-page: #e9e9e5;
+  --project-card-surface: color-mix(in srgb, currentColor 4%, transparent);
+  --project-card-surface-hover: color-mix(in srgb, currentColor 6.5%, transparent);
+  --project-card-border: color-mix(in srgb, currentColor 18%, transparent);
+  --project-card-border-active: color-mix(in srgb, currentColor 34%, transparent);
+  --project-card-shadow: rgb(47 47 39 / 12%);
+  --project-preview-background: color-mix(in srgb, currentColor 9%, var(--project-page));
+  --project-preview-shade: rgb(17 17 15 / 15%);
+  --project-preview-wash: rgb(233 233 229 / 2%);
+  --project-domain-background: rgb(233 233 229 / 90%);
+  --project-domain-border: rgb(17 17 15 / 18%);
+  --project-domain-color: #11110f;
+  --project-spotlight: rgb(255 255 255 / 42%);
+  --project-preview-filter: grayscale(0.72) saturate(0.58) contrast(0.96);
+  --project-preview-filter-hover: grayscale(0.28) saturate(0.76) contrast(0.98);
   --tilt-x: 0deg;
   --tilt-y: 0deg;
   --pointer-x: 50%;
@@ -134,13 +155,27 @@ function resetTilt(event: PointerEvent) {
   animation-delay: calc(var(--project-index) * 45ms);
 }
 
+:global(.dark) .project-card {
+  --project-page: #11110f;
+  --project-card-shadow: rgb(0 0 0 / 30%);
+  --project-preview-background: color-mix(in srgb, currentColor 5%, var(--project-page));
+  --project-preview-shade: rgb(17 17 15 / 72%);
+  --project-preview-wash: rgb(17 17 15 / 68%);
+  --project-domain-background: rgb(17 17 15 / 88%);
+  --project-domain-border: rgb(233 233 229 / 17%);
+  --project-domain-color: #e9e9e5;
+  --project-spotlight: rgb(233 233 229 / 9%);
+  --project-preview-filter: grayscale(0.9) saturate(0.38) brightness(0.48) contrast(1.04);
+  --project-preview-filter-hover: grayscale(0.58) saturate(0.58) brightness(0.62) contrast(1.02);
+}
+
 .project-card__surface {
   position: relative;
   height: 100%;
   overflow: hidden;
-  border: 1px dashed color-mix(in srgb, currentColor 13%, transparent);
+  border: 1px dashed var(--project-card-border);
   border-radius: 0.45rem;
-  background: color-mix(in srgb, currentColor 2.8%, transparent);
+  background: var(--project-card-surface);
   transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   transform-style: preserve-3d;
   transition:
@@ -152,18 +187,9 @@ function resetTilt(event: PointerEvent) {
 }
 
 .project-card:hover .project-card__surface {
-  border-color: color-mix(in srgb, currentColor 28%, transparent);
-  background: color-mix(in srgb, currentColor 4.5%, transparent);
-  box-shadow: 0 1.4rem 3rem color-mix(in srgb, #000 18%, transparent);
-}
-
-.project-card:active .project-card__surface {
-  transform: rotateX(calc(var(--tilt-x) * 0.5)) rotateY(calc(var(--tilt-y) * 0.5)) scale(0.985);
-  transition-duration: 80ms;
-}
-
-.project-card:focus-within .project-card__surface {
-  border-color: color-mix(in srgb, currentColor 30%, transparent);
+  border-color: var(--project-card-border-active);
+  background: var(--project-card-surface-hover);
+  box-shadow: 0 1.4rem 3rem var(--project-card-shadow);
 }
 
 .project-card__preview {
@@ -171,13 +197,9 @@ function resetTilt(event: PointerEvent) {
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #deded9;
+  /* background: var(--project-preview-background); */
   transform: translateZ(0.4rem);
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-:global(.dark) .project-card__preview {
-  background: #191917;
 }
 
 .project-card:hover .project-card__preview {
@@ -185,22 +207,23 @@ function resetTilt(event: PointerEvent) {
 }
 
 .project-card__preview iframe {
+  position: relative;
+  z-index: 0;
   width: calc(100% / var(--preview-scale));
   height: calc(100% / var(--preview-scale));
   border: 0;
-  opacity: 0.78;
+  opacity: 1;
   pointer-events: none;
   transform: scale(var(--preview-scale));
   transform-origin: top left;
-  filter: grayscale(0.82) saturate(0.48) contrast(0.9);
+  filter: var(--project-preview-filter);
   transition:
     filter 400ms ease,
     opacity 400ms ease;
 }
 
 .project-card:hover .project-card__preview iframe {
-  opacity: 0.9;
-  filter: grayscale(0.35) saturate(0.7) contrast(0.94);
+  filter: var(--project-preview-filter-hover);
 }
 
 .project-card__domain {
@@ -214,33 +237,29 @@ function resetTilt(event: PointerEvent) {
   gap: 0.38rem;
   overflow: hidden;
   padding: 0.3rem 0.48rem;
-  border: 1px solid rgb(255 255 255 / 42%);
   border-radius: 0.28rem;
-  background: rgb(233 233 229 / 80%);
-  color: #24241f;
+  background: var(--project-domain-background);
+  color: var(--project-domain-color);
   font-size: 0.58rem;
   letter-spacing: 0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
-  backdrop-filter: blur(0.65rem);
-}
-
-.project-card__domain i {
-  width: 0.3rem;
-  height: 0.3rem;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: #718975;
+  backdrop-filter: blur(1rem);
 }
 
 .project-card__preview::after {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background:
-    linear-gradient(to bottom, transparent 65%, rgb(17 17 15 / 10%)),
-    color-mix(in srgb, currentColor 3%, transparent);
+    linear-gradient(to bottom, transparent 65%, var(--project-preview-shade)),
+    linear-gradient(var(--project-preview-wash), var(--project-preview-wash));
   content: '';
   pointer-events: none;
+}
+
+.project-card__preview.is-repository::after {
+  display: none;
 }
 
 .project-card__loading {
@@ -260,40 +279,119 @@ function resetTilt(event: PointerEvent) {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
   justify-content: space-between;
-  padding: 1.2rem;
+  isolation: isolate;
+  padding: 1rem 1.05rem 0.95rem;
+  color: color-mix(in srgb, var(--repo-accent) 72%, #11110f);
   background:
     radial-gradient(
-      circle at var(--pointer-x) var(--pointer-y),
-      color-mix(in srgb, currentColor 8%, transparent),
-      transparent 42%
+      circle at 104% -12%,
+      color-mix(in srgb, var(--repo-accent) 28%, transparent),
+      transparent 48%
     ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 3rem,
-      color-mix(in srgb, currentColor 4%, transparent) 3rem calc(3rem + 1px)
-    ),
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 3rem,
-      color-mix(in srgb, currentColor 4%, transparent) 3rem calc(3rem + 1px)
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--repo-accent) 14%, var(--project-page)),
+      color-mix(in srgb, currentColor 3%, var(--project-page)) 72%
     );
+  transition: color 320ms ease;
 }
 
-.project-card__repo-cover span {
-  font-size: clamp(3rem, 7vw, 5rem);
-  font-weight: 500;
-  line-height: 0.75;
-  letter-spacing: -0.12em;
+.project-card__repo-cover::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--repo-accent) 14%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--repo-accent) 14%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 2.75rem 2.75rem;
+  content: '';
+  -webkit-mask-image: linear-gradient(105deg, rgb(0 0 0 / 76%), transparent 88%);
+  mask-image: linear-gradient(105deg, rgb(0 0 0 / 76%), transparent 88%);
+}
+
+.project-card__repo-cover::after {
+  position: absolute;
+  top: 50%;
+  right: -11%;
+  z-index: -1;
+  width: 44%;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--repo-accent) 32%, transparent);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1.15rem color-mix(in srgb, var(--repo-accent) 5%, transparent),
+    0 0 0 2.3rem color-mix(in srgb, var(--repo-accent) 4%, transparent);
+  content: '';
+  transform: translateY(-50%);
+}
+
+.project-card__repo-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: color-mix(in srgb, currentColor 66%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.52rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0.09em;
   text-transform: lowercase;
-  opacity: 0.12;
 }
 
-.project-card__repo-cover i {
-  width: 1.6rem;
-  height: 1.6rem;
-  opacity: 0.2;
+.project-card__repo-cover strong {
+  max-width: 78%;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 560;
+  line-height: 0.76;
+  overflow-wrap: anywhere;
+  text-transform: lowercase;
+  text-shadow: 0 0.7rem 2.2rem color-mix(in srgb, var(--repo-accent) 18%, transparent);
+  transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project-card:hover .project-card__repo-cover strong {
+  transform: translateX(0.18rem);
+}
+
+.project-card__repo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.project-card__repo-mark span {
+  width: clamp(3rem, 28%, 5.5rem);
+  height: 0.18rem;
+  background: var(--repo-accent);
+  box-shadow: 0 0 1.1rem color-mix(in srgb, var(--repo-accent) 42%, transparent);
+}
+
+.project-card__repo-mark i {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: color-mix(in srgb, var(--repo-accent) 66%, currentColor);
+  opacity: 0.74;
+}
+
+:global(.dark) .project-card__repo-cover {
+  color: color-mix(in srgb, var(--repo-accent) 76%, #e9e9e5);
+  background:
+    radial-gradient(
+      circle at 104% -12%,
+      color-mix(in srgb, var(--repo-accent) 20%, transparent),
+      transparent 48%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--repo-accent) 12%, var(--project-page)),
+      color-mix(in srgb, currentColor 4%, var(--project-page)) 72%
+    );
 }
 
 .project-card__content {
@@ -326,7 +424,7 @@ function resetTilt(event: PointerEvent) {
   margin: 0.7rem 0 1.25rem;
   font-size: 0.76rem;
   line-height: 1.55;
-  opacity: 0.54;
+  opacity: 0.64;
   text-wrap: pretty;
 }
 
@@ -337,7 +435,7 @@ function resetTilt(event: PointerEvent) {
   gap: 0.72rem;
   font-size: 0.62rem;
   font-variant-numeric: tabular-nums;
-  opacity: 0.52;
+  opacity: 0.62;
 }
 
 .project-card__meta > span,
@@ -351,12 +449,6 @@ function resetTilt(event: PointerEvent) {
 .project-card__source > i {
   width: 0.76rem;
   height: 0.76rem;
-}
-
-.project-card__language i {
-  width: 0.38rem;
-  height: 0.38rem;
-  border-radius: 50%;
 }
 
 .project-card__source {
@@ -374,11 +466,6 @@ function resetTilt(event: PointerEvent) {
   text-underline-offset: 0.18rem;
 }
 
-.project-card__source:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 0.18rem;
-}
-
 .project-card__light {
   position: absolute;
   inset: -1px;
@@ -386,13 +473,12 @@ function resetTilt(event: PointerEvent) {
   border-radius: inherit;
   background: radial-gradient(
     circle at var(--pointer-x) var(--pointer-y),
-    color-mix(in srgb, currentColor 10%, transparent),
+    var(--project-spotlight),
     transparent 34%
   );
   opacity: 0;
   pointer-events: none;
   transition: opacity 220ms ease;
-  mix-blend-mode: soft-light;
 }
 
 .project-card:hover .project-card__light {
@@ -404,10 +490,6 @@ function resetTilt(event: PointerEvent) {
   inset: 0;
   z-index: 4;
   border-radius: 0.45rem;
-}
-
-.project-card__link:focus-visible {
-  outline: none;
 }
 
 @keyframes project-card-in {
@@ -437,11 +519,13 @@ function resetTilt(event: PointerEvent) {
   .project-card__preview iframe,
   .project-card:hover .project-card__preview iframe {
     opacity: 1;
-    filter: none;
+    filter: var(--project-preview-filter-hover);
   }
 
-  .project-card__preview::after {
-    display: none;
+  .project-card__preview:not(.is-repository)::after {
+    background:
+      linear-gradient(to bottom, transparent 72%, var(--project-preview-shade)),
+      linear-gradient(var(--project-preview-wash), var(--project-preview-wash));
   }
 }
 

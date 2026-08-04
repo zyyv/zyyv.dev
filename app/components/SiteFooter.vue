@@ -15,6 +15,7 @@ const commitUrl = computed(() =>
 const { stats } = useSiteStats()
 const totalViews = computed(() => stats.value.totalViews?.toLocaleString('en-US') ?? '—')
 const onlineVisitors = computed(() => stats.value.onlineVisitors?.toLocaleString('en-US') ?? '—')
+const isPresenceConnected = computed(() => stats.value.onlineVisitors !== null)
 
 const socialLinks = [
   { label: 'GitHub', href: 'https://github.com/zyyv', external: true },
@@ -44,7 +45,10 @@ function backToTop() {
             <dd>{{ totalViews }}</dd>
           </div>
           <div>
-            <dt><span class="site-footer__live-dot" aria-hidden="true" /> Online</dt>
+            <dt class="site-footer__online-label">
+              <StatusDot :active="isPresenceConnected" pulse />
+              Online
+            </dt>
             <dd>{{ onlineVisitors }}</dd>
           </div>
         </dl>
@@ -171,15 +175,10 @@ function backToTop() {
   color: color-mix(in srgb, currentColor 48%, transparent);
 }
 
-.site-footer__live-dot {
-  display: inline-block;
-  width: 0.38rem;
-  height: 0.38rem;
-  margin-right: 0.18rem;
-  border-radius: 50%;
-  background: #4f9a68;
-  box-shadow: 0 0 0 0.18rem color-mix(in srgb, #4f9a68 18%, transparent);
-  vertical-align: 0.04rem;
+.site-footer__online-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .site-footer__links a {

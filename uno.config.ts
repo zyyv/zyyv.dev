@@ -66,6 +66,7 @@ export default defineConfig<Theme>({
       },
       fonts: {
         dm: 'DM Sans',
+        londrina: 'Londrina Outline',
       },
     }),
   ],
