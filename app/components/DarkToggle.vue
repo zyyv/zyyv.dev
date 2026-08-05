@@ -1,10 +1,8 @@
 <script setup lang="ts">
-const mode = useColorMode({
-  emitAuto: true,
-})
-const state = computed(() => (mode.value === 'dark' ? 'dark' : 'light'))
+const mode = useColorMode()
+const state = mode.state
 
-function next() {
+function toggleDark() {
   mode.value = state.value === 'dark' ? 'light' : 'dark'
 }
 
@@ -16,53 +14,9 @@ watchEffect(() => {
   }
 })
 
-function enableTransitions() {
-  return (
-    typeof document.startViewTransition === 'function' &&
-    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-}
-
-async function toggleDark(event: MouseEvent) {
-  if (!enableTransitions()) {
-    next()
-    return
-  }
-
-  const x = event.clientX
-  const y = event.clientY
-  const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
-  const clipPath = [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`]
-
-  await document.startViewTransition(async () => {
-    next()
-    await nextTick()
-  }).ready
-
-  document.documentElement.animate(
-    {
-      clipPath: state.value === 'dark' ? [...clipPath].reverse() : clipPath,
-    },
-    {
-      duration: 300,
-      easing: 'ease-in',
-      fill: 'forwards',
-      pseudoElement:
-        state.value === 'dark' ? '::view-transition-old(root)' : '::view-transition-new(root)',
-    },
-  )
-}
-
-const icon = computed(() => {
-  switch (state.value) {
-    case 'dark':
-      return 'i-hugeicons:moon-slow-wind'
-    case 'light':
-      return 'i-hugeicons:sun-03'
-    default:
-      return ''
-  }
-})
+const icon = computed(() =>
+  state.value === 'dark' ? 'i-hugeicons:moon-slow-wind' : 'i-hugeicons:sun-03',
+)
 
 const toggleLabel = computed(() =>
   state.value === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
@@ -82,23 +36,3 @@ const toggleLabel = computed(() =>
     </button>
   </ClientOnly>
 </template>
-
-<style>
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-::view-transition-old(root) {
-  z-index: 1;
-}
-::view-transition-new(root) {
-  z-index: 2147483646;
-}
-.dark::view-transition-old(root) {
-  z-index: 2147483646;
-}
-.dark::view-transition-new(root) {
-  z-index: 1;
-}
-</style>

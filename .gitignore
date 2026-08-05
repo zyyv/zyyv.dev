@@ -6,7 +6,24 @@ dist
 .output
 .nuxt
 .astro
-.env
+# Local environment variables and Cloudflare development secrets.
+.env*
+!.env.example
+!.env.*.example
+.dev.vars*
+!.dev.vars.example
+!.dev.vars.*.example
+
+# Private credentials and local databases.
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.db
+credentials.json
+secrets.json
 .vscode
 *.zip
 mock
