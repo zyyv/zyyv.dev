@@ -47,7 +47,7 @@ onMounted(async () => {
         <div class="projects__grid">
           <ProjectsRepoCard
             v-for="(repo, index) in repos"
-            :key="repo.id"
+            :key="String(repo.id)"
             :repo="repo"
             :index="index"
           />

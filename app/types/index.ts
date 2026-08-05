@@ -19,7 +19,7 @@ export interface PostPreview {
 export type BaseRepo = Endpoints['GET /users/{username}/repos']['response']['data'][number]
 export type RepoLanguages = Endpoints['GET /repos/{owner}/{repo}/languages']['response']['data']
 export interface Repo {
-  id: number
+  id: BaseRepo['id']
   name: string
   full_name: string
   html_url: string
