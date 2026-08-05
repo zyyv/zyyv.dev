@@ -13,7 +13,7 @@ const commitUrl = computed(() =>
     : `https://github.com/zyyv/zyyv.dev/commit/${commitHash.value}`,
 )
 const { stats } = useSiteStats()
-const totalViews = computed(() => stats.value.totalViews?.toLocaleString('en-US') ?? '—')
+const totalVisits = computed(() => stats.value.totalVisits?.toLocaleString('en-US') ?? '—')
 const onlineVisitors = computed(() => stats.value.onlineVisitors?.toLocaleString('en-US') ?? '—')
 const isPresenceConnected = computed(() => stats.value.onlineVisitors !== null)
 
@@ -47,8 +47,8 @@ function backToTop() {
             </dt>
             <dd>{{ onlineVisitors }}</dd>
             <dt>/</dt>
-            <dd>{{ totalViews }}</dd>
-            <dt>Views</dt>
+            <dd>{{ totalVisits }}</dd>
+            <dt>Visits</dt>
           </div>
         </dl>
         <nav class="site-footer__links" aria-label="Social links">

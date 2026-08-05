@@ -1,0 +1,33 @@
+DROP TABLE site_stats;
+
+ALTER TABLE site_visits ADD COLUMN visitor_id TEXT;
+ALTER TABLE site_visits ADD COLUMN last_seen_at INTEGER;
+ALTER TABLE site_visits ADD COLUMN landing_path TEXT;
+ALTER TABLE site_visits ADD COLUMN exit_path TEXT;
+ALTER TABLE site_visits ADD COLUMN page_view_count INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE site_visits ADD COLUMN duration_seconds INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE site_visits ADD COLUMN referrer_host TEXT;
+ALTER TABLE site_visits ADD COLUMN source_type TEXT;
+ALTER TABLE site_visits ADD COLUMN utm_source TEXT;
+ALTER TABLE site_visits ADD COLUMN utm_medium TEXT;
+ALTER TABLE site_visits ADD COLUMN utm_campaign TEXT;
+ALTER TABLE site_visits ADD COLUMN utm_term TEXT;
+ALTER TABLE site_visits ADD COLUMN utm_content TEXT;
+ALTER TABLE site_visits ADD COLUMN country_code TEXT;
+ALTER TABLE site_visits ADD COLUMN region TEXT;
+ALTER TABLE site_visits ADD COLUMN city TEXT;
+ALTER TABLE site_visits ADD COLUMN continent TEXT;
+ALTER TABLE site_visits ADD COLUMN device_type TEXT;
+ALTER TABLE site_visits ADD COLUMN operating_system TEXT;
+ALTER TABLE site_visits ADD COLUMN browser TEXT;
+ALTER TABLE site_visits ADD COLUMN language TEXT;
+ALTER TABLE site_visits ADD COLUMN timezone TEXT;
+ALTER TABLE site_visits ADD COLUMN screen_width INTEGER;
+ALTER TABLE site_visits ADD COLUMN screen_height INTEGER;
+ALTER TABLE site_visits ADD COLUMN viewport_width INTEGER;
+ALTER TABLE site_visits ADD COLUMN viewport_height INTEGER;
+
+CREATE INDEX site_visits_created_at_idx ON site_visits (created_at);
+CREATE INDEX site_visits_visitor_id_idx ON site_visits (visitor_id);
+CREATE INDEX site_visits_landing_path_idx ON site_visits (landing_path);
+CREATE INDEX site_visits_source_type_idx ON site_visits (source_type);
