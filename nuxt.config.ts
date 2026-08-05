@@ -32,6 +32,9 @@ export default defineNuxtConfig({
   $production: {
     nitro: {
       preset: 'cloudflare_module',
+      cloudflare: {
+        deployConfig: false,
+      },
     },
   },
 
