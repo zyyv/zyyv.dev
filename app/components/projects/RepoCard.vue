@@ -37,16 +37,12 @@ function updateTilt(event: PointerEvent) {
 
   card.style.setProperty('--tilt-x', `${(0.5 - y) * 7}deg`)
   card.style.setProperty('--tilt-y', `${(x - 0.5) * 9}deg`)
-  card.style.setProperty('--pointer-x', `${x * 100}%`)
-  card.style.setProperty('--pointer-y', `${y * 100}%`)
 }
 
 function resetTilt(event: PointerEvent) {
   const card = event.currentTarget as HTMLElement
   card.style.setProperty('--tilt-x', '0deg')
   card.style.setProperty('--tilt-y', '0deg')
-  card.style.setProperty('--pointer-x', '50%')
-  card.style.setProperty('--pointer-y', '50%')
 }
 </script>
 
@@ -79,9 +75,6 @@ function resetTilt(event: PointerEvent) {
 
         <div v-else class="project-card__repo-cover" :style="repoCoverStyle" aria-hidden="true">
           <strong class="font-londrina">{{ repoCoverWord }}</strong>
-          <!-- <div class="project-card__repo-mark">
-            <i i-hugeicons:repository />
-          </div> -->
         </div>
       </div>
 
@@ -135,19 +128,14 @@ function resetTilt(event: PointerEvent) {
   --project-card-border: color-mix(in srgb, currentColor 18%, transparent);
   --project-card-border-active: color-mix(in srgb, currentColor 34%, transparent);
   --project-card-shadow: rgb(47 47 39 / 12%);
-  --project-preview-background: color-mix(in srgb, currentColor 9%, var(--project-page));
   --project-preview-shade: rgb(17 17 15 / 15%);
   --project-preview-wash: rgb(233 233 229 / 2%);
   --project-domain-background: rgb(233 233 229 / 90%);
-  --project-domain-border: rgb(17 17 15 / 18%);
   --project-domain-color: #11110f;
-  --project-spotlight: rgb(255 255 255 / 42%);
   --project-preview-filter: grayscale(0.72) saturate(0.58) contrast(0.96);
   --project-preview-filter-hover: grayscale(0.28) saturate(0.76) contrast(0.98);
   --tilt-x: 0deg;
   --tilt-y: 0deg;
-  --pointer-x: 50%;
-  --pointer-y: 50%;
   position: relative;
   min-width: 0;
   perspective: 70rem;
@@ -158,13 +146,10 @@ function resetTilt(event: PointerEvent) {
 :global(.dark) .project-card {
   --project-page: #11110f;
   --project-card-shadow: rgb(0 0 0 / 30%);
-  --project-preview-background: color-mix(in srgb, currentColor 5%, var(--project-page));
   --project-preview-shade: rgb(17 17 15 / 72%);
   --project-preview-wash: rgb(17 17 15 / 68%);
   --project-domain-background: rgb(17 17 15 / 88%);
-  --project-domain-border: rgb(233 233 229 / 17%);
   --project-domain-color: #e9e9e5;
-  --project-spotlight: rgb(233 233 229 / 9%);
   --project-preview-filter: grayscale(0.9) saturate(0.38) brightness(0.48) contrast(1.04);
   --project-preview-filter-hover: grayscale(0.58) saturate(0.58) brightness(0.62) contrast(1.02);
 }
@@ -197,7 +182,6 @@ function resetTilt(event: PointerEvent) {
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  /* background: var(--project-preview-background); */
   transform: translateZ(0.4rem);
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -336,26 +320,6 @@ function resetTilt(event: PointerEvent) {
 
 .project-card:hover .project-card__repo-cover strong {
   transform: translateX(0.18rem);
-}
-
-.project-card__repo-mark {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.project-card__repo-mark span {
-  width: clamp(3rem, 28%, 5.5rem);
-  height: 0.18rem;
-  background: var(--repo-accent);
-  box-shadow: 0 0 1.1rem color-mix(in srgb, var(--repo-accent) 42%, transparent);
-}
-
-.project-card__repo-mark i {
-  width: 1.35rem;
-  height: 1.35rem;
-  color: color-mix(in srgb, var(--repo-accent) 66%, currentColor);
-  opacity: 0.74;
 }
 
 :global(.dark) .project-card__repo-cover {
