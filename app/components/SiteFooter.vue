@@ -41,15 +41,14 @@ function backToTop() {
         <p>© {{ year }} Chris</p>
         <dl class="site-footer__stats" aria-label="Site activity">
           <div>
-            <dt>Views</dt>
-            <dd>{{ totalViews }}</dd>
-          </div>
-          <div>
             <dt class="site-footer__online-label">
               <StatusDot :active="isPresenceConnected" pulse />
               Online
             </dt>
             <dd>{{ onlineVisitors }}</dd>
+            <dt>/</dt>
+            <dd>{{ totalViews }}</dd>
+            <dt>Views</dt>
           </div>
         </dl>
         <nav class="site-footer__links" aria-label="Social links">
@@ -69,7 +68,6 @@ function backToTop() {
         <a :href="commitUrl" target="_blank" rel="noreferrer" :title="`Open commit ${commitHash}`">
           <span>Last dispatch</span>
           <code>{{ shortCommit }}</code>
-          <i class="i-hugeicons:arrow-up-right-02" aria-hidden="true" />
         </a>
 
         <button type="button" aria-label="Back to top" @click="backToTop">

@@ -15,7 +15,7 @@ const primaryUrl = computed(() => previewUrl.value || props.repo.html_url)
 const repoCoverStyle = computed(() => ({
   '--repo-accent': props.repo.language ? getLanguageColor(props.repo.language) : '#718975',
 }))
-const repoCoverWord = computed(() => props.repo.name.split(/[-_]/)[0] || props.repo.name)
+const repoCoverWord = computed(() => props.repo.name.split(/[-_]/).pop() || props.repo.name)
 const previewDomain = computed(() => {
   if (!previewUrl.value) return ''
 
@@ -79,9 +79,9 @@ function resetTilt(event: PointerEvent) {
 
         <div v-else class="project-card__repo-cover" :style="repoCoverStyle" aria-hidden="true">
           <strong class="font-londrina">{{ repoCoverWord }}</strong>
-          <div class="project-card__repo-mark">
+          <!-- <div class="project-card__repo-mark">
             <i i-hugeicons:repository />
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -279,8 +279,8 @@ function resetTilt(event: PointerEvent) {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   isolation: isolate;
   padding: 1rem 1.05rem 0.95rem;
   color: color-mix(in srgb, var(--repo-accent) 72%, #11110f);
@@ -302,13 +302,6 @@ function resetTilt(event: PointerEvent) {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--repo-accent) 14%, transparent) 1px, transparent 1px),
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--repo-accent) 14%, transparent) 1px,
-      transparent 1px
-    );
   background-size: 2.75rem 2.75rem;
   content: '';
   -webkit-mask-image: linear-gradient(105deg, rgb(0 0 0 / 76%), transparent 88%);
@@ -331,21 +324,7 @@ function resetTilt(event: PointerEvent) {
   transform: translateY(-50%);
 }
 
-.project-card__repo-topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: color-mix(in srgb, currentColor 66%, transparent);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.52rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: lowercase;
-}
-
 .project-card__repo-cover strong {
-  max-width: 78%;
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 560;
   line-height: 0.76;
@@ -471,11 +450,6 @@ function resetTilt(event: PointerEvent) {
   inset: -1px;
   z-index: 3;
   border-radius: inherit;
-  background: radial-gradient(
-    circle at var(--pointer-x) var(--pointer-y),
-    var(--project-spotlight),
-    transparent 34%
-  );
   opacity: 0;
   pointer-events: none;
   transition: opacity 220ms ease;
