@@ -82,8 +82,8 @@ function backToTop() {
 <style scoped>
 .site-footer {
   width: 100%;
-  padding: clamp(3.5rem, 6vw, 6rem) clamp(1rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem);
-  border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  padding: clamp(2.5rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem) clamp(1rem, 1.5vw, 3rem);
+  border-top: 1px dashed color-mix(in srgb, currentColor 10%, transparent);
   color: inherit;
   font-family: 'DM Sans', sans-serif;
 }
@@ -106,7 +106,7 @@ function backToTop() {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3em;
-  margin: clamp(2.5rem, 4vw, 4rem) 0 clamp(3rem, 5vw, 4.5rem);
+  margin: clamp(2.5rem, 2vw, 4rem) 0 clamp(3rem, 5vw, 4.5rem);
   font-size: clamp(1.15rem, 2.2vw, 1.7rem);
   font-weight: 500;
   line-height: 1.15;

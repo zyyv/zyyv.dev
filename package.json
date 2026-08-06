@@ -42,7 +42,6 @@
     "@vueuse/nuxt": "^14.4.0",
     "better-sqlite3": "^13.0.2",
     "blurhash": "^2.0.5",
-    "dayjs": "^1.11.21",
     "nuxt": "^4.5.1",
     "octokit": "^5.0.5",
     "ripplable": "^0.3.0",

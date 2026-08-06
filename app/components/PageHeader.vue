@@ -17,7 +17,6 @@ defineProps<{
 <style scoped>
 .page-header {
   padding: clamp(6.5rem, 13vw, 9.5rem) 0 clamp(2.75rem, 6vw, 4.5rem);
-  border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
 }
 
 .page-header__eyebrow {

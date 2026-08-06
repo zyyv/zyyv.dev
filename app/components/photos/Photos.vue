@@ -62,10 +62,9 @@ onMounted(() => {
     <!-- 瀑布流容器 -->
     <div
       v-else
-      ref="scrollContainer"
       class="photos-scroll flex-1 overflow-auto"
       :class="{ 'flex-none! overflow-visible!': pageScroll }"
-      @scroll="pageScroll ? undefined : handleScroll()"
+      @scroll="pageScroll ? undefined : handleScroll($event)"
     >
       <VirtualWaterfall
         :items="allPhotos"

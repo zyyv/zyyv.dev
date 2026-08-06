@@ -74,11 +74,6 @@ useHead(() => ({
           <Toc :links="tocLinks" :highlights="[]" />
         </aside>
       </div>
-
-      <footer class="post-footer">
-        <p>End of article</p>
-        <Back label="Back to posts" />
-      </footer>
     </article>
   </div>
 </template>

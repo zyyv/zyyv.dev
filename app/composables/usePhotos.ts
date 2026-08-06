@@ -116,20 +116,19 @@ export function usePhotos(initialPhotos: Photo[] = []) {
     await loadPhotos(currentPage.value, true)
   }
 
-  // 滚动容器引用
-  const scrollContainer = ref<HTMLElement>()
-
   // 监听滚动事件
-  function handleScroll() {
-    if (!scrollContainer.value || loading.value || !hasMore.value) {
+  function handleScroll(event: Event) {
+    const scrollContainer = event.currentTarget
+
+    if (!(scrollContainer instanceof HTMLElement) || loading.value || !hasMore.value) {
       return
     }
 
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainer.value
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainer
     const threshold = 200 // 距离底部200px时开始加载
 
     if (scrollTop + clientHeight >= scrollHeight - threshold) {
-      loadMore()
+      void loadMore()
     }
   }
 
@@ -176,8 +175,6 @@ export function usePhotos(initialPhotos: Photo[] = []) {
     hasMore: readonly(hasMore),
     totalPhotos: readonly(totalPhotos),
     isEmpty: readonly(isEmpty),
-    scrollContainer,
-
     // 方法
     loadPhotos,
     loadMore,

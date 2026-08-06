@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo } from '~/types'
-import dayjs from 'dayjs'
 import { PHOTO_REACTIONS } from '#shared/constants/photo-reactions'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
 
@@ -132,7 +131,7 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 function formatDate(date: Date | string): string {
-  return dayjs(date).format('YYYY-MM-DD HH:mm')
+  return useDateFormat(date, 'YYYY-MM-DD HH:mm', { locales: 'en-US' }).value
 }
 
 function formatExposureTime(time: number): string {
