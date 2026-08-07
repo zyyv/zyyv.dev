@@ -69,7 +69,7 @@ onMounted(() => loadPhotos(1))
       </div>
       <div class="workspace-status">
         <span><i aria-hidden="true" /> D1 + R2 已连接</span>
-        <NuxtLink to="/admin">管理首页</NuxtLink>
+        <NuxtLink to="/admin">私密首页</NuxtLink>
       </div>
     </header>
 

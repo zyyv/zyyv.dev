@@ -135,8 +135,8 @@ onMounted(loadBookmarks)
       </p>
 
       <div v-if="isAdmin" class="admin-notice">
-        <span><i class="i-hugeicons:square-lock-02" aria-hidden="true" /> 管理模式</span>
-        <p>你已登录，可以直接维护这页的公开与私密书签。</p>
+        <span><i class="i-hugeicons:square-lock-02" aria-hidden="true" /> 私密模式</span>
+        <p>私密会话已启用，可以直接维护这页的公开与私密书签。</p>
       </div>
 
       <BookmarkToolbar

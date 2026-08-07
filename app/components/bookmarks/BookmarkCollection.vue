@@ -50,7 +50,7 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
           <i class="i-hugeicons:folder-02" aria-hidden="true" />
           <h2>{{ folder.title }}</h2>
           <span>{{ folder.children.length }}</span>
-          <span v-if="isAdmin && folder.private" class="collection__private" title="仅管理员可见">
+          <span v-if="isAdmin && folder.private" class="collection__private" title="仅维护者可见">
             <i class="i-hugeicons:square-lock-02" aria-hidden="true" /> 私密
           </span>
         </div>

@@ -97,10 +97,10 @@ useHead({
       v-if="authenticated"
       to="/admin/photos"
       class="photos-admin-link"
-      aria-label="管理照片"
+      aria-label="整理照片"
     >
       <i class="i-hugeicons:settings-02" aria-hidden="true" />
-      <span>管理照片</span>
+      <span>整理照片</span>
     </NuxtLink>
 
     <Transition

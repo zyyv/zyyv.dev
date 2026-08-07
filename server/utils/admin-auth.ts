@@ -110,6 +110,6 @@ export async function isAdmin(event: H3Event) {
 
 export async function requireAdmin(event: H3Event) {
   if (!(await isAdmin(event))) {
-    throw createError({ statusCode: 401, statusMessage: '请先登录管理后台' })
+    throw createError({ statusCode: 401, statusMessage: '需要有效的私密会话' })
   }
 }

@@ -11,8 +11,8 @@ if (!authenticated.value) {
 }
 
 useSeoMeta({
-  title: 'Photo Admin - Chris',
-  description: 'Photo archive management',
+  title: 'Photo Archive - Chris',
+  description: 'Private photo archive',
   robots: 'noindex, nofollow',
 })
 </script>

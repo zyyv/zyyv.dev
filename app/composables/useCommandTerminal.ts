@@ -82,7 +82,7 @@ export function useCommandTerminal({ close }: UseCommandTerminalOptions) {
     if (!path) {
       return [
         { text: '只支持本站 /api 下的公开 GET 接口。', tone: 'error' },
-        { text: '外部 URL、/api/admin 和无效路径不会被请求。', tone: 'muted' },
+        { text: '外部 URL、受限接口和无效路径不会被请求。', tone: 'muted' },
       ]
     }
 

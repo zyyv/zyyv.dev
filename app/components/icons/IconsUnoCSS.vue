@@ -19,7 +19,7 @@
         from-unocss-from
         via-unocss-via
         to-unocss-to
-        >admin</sub
+        >lab</sub
       >
     </a>
   </div>

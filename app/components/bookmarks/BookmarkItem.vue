@@ -43,7 +43,7 @@ const host = computed(() => bookmarkHost(props.item.url))
       <span v-for="tag in item.tags.slice(0, 3)" :key="tag">{{ tag }}</span>
     </div>
 
-    <span v-if="isAdmin && item.private" class="bookmark-item__private" title="仅管理员可见">
+    <span v-if="isAdmin && item.private" class="bookmark-item__private" title="仅维护者可见">
       <i class="i-hugeicons:square-lock-02" aria-hidden="true" />
       <span>私密</span>
     </span>

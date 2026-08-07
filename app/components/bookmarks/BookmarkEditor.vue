@@ -164,7 +164,7 @@ function submit() {
           <label class="editor__visibility">
             <input v-model="form.private" type="checkbox" />
             <span>
-              <strong>仅管理员可见</strong>
+              <strong>仅维护者可见</strong>
               <small>访客看不到此项目；私密文件夹也会隐藏其内容。</small>
             </span>
           </label>

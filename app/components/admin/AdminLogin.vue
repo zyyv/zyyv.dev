@@ -15,16 +15,16 @@ function submit() {
     <div class="login-copy">
       <span class="login-index">PRIVATE / 01</span>
       <h1 id="admin-login-title">Site<br />control.</h1>
-      <p>一个只属于站点维护者的入口。登录后，管理操作会出现在对应内容页面。</p>
+      <p>一个只属于站点维护者的私密空间。验证后，维护操作会出现在对应内容页面。</p>
     </div>
 
     <form class="login-form" @submit.prevent="submit">
       <div class="login-form__heading">
         <span aria-hidden="true"><i /> SECURE SESSION</span>
-        <p>使用 NUXT_ADMIN_PASSWORD 继续</p>
+        <p>验证访问密钥后继续</p>
       </div>
 
-      <label for="admin-password">管理密码</label>
+      <label for="admin-password">访问密钥</label>
       <div class="login-control">
         <input
           id="admin-password"
@@ -55,7 +55,7 @@ function submit() {
       </p>
 
       <button class="login-submit" type="submit" :disabled="loading || !password">
-        <span>{{ loading ? '正在验证' : '进入管理模式' }}</span>
+        <span>{{ loading ? '正在验证' : '进入私密空间' }}</span>
         <i class="i-hugeicons:arrow-up-right-01" aria-hidden="true" />
       </button>
     </form>

@@ -3,7 +3,7 @@ interface AdminSessionResponse {
 }
 
 function getAuthErrorMessage(error: unknown) {
-  if (!error || typeof error !== 'object') return '登录失败，请稍后重试。'
+  if (!error || typeof error !== 'object') return '验证失败，请稍后重试。'
 
   const candidate = error as {
     data?: { statusMessage?: string; message?: string }
@@ -16,7 +16,7 @@ function getAuthErrorMessage(error: unknown) {
     candidate.data?.message ||
     candidate.statusMessage ||
     candidate.message ||
-    '登录失败，请稍后重试。'
+    '验证失败，请稍后重试。'
   )
 }
 

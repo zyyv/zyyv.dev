@@ -18,8 +18,8 @@ async function handleLogin(password: string) {
 onBeforeUnmount(clearError)
 
 useSeoMeta({
-  title: 'Admin - Chris',
-  description: 'Site administration',
+  title: 'Private - Chris',
+  description: 'Private workspace',
   robots: 'noindex, nofollow',
 })
 </script>

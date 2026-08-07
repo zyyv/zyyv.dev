@@ -27,13 +27,13 @@ async function handleLogout() {
   <section class="portal-shell" aria-labelledby="admin-portal-title">
     <header class="portal-header">
       <div>
-        <span class="portal-index">ADMIN / ACTIVE</span>
+        <span class="portal-index">PRIVATE / ACTIVE</span>
         <h1 id="admin-portal-title">Control<br />room.</h1>
       </div>
       <div class="portal-session">
-        <span><i aria-hidden="true" /> 管理会话已启用</span>
+        <span><i aria-hidden="true" /> 私密会话已启用</span>
         <button type="button" :disabled="mutating" @click="handleLogout">
-          {{ mutating ? '正在退出' : '退出登录' }}
+          {{ mutating ? '正在退出' : '结束会话' }}
         </button>
       </div>
     </header>
@@ -53,7 +53,7 @@ async function handleLogout() {
     </div>
 
     <footer class="portal-footer">
-      <p>登录态同时作用于站点内容页；只有管理员会看到编辑、删除和私密内容控制。</p>
+      <p>私密会话同时作用于站点内容页；维护工具不会对普通访客显示。</p>
       <NuxtLink to="/">返回站点</NuxtLink>
     </footer>
   </section>

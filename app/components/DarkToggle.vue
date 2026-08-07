@@ -1,10 +1,32 @@
 <script setup lang="ts">
 const mode = useColorMode()
 const state = mode.state
+const consecutiveClicks = shallowRef(0)
+let resetClicksTimer: number | undefined
+
+const SECRET_CLICK_COUNT = 5
+const CLICK_SEQUENCE_TIMEOUT_MS = 1_500
 
 function toggleDark() {
   mode.value = state.value === 'dark' ? 'light' : 'dark'
+
+  consecutiveClicks.value += 1
+  if (resetClicksTimer) window.clearTimeout(resetClicksTimer)
+
+  if (consecutiveClicks.value === SECRET_CLICK_COUNT) {
+    consecutiveClicks.value = 0
+    void navigateTo('/admin')
+    return
+  }
+
+  resetClicksTimer = window.setTimeout(() => {
+    consecutiveClicks.value = 0
+  }, CLICK_SEQUENCE_TIMEOUT_MS)
 }
+
+onBeforeUnmount(() => {
+  if (resetClicksTimer) window.clearTimeout(resetClicksTimer)
+})
 
 watchEffect(() => {
   if (typeof document !== 'undefined') {
