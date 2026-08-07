@@ -4,6 +4,7 @@ import type { PhotoReactionType } from '#shared/constants/photo-reactions'
 export type { PhotoReactionType } from '#shared/constants/photo-reactions'
 
 export * from './article'
+export * from './bookmark'
 
 export interface PostPreview {
   id: string

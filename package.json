@@ -33,7 +33,8 @@
     "format": "oxfmt .",
     "typecheck": "nuxt typecheck",
     "taze": "taze major -wIr",
-    "upload:local-photos": "esno scripts/upload-local-photos.ts"
+    "upload:local-photos": "esno scripts/upload-local-photos.ts",
+    "import:bookmarks": "esno scripts/import-bookmarks.ts"
   },
   "dependencies": {
     "@lhlyu/vue-virtual-waterfall": "^1.0.9",

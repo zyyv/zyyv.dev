@@ -5,6 +5,7 @@ const navigation = [
   { label: 'Home', to: '/', icon: null },
   { label: 'Photos', to: '/photos', icon: 'i-hugeicons:image-03' },
   { label: 'Projects', to: '/projects', icon: 'i-hugeicons:package-search' },
+  { label: 'Bookmarks', to: '/bookmarks', icon: 'i-hugeicons:book-open-02' },
   { label: 'Posts', to: '/posts', icon: 'i-hugeicons:note-edit' },
   { label: 'About', to: '/about', icon: 'i-hugeicons:user-circle' },
 ] as const

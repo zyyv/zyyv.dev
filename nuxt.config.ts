@@ -25,6 +25,7 @@ export default defineNuxtConfig({
         '/api/admin': { target: 'https://zyyv.dev/api/admin', changeOrigin: true },
         '/api/photo-assets': { target: 'https://zyyv.dev/api/photo-assets', changeOrigin: true },
         '/api/photos': { target: 'https://zyyv.dev/api/photos', changeOrigin: true },
+        '/api/bookmarks': { target: 'https://zyyv.dev/api/bookmarks', changeOrigin: true },
       },
     },
   },

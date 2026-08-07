@@ -13,6 +13,7 @@ const PAGE_PATHS = {
   posts: '/posts',
   photos: '/photos',
   projects: '/projects',
+  bookmarks: '/bookmarks',
   about: '/about',
 } as const
 
@@ -171,6 +172,7 @@ export function useCommandTerminal({ close }: UseCommandTerminalOptions) {
         case 'posts':
         case 'photos':
         case 'projects':
+        case 'bookmarks':
         case 'about': {
           const path = PAGE_PATHS[command.name]
           lines = [{ text: `navigating to ${path}`, tone: 'success' }]
