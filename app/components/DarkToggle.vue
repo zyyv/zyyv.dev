@@ -4,7 +4,7 @@ const state = mode.state
 const consecutiveClicks = shallowRef(0)
 let resetClicksTimer: number | undefined
 
-const SECRET_CLICK_COUNT = 5
+const SECRET_CLICK_COUNT = 4
 const CLICK_SEQUENCE_TIMEOUT_MS = 1_500
 
 function toggleDark() {
