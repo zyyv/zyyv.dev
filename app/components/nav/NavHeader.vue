@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const route = useRoute()
+const { authenticated } = useAdminSession()
 
-const navigation = [
+const publicNavigation = [
   { label: 'Home', to: '/', icon: null },
   { label: 'Photos', to: '/photos', icon: 'i-hugeicons:image-03' },
   { label: 'Projects', to: '/projects', icon: 'i-hugeicons:package-search' },
@@ -9,6 +10,15 @@ const navigation = [
   { label: 'Posts', to: '/posts', icon: 'i-hugeicons:note-edit' },
   { label: 'About', to: '/about', icon: 'i-hugeicons:user-circle' },
 ] as const
+
+const navigation = computed(() => [
+  ...publicNavigation,
+  {
+    label: authenticated.value ? 'Admin' : 'Login',
+    to: '/admin',
+    icon: authenticated.value ? 'i-hugeicons:dashboard-square-01' : 'i-hugeicons:square-lock-02',
+  },
+])
 
 const isHome = computed(() => route.path === '/')
 const { mode: photosViewMode, togglePhotosView } = usePhotosViewMode()
@@ -80,6 +90,11 @@ function isActive(path: string) {
             <MeAvatar v-else-if="item.to === '/'" navigation shared />
             <i v-else class="color-inherit" :class="item.icon" aria-hidden="true" />
             <span v-if="!isHome" class="sr-only">{{ item.label }}</span>
+            <span
+              v-if="authenticated && item.to === '/admin'"
+              class="absolute right-[0.32rem] top-[0.32rem] size-[0.3rem] rounded-full bg-[#568c68]"
+              aria-hidden="true"
+            />
           </NuxtLink>
         </template>
       </div>

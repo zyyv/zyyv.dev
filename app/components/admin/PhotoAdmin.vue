@@ -2,12 +2,8 @@
 import type { Photo } from '~/types'
 import PhotoEditor from './PhotoEditor.vue'
 import PhotoLibrary from './PhotoLibrary.vue'
-import PhotoLogin from './PhotoLogin.vue'
 import PhotoUploadForm from './PhotoUploadForm.vue'
 
-const authenticated = ref<boolean | null>(null)
-const authLoading = ref(false)
-const authError = ref<string | null>(null)
 const selectedPhoto = ref<Photo | null>(null)
 const deleteTarget = ref<Photo | null>(null)
 const uploadForm = useTemplateRef<InstanceType<typeof PhotoUploadForm>>('uploadForm')
@@ -26,43 +22,6 @@ const {
   updatePhoto,
   deletePhoto,
 } = useAdminPhotos()
-
-function errorMessage(error: unknown) {
-  if (error && typeof error === 'object') {
-    const value = error as { data?: { statusMessage?: string }; statusMessage?: string }
-    return value.data?.statusMessage || value.statusMessage
-  }
-  return undefined
-}
-
-async function checkSession() {
-  try {
-    const session = await $fetch<{ authenticated: boolean }>('/api/admin/session')
-    authenticated.value = session.authenticated
-    if (session.authenticated) await loadPhotos(1)
-  } catch {
-    authenticated.value = false
-  }
-}
-
-async function login(password: string) {
-  authLoading.value = true
-  authError.value = null
-  try {
-    await $fetch('/api/admin/session', { method: 'POST', body: { password } })
-    authenticated.value = true
-    await loadPhotos(1)
-  } catch (cause) {
-    authError.value = errorMessage(cause) || '登录失败，请检查配置。'
-  } finally {
-    authLoading.value = false
-  }
-}
-
-async function logout() {
-  await $fetch('/api/admin/session', { method: 'DELETE' })
-  authenticated.value = false
-}
 
 async function handleUpload(payload: Parameters<typeof uploadPhoto>[0]) {
   try {
@@ -98,20 +57,11 @@ watch([search, visibility], () => {
   onWatcherCleanup(() => window.clearTimeout(timeout))
 })
 
-onMounted(checkSession)
+onMounted(() => loadPhotos(1))
 </script>
 
 <template>
-  <div v-if="authenticated === null" class="admin-boot" aria-label="正在检查登录状态">
-    <span />
-  </div>
-  <PhotoLogin
-    v-else-if="!authenticated"
-    :loading="authLoading"
-    :error="authError"
-    @submit="login"
-  />
-  <div v-else class="admin-workspace">
+  <div class="admin-workspace">
     <header class="workspace-header">
       <div>
         <span>PHOTO OPERATIONS</span>
@@ -119,7 +69,7 @@ onMounted(checkSession)
       </div>
       <div class="workspace-status">
         <span><i aria-hidden="true" /> D1 + R2 已连接</span>
-        <button type="button" @click="logout">退出</button>
+        <NuxtLink to="/admin">管理首页</NuxtLink>
       </div>
     </header>
 
@@ -176,25 +126,6 @@ onMounted(checkSession)
 </template>
 
 <style scoped>
-.admin-boot {
-  display: grid;
-  min-height: 100dvh;
-  place-items: center;
-}
-.admin-boot span {
-  width: 5rem;
-  height: 1px;
-  overflow: hidden;
-  background: color-mix(in srgb, currentColor 14%, transparent);
-}
-.admin-boot span::after {
-  display: block;
-  width: 45%;
-  height: 100%;
-  background: currentColor;
-  content: '';
-  animation: loading 900ms ease-in-out infinite alternate;
-}
 .admin-workspace {
   width: min(calc(100% - 3rem), 76rem);
   margin: 0 auto;
@@ -240,15 +171,15 @@ onMounted(checkSession)
   border-radius: 50%;
   background: #568c68;
 }
-.workspace-status button {
+.workspace-status a {
   padding: 0.45rem 0.6rem;
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 0.45rem;
   background: transparent;
   color: inherit;
-  cursor: pointer;
   font: inherit;
   font-size: 0.62rem;
+  text-decoration: none;
 }
 .workspace-error {
   display: flex;
@@ -325,14 +256,6 @@ onMounted(checkSession)
   cursor: not-allowed;
   opacity: 0.45;
 }
-@keyframes loading {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(220%);
-  }
-}
 @media (max-width: 767.9px) {
   .admin-workspace {
     width: min(calc(100% - 2rem), 40rem);
@@ -345,11 +268,6 @@ onMounted(checkSession)
   }
   .workspace-header h1 {
     font-size: clamp(3.5rem, 17vw, 5rem);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .admin-boot span::after {
-    animation: none;
   }
 }
 </style>

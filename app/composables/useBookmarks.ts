@@ -22,17 +22,15 @@ export function useBookmarks() {
   const bookmarks = ref<Bookmark[]>([])
   const loading = shallowRef(true)
   const mutating = shallowRef(false)
-  const isAdmin = shallowRef(false)
   const error = shallowRef<string | null>(null)
+  const { authenticated, refreshSession } = useAdminSession()
+  const isAdmin = computed(() => authenticated.value === true)
 
   async function loadBookmarks() {
     loading.value = true
     error.value = null
     try {
-      const session = await $fetch<{ authenticated: boolean }>('/api/admin/session').catch(() => ({
-        authenticated: false,
-      }))
-      isAdmin.value = session.authenticated
+      await refreshSession()
       const path = isAdmin.value ? '/api/admin/bookmarks' : '/api/bookmarks'
       const response = await $fetch<BookmarkListResponse>(path)
       bookmarks.value = response.bookmarks
@@ -92,7 +90,7 @@ export function useBookmarks() {
     bookmarks: readonly(bookmarks),
     loading: readonly(loading),
     mutating: readonly(mutating),
-    isAdmin: readonly(isAdmin),
+    isAdmin,
     error: readonly(error),
     loadBookmarks,
     createBookmark,
