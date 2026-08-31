@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { PostPreview } from '~/types'
+import PostTagFilter from './PostTagFilter.vue'
 
 const props = defineProps<{
   posts: PostPreview[]
@@ -29,6 +30,12 @@ function isDimmed(post: PostPreview) {
   return tags.value.size > 0 && post.tags.every((tag) => !tags.value.has(tag))
 }
 
+const availableTags = computed(() =>
+  Array.from(new Set(props.posts.flatMap((post) => post.tags))).sort((a, b) => a.localeCompare(b)),
+)
+
+const selectedTags = computed(() => Array.from(tags.value))
+
 const sortedPosts = computed(() => {
   if (tags.value.size === 0) return props.posts
 
@@ -43,6 +50,8 @@ const sortedPosts = computed(() => {
       eyebrow="Notes / archive"
       description="Notes on front-end tooling, open source, and the details discovered along the way."
     />
+
+    <PostTagFilter :tags="availableTags" :selected-tags="selectedTags" @toggle="toggleTag" />
 
     <ul
       class="m-0 grid grid-cols-1 gap-y-[clamp(2.5rem,5vw,4rem)] p-0 rule-1 rule-solid rule-current/10 rule-break-intersection rule-visibility-between mb-[clamp(2.75rem,6vw,4.5rem)]"
@@ -80,21 +89,14 @@ const sortedPosts = computed(() => {
           </p>
 
           <div class="mt-6 grid items-end gap-x-8 gap-y-4 sm:flex sm:justify-between">
-            <div class="flex flex-wrap gap-[0.45rem]" aria-label="Filter by tag">
-              <button
+            <div class="flex flex-wrap gap-[0.45rem]" aria-label="Post tags">
+              <span
                 v-for="tag in post.tags"
                 :key="tag"
-                type="button"
-                class="cursor-pointer border rounded-full bg-transparent px-[0.48rem] py-[0.22rem] color-inherit text-0.62rem leading-normal op-56 border-color-[color-mix(in_srgb,currentColor_16%,transparent)] font-inherit transition-[background-color,border-color,opacity] duration-200 hover:(op-100 [border-color:color-mix(in_srgb,currentColor_5%,transparent)] [background-color:color-mix(in_srgb,currentColor_2%,transparent)]) motion-reduce:transition-none"
-                :class="{
-                  'op-100 [border-color:color-mix(in_srgb,currentColor_4%,transparent)] [background-color:color-mix(in_srgb,currentColor_4%,transparent)]':
-                    tags.has(tag),
-                }"
-                :aria-pressed="tags.has(tag)"
-                @click="toggleTag(tag)"
+                class="inline-block border rounded-full bg-transparent px-[0.48rem] py-[0.22rem] color-inherit text-0.62rem leading-normal op-56 border-color-[color-mix(in_srgb,currentColor_16%,transparent)] font-inherit"
               >
                 {{ tag }}
-              </button>
+              </span>
             </div>
 
             <p
