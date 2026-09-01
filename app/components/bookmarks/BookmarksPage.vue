@@ -2,9 +2,9 @@
 import type { Bookmark, BookmarkInput, BookmarkKind } from '~/types'
 import type { BookmarkNode } from '~/utils/bookmarks'
 import { buildBookmarkTree, filterBookmarkTree } from '~/utils/bookmarks'
-import BookmarkBar from './BookmarkBar.vue'
 import BookmarkCollection from './BookmarkCollection.vue'
 import BookmarkEditor from './BookmarkEditor.vue'
+import BookmarkSidebar from './BookmarkSidebar.vue'
 import BookmarkToolbar from './BookmarkToolbar.vue'
 
 const query = shallowRef('')
@@ -119,11 +119,17 @@ onMounted(loadBookmarks)
 
 <template>
   <div class="bookmarks-page interior-shell">
-    <PageHeader
-      title="Bookmarks"
-      eyebrow="Library / useful links"
-      description="A small, organized corner for tools, references, and pages worth returning to."
-    />
+    <header class="bookmarks-intro">
+      <div class="bookmarks-intro__main">
+        <h1>Bookmarks</h1>
+        <div class="bookmarks-intro__copy">
+          <p>一个持续维护的开发资源索引。工具、文档、参考资料，以及值得再次访问的网页。</p>
+          <p class="bookmarks-intro__meta">
+            {{ bookmarkCount }} links <span>·</span> {{ folderCount }} folders
+          </p>
+        </div>
+      </div>
+    </header>
 
     <div v-if="loading" class="bookmarks-loading" aria-label="正在加载书签">
       <span v-for="index in 6" :key="index" />
@@ -143,27 +149,22 @@ onMounted(loadBookmarks)
         v-model:query="query"
         v-model:tag="selectedTag"
         :tags="tags"
-        :total="bookmarkCount"
-        :folder-count="folderCount"
         :is-admin="isAdmin"
         @create="openCreate($event)"
       />
 
-      <BookmarkBar
-        :items="filteredTree"
-        :is-admin="isAdmin"
-        @edit="openEdit"
-        @delete="deleteTarget = $event"
-      />
-
-      <BookmarkCollection
-        v-if="filteredTree.length"
-        :items="filteredTree"
-        :is-admin="isAdmin"
-        @edit="openEdit"
-        @delete="deleteTarget = $event"
-        @create="openCreate('bookmark', $event)"
-      />
+      <div v-if="filteredTree.length" class="bookmarks-workspace">
+        <BookmarkSidebar :items="filteredTree" />
+        <section class="bookmarks-workspace__content" aria-label="书签资源列表">
+          <BookmarkCollection
+            :items="filteredTree"
+            :is-admin="isAdmin"
+            @edit="openEdit"
+            @delete="deleteTarget = $event"
+            @create="openCreate('bookmark', $event)"
+          />
+        </section>
+      </div>
 
       <section v-else class="bookmarks-empty">
         <i class="i-hugeicons:bookmark-02" aria-hidden="true" />
@@ -217,17 +218,51 @@ onMounted(loadBookmarks)
 
 <style scoped>
 .bookmarks-page {
+  width: min(calc(100% - 2rem), 68rem);
   padding-bottom: clamp(6rem, 12vw, 9rem);
 }
-.bookmarks-loading {
+.bookmarks-intro {
+  padding: clamp(6rem, 10vw, 8rem) 0 clamp(3rem, 6vw, 5rem);
+}
+.bookmarks-intro__main {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
-  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.55fr);
+  align-items: end;
+  gap: 3rem;
+}
+.bookmarks-intro__main h1 {
+  margin: 0;
+  font-size: clamp(3rem, 7vw, 5.75rem);
+  font-weight: 560;
+  line-height: 0.86;
+  letter-spacing: -0.075em;
+}
+.bookmarks-intro__copy > p {
+  max-width: 28rem;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.75;
+  opacity: 0.58;
+  text-wrap: pretty;
+}
+.bookmarks-intro__copy .bookmarks-intro__meta {
+  margin-top: 1rem;
+  font:
+    0.58rem ui-monospace,
+    monospace;
+  opacity: 0.35;
+}
+.bookmarks-intro__meta span {
+  margin-inline: 0.35rem;
+}
+.bookmarks-loading {
+  border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
 }
 .bookmarks-loading span {
-  height: 6rem;
-  border-radius: 0.8rem;
-  background: color-mix(in srgb, currentColor 7%, transparent);
+  display: block;
+  height: 3.25rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  background: color-mix(in srgb, currentColor 2.5%, transparent);
   animation: bookmark-pulse 1.2s ease-in-out infinite alternate;
 }
 .bookmarks-loading span:nth-child(even) {
@@ -240,7 +275,6 @@ onMounted(loadBookmarks)
   margin: 0 0 1rem;
   padding: 0.85rem 1rem;
   border: 1px solid color-mix(in srgb, #a13d32 30%, transparent);
-  border-radius: 0.7rem;
   color: #a13d32;
   font-size: 0.7rem;
 }
@@ -250,10 +284,8 @@ onMounted(loadBookmarks)
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid color-mix(in srgb, currentColor 13%, transparent);
-  border-radius: 0.7rem;
-  background: color-mix(in srgb, currentColor 4%, transparent);
+  padding: 0.7rem 0;
+  border-block: 1px solid color-mix(in srgb, currentColor 12%, transparent);
 }
 .admin-notice span {
   display: flex;
@@ -274,8 +306,7 @@ onMounted(loadBookmarks)
   place-items: center;
   align-content: center;
   padding: 2rem;
-  border: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 0.85rem;
+  border-block: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   text-align: center;
 }
 .bookmarks-empty > i {
@@ -297,7 +328,6 @@ onMounted(loadBookmarks)
   margin-top: 1.2rem;
   padding: 0.65rem 0.9rem;
   border: 0;
-  border-radius: 0.6rem;
   background: #11110f;
   color: #e9e9e5;
   cursor: pointer;
@@ -325,6 +355,15 @@ onMounted(loadBookmarks)
   background: #e9e9e5;
   color: #11110f;
   box-shadow: 0 1.5rem 5rem rgb(17 17 15 / 24%);
+}
+.bookmarks-workspace {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.22fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+.bookmarks-workspace__content {
+  min-width: 0;
 }
 .dark .delete-dialog {
   background: #181816;
@@ -378,6 +417,22 @@ onMounted(loadBookmarks)
   }
 }
 @media (max-width: 600px) {
+  .bookmarks-intro {
+    padding-top: 5.75rem;
+  }
+  .bookmarks-intro__main {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .bookmarks-intro__main h1 {
+    font-size: clamp(3rem, 16vw, 4.25rem);
+  }
+  .bookmarks-workspace {
+    grid-template-columns: 1fr;
+  }
+  .bookmarks-workspace {
+    gap: 2.25rem;
+  }
   .admin-notice {
     align-items: flex-start;
     flex-direction: column;

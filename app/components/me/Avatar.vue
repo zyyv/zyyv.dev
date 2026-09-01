@@ -11,23 +11,15 @@ const props = withDefaults(defineProps<Props>(), {
   shared: false,
 })
 
-const avatarUrl = shallowRef('/avatar.png')
+const { user, loadUser } = useUser()
 
 const avatarStyle = computed(() => ({
   viewTransitionName: props.shared ? 'site-avatar' : 'none',
 }))
 
-onMounted(async () => {
-  try {
-    const response = await fetch('/api/user')
-    if (response.ok) {
-      const user = await response.json()
-      avatarUrl.value = user.avatar_url || avatarUrl.value
-    }
-  } catch (error) {
-    console.error(error)
-  }
-})
+const avatarUrl = computed(() => user.value.avatar_url || '/avatar.png')
+
+onMounted(loadUser)
 </script>
 
 <template>

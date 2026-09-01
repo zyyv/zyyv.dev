@@ -10,13 +10,12 @@ const props = defineProps<{
 
 const photoSeed = useState('home-photo-seed', () => Math.random())
 const randomPhotos = computed(() => seededShuffle(props.photos, photoSeed.value))
-const heroPhotos = computed(() => randomPhotos.value.slice(0, 3))
-const streamPhotos = computed(() => randomPhotos.value.slice(3, 25))
+const streamPhotos = computed(() => randomPhotos.value.slice(0, 22))
 </script>
 
 <template>
   <div class="home-page w-full min-w-0 overflow-x-clip">
-    <HomeHero :photos="heroPhotos" />
+    <HomeHero />
 
     <HomePhotosPreview :photos="streamPhotos" />
   </div>

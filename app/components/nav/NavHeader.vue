@@ -7,7 +7,6 @@ const navigation = [
   { label: 'Projects', to: '/projects', icon: 'i-hugeicons:package-search' },
   { label: 'Bookmarks', to: '/bookmarks', icon: 'i-hugeicons:book-open-02' },
   { label: 'Posts', to: '/posts', icon: 'i-hugeicons:note-edit' },
-  { label: 'About', to: '/about', icon: 'i-hugeicons:user-circle' },
 ] as const
 
 const isHome = computed(() => route.path === '/')
@@ -43,13 +42,31 @@ function isActive(path: string) {
       "
       aria-label="Site navigation"
     >
-      <div
-        class="flex items-center"
-        :class="isHome ? 'gap-[clamp(1rem,3vw,2.5rem)]' : 'flex-col gap-[0.2rem] lt-md:flex-row'"
-      >
+      <div v-if="isHome" class="home-menu">
+        <button type="button" class="home-menu__trigger" aria-label="Show navigation menu">
+          <i class="i-hugeicons:left-to-right-list-star color-inherit" aria-hidden="true" />
+        </button>
+
+        <div class="home-menu__panel">
+          <div class="home-menu__links">
+            <NuxtLink
+              v-for="item in navigation"
+              :key="item.to"
+              :to="item.to"
+              class="home-menu__link"
+              :class="isActive(item.to) ? 'op-100' : 'op-62'"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="flex flex-col items-center gap-[0.2rem] lt-md:flex-row">
         <template v-for="item in navigation" :key="item.to">
           <button
-            v-if="!isHome && item.to === '/photos' && isActive(item.to)"
+            v-if="item.to === '/photos' && isActive(item.to)"
             type="button"
             class="relative grid size-[2.35rem] place-items-center rounded-[0.65rem] border-0 color-inherit text-[1.12rem] op-100 [background-color:color-mix(in_srgb,currentColor_14%,transparent)] transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
             :aria-label="photosToggleLabel"
@@ -65,10 +82,8 @@ function isActive(path: string) {
             :to="item.to"
             class="relative color-inherit no-underline transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
             :class="[
-              isHome
-                ? 'text-[0.68rem] font-500'
-                : 'grid size-[2.35rem] place-items-center rounded-[0.65rem] text-[1.12rem] op-52 hover:[background-color:color-mix(in_srgb,currentColor_9%,transparent)]',
-              !isHome && isActive(item.to)
+              'grid size-[2.35rem] place-items-center rounded-[0.65rem] text-[1.12rem] op-52 hover:[background-color:color-mix(in_srgb,currentColor_9%,transparent)]',
+              isActive(item.to)
                 ? '[background-color:color-mix(in_srgb,currentColor_14%,transparent)]! op-100!'
                 : '',
             ]"
@@ -76,10 +91,9 @@ function isActive(path: string) {
             :aria-label="item.label"
             :title="item.label"
           >
-            <span v-if="isHome">{{ item.label }}</span>
-            <MeAvatar v-else-if="item.to === '/'" navigation shared />
+            <MeAvatar v-if="item.to === '/'" navigation shared />
             <i v-else class="color-inherit" :class="item.icon" aria-hidden="true" />
-            <span v-if="!isHome" class="sr-only">{{ item.label }}</span>
+            <span class="sr-only">{{ item.label }}</span>
           </NuxtLink>
         </template>
       </div>
@@ -99,3 +113,119 @@ function isActive(path: string) {
     </nav>
   </header>
 </template>
+
+<style scoped>
+.home-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.home-menu__trigger {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.65rem;
+  color: inherit;
+  font-size: 1.12rem;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.52;
+  transition:
+    background-color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.home-menu__trigger:hover,
+.home-menu__trigger:focus-visible {
+  background-color: color-mix(in srgb, currentColor 9%, transparent);
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.home-menu__trigger:active {
+  transform: scale(0.96);
+}
+
+.home-menu__trigger:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.home-menu__panel {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  padding-left: 0.55rem;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-0.5rem, -50%, 0);
+  transition:
+    opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 260ms;
+}
+
+.home-menu__links {
+  display: flex;
+  box-sizing: border-box;
+  height: 1.75rem;
+  align-items: center;
+  gap: clamp(0.8rem, 2.2vw, 2rem);
+  padding: 0 0.65rem;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 0.65rem;
+  background-color: color-mix(in srgb, currentColor 5%, transparent);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  box-shadow: 0 0.65rem 2rem color-mix(in srgb, currentColor 7%, transparent);
+}
+
+.home-menu__link {
+  color: inherit;
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.home-menu__link:hover,
+.home-menu__link:focus-visible {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.home-menu__link:active {
+  transform: scale(0.96);
+}
+
+.home-menu__link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.home-menu:hover .home-menu__panel,
+.home-menu:focus-within .home-menu__panel {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate3d(0, -50%, 0);
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-menu__trigger,
+  .home-menu__panel,
+  .home-menu__link {
+    transition: none;
+  }
+}
+</style>

@@ -167,10 +167,6 @@ useScrollStage(tunnelRef, {
     <header class="photo-stream__header">
       <div class="photo-stream__intro">
         <p>Light, weather, and ordinary moments worth keeping.</p>
-        <NuxtLink to="/photos">
-          <span>View all photos</span>
-          <i class="i-hugeicons:arrow-up-right-02" aria-hidden="true" />
-        </NuxtLink>
       </div>
 
       <h2 id="photos-title">

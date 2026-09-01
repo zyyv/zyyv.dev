@@ -1,6 +1,7 @@
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
 import { symbols } from '@unocss/core'
 import { PHOTO_REACTIONS } from './shared/constants/photo-reactions'
+import { socialLinks } from './app/utils/socialLinks'
 import {
   presetTypography,
   presetIcons,
@@ -71,7 +72,10 @@ export default defineConfig<Theme>({
     }),
   ],
   transformers: [transformerDirectives(), transformerCompileClass(), transformerVariantGroup()],
-  safelist: PHOTO_REACTIONS.map((reaction) => reaction.icon),
+  safelist: [
+    ...PHOTO_REACTIONS.map((reaction) => reaction.icon),
+    ...socialLinks.map((link) => link.icon),
+  ],
   blocklist: [/^\./u, /^[a-z][\w-]*::/u],
   rules: [
     // 隐藏滚动条

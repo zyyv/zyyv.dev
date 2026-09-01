@@ -25,11 +25,12 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
 
 <template>
   <div class="collection" :class="{ 'collection--nested': depth > 0 }">
-    <section v-if="looseBookmarks.length" class="collection__group">
+    <section v-if="looseBookmarks.length" id="bookmark-loose" class="collection__group">
       <header v-if="depth === 0" class="collection__heading">
         <div>
-          <h2>单独书签</h2>
-          <span>{{ looseBookmarks.length }}</span>
+          <span class="collection__path">./</span>
+          <h2>root</h2>
+          <span>[{{ looseBookmarks.length }}]</span>
         </div>
       </header>
       <div class="collection__grid">
@@ -44,12 +45,17 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
       </div>
     </section>
 
-    <section v-for="folder in folders" :key="folder.id" class="collection__group">
+    <section
+      v-for="folder in folders"
+      :id="`bookmark-folder-${folder.id}`"
+      :key="folder.id"
+      class="collection__group"
+    >
       <header class="collection__heading">
         <div>
-          <i class="i-hugeicons:folder-02" aria-hidden="true" />
+          <span class="collection__path">{{ depth ? '../' : './' }}</span>
           <h2>{{ folder.title }}</h2>
-          <span>{{ folder.children.length }}</span>
+          <span>[{{ folder.children.length }}]</span>
           <span v-if="isAdmin && folder.private" class="collection__private" title="仅维护者可见">
             <i class="i-hugeicons:square-lock-02" aria-hidden="true" /> 私密
           </span>
@@ -92,19 +98,23 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
 
 <style scoped>
 .collection__group + .collection__group {
-  margin-top: clamp(3rem, 7vw, 5rem);
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+}
+.collection__group {
+  scroll-margin-top: 5rem;
 }
 .collection--nested > .collection__group + .collection__group {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
 }
 .collection__heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  margin-bottom: 0.7rem;
+  min-height: 2rem;
+  padding: 0;
+  font-family: ui-monospace, monospace;
 }
 .collection__heading > div {
   display: flex;
@@ -115,28 +125,27 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
 .collection__heading h2 {
   overflow: hidden;
   margin: 0;
-  font-size: 1rem;
-  font-weight: 550;
-  letter-spacing: -0.035em;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.025em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.collection__heading > div > i:first-child {
-  opacity: 0.46;
+.collection__path {
+  color: #c8342d;
+  opacity: 1 !important;
 }
 .collection__heading span {
   font:
     0.58rem ui-monospace,
     monospace;
-  opacity: 0.36;
+  opacity: 0.4;
 }
 .collection__heading .collection__private {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.2rem 0.38rem;
-  border-radius: 0.35rem;
-  background: color-mix(in srgb, currentColor 7%, transparent);
+  padding: 0;
   font-family: inherit;
   font-size: 0.53rem;
   opacity: 0.58;
@@ -150,7 +159,6 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
   height: 2rem;
   padding: 0 0.5rem;
   border: 0;
-  border-radius: 0.5rem;
   place-items: center;
   background: transparent;
   color: inherit;
@@ -167,14 +175,14 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
 }
 .collection__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
-  gap: 0.75rem;
+  gap: 0.15rem;
+  counter-reset: bookmark;
 }
 .collection--nested .collection__group {
-  margin-left: clamp(0.65rem, 2vw, 1.4rem);
+  margin-left: clamp(0.75rem, 2vw, 1.5rem);
 }
 .collection--nested .collection__heading h2 {
-  font-size: 0.82rem;
+  font-size: 0.68rem;
 }
 .collection__empty {
   display: flex;
@@ -182,9 +190,7 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0 1rem;
-  border: 1px dashed color-mix(in srgb, currentColor 16%, transparent);
-  border-radius: 0.8rem;
+  padding: 0;
   font-size: 0.68rem;
   opacity: 0.58;
 }
@@ -208,7 +214,7 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
     font-size: 1rem;
   }
   .collection--nested .collection__group {
-    margin-left: 0.35rem;
+    margin-left: 0.5rem;
   }
 }
 </style>

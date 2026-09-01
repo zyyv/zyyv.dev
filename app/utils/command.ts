@@ -122,13 +122,6 @@ export const TERMINAL_COMMANDS: TerminalCommand[] = [
     category: 'Navigation',
   },
   {
-    name: 'about',
-    aliases: ['a'],
-    usage: 'about',
-    description: '前往关于页',
-    category: 'Navigation',
-  },
-  {
     name: 'back',
     aliases: ['b'],
     usage: 'back',

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { socialLinks } from '~/utils/socialLinks'
+
 const config = useRuntimeConfig()
 const route = useRoute()
 const year = new Date().getFullYear()
@@ -16,13 +18,6 @@ const { stats } = useSiteStats()
 const totalVisits = computed(() => stats.value.totalVisits?.toLocaleString('en-US') ?? '—')
 const onlineVisitors = computed(() => stats.value.onlineVisitors?.toLocaleString('en-US') ?? '—')
 const isPresenceConnected = computed(() => stats.value.onlineVisitors !== null)
-
-const socialLinks = [
-  { label: 'GitHub', href: 'https://github.com/zyyv', external: true },
-  { label: 'Bluesky', href: 'https://bsky.app/profile/zyyv.dev', external: true },
-  { label: 'X', href: 'https://x.com/chris_zyyv', external: true },
-  { label: 'Email', href: 'mailto:hizyyv@gmail.com', external: false },
-] as const
 
 function backToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })

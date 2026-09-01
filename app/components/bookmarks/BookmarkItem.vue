@@ -21,6 +21,7 @@ const host = computed(() => bookmarkHost(props.item.url))
 
 <template>
   <article class="bookmark-item" :class="{ 'bookmark-item--compact': compact }">
+    <span class="bookmark-item__index" aria-hidden="true" />
     <a
       class="bookmark-item__link"
       :href="item.url || undefined"
@@ -62,43 +63,51 @@ const host = computed(() => bookmarkHost(props.item.url))
 <style scoped>
 .bookmark-item {
   position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) minmax(7rem, 0.26fr);
   min-width: 0;
-  border: 1px solid color-mix(in srgb, currentColor 13%, transparent);
-  border-radius: 0.8rem;
-  background: color-mix(in srgb, currentColor 2.5%, transparent);
+  align-items: center;
+  counter-increment: bookmark;
   transition:
-    border-color 180ms ease,
-    transform 180ms ease,
-    background-color 180ms ease;
+    background-color 140ms ease,
+    color 140ms ease;
 }
 .bookmark-item:hover {
-  border-color: color-mix(in srgb, currentColor 28%, transparent);
   background: color-mix(in srgb, currentColor 5%, transparent);
-  transform: translateY(-2px);
+}
+.bookmark-item__index {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  font:
+    0.5rem ui-monospace,
+    monospace;
+  opacity: 0.32;
+}
+.bookmark-item__index::before {
+  content: counter(bookmark, decimal-leading-zero);
 }
 .bookmark-item__link {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.8rem;
-  min-height: 5rem;
-  padding: 1rem;
+  gap: 0.7rem;
+  min-height: 3.45rem;
+  padding: 0.6rem 0.5rem;
   color: inherit;
   text-decoration: none;
 }
 .bookmark-item__icon {
   display: grid;
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 1.35rem;
+  height: 1.35rem;
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border-radius: 0.55rem;
-  background: color-mix(in srgb, currentColor 8%, transparent);
 }
 .bookmark-item__icon img {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 0.9rem;
+  height: 0.9rem;
   object-fit: contain;
 }
 .bookmark-item__icon i {
@@ -116,31 +125,45 @@ const host = computed(() => bookmarkHost(props.item.url))
   white-space: nowrap;
 }
 .bookmark-item__copy strong {
-  font-size: 0.78rem;
-  font-weight: 550;
+  font-size: 0.7rem;
+  font-weight: 600;
   letter-spacing: -0.015em;
 }
 .bookmark-item__copy span {
-  margin-top: 0.28rem;
-  font-size: 0.64rem;
+  margin-top: 0.22rem;
+  font:
+    0.55rem ui-monospace,
+    monospace;
   opacity: 0.46;
 }
 .bookmark-item__arrow {
-  font-size: 0.9rem;
-  opacity: 0.3;
+  font-size: 0.78rem;
+  opacity: 0;
+  transform: translate(-0.2rem, 0.2rem);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+.bookmark-item:hover .bookmark-item__arrow,
+.bookmark-item:focus-within .bookmark-item__arrow {
+  opacity: 0.55;
+  transform: translate(0, 0);
 }
 .bookmark-item__tags {
   display: flex;
+  min-width: 0;
+  align-items: center;
   gap: 0.35rem;
-  padding: 0 1rem 0.85rem 3.9rem;
+  align-self: stretch;
+  padding: 0 0.5rem;
 }
 .bookmark-item__tags span {
   overflow: hidden;
-  max-width: 8rem;
-  padding: 0.18rem 0.4rem;
-  border-radius: 0.32rem;
-  background: color-mix(in srgb, currentColor 7%, transparent);
-  font-size: 0.55rem;
+  max-width: 6rem;
+  padding: 0;
+  font:
+    0.5rem ui-monospace,
+    monospace;
   text-overflow: ellipsis;
   white-space: nowrap;
   opacity: 0.6;
@@ -152,10 +175,8 @@ const host = computed(() => bookmarkHost(props.item.url))
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.2rem 0.38rem;
-  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
-  border-radius: 0.35rem;
-  background: color-mix(in srgb, currentColor 7%, transparent);
+  padding: 0;
+  background: transparent;
   font-size: 0.53rem;
   opacity: 0.62;
 }
@@ -178,7 +199,6 @@ const host = computed(() => bookmarkHost(props.item.url))
   height: 1.75rem;
   padding: 0;
   border: 1px solid color-mix(in srgb, currentColor 13%, transparent);
-  border-radius: 0.45rem;
   place-items: center;
   background: #e9e9e5;
   color: #11110f;
@@ -189,17 +209,19 @@ const host = computed(() => bookmarkHost(props.item.url))
   color: #e9e9e5;
 }
 .bookmark-item--compact {
+  display: block;
   border: 0;
-  border-radius: 0.55rem;
   background: transparent;
 }
 .bookmark-item--compact:hover {
   background: color-mix(in srgb, currentColor 7%, transparent);
-  transform: none;
 }
 .bookmark-item--compact .bookmark-item__link {
   min-height: 2.75rem;
   padding: 0.45rem 0.55rem;
+}
+.bookmark-item--compact .bookmark-item__index {
+  display: none;
 }
 .bookmark-item--compact .bookmark-item__icon {
   width: 1.65rem;
@@ -217,6 +239,22 @@ const host = computed(() => bookmarkHost(props.item.url))
 @media (hover: none) {
   .bookmark-item__actions {
     opacity: 1;
+  }
+}
+@media (max-width: 760px) {
+  .bookmark-item {
+    grid-template-columns: 2.2rem minmax(0, 1fr);
+  }
+  .bookmark-item__link {
+    min-height: 3.75rem;
+    padding-inline: 0.65rem;
+  }
+  .bookmark-item__tags {
+    display: none;
+  }
+  .bookmark-item__actions {
+    right: 0.25rem;
+    bottom: 0.25rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {

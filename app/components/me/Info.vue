@@ -1,20 +1,7 @@
-<script lang="ts" setup>
-import type { User } from '~/types'
+<script setup lang="ts">
+const { user, loadUser } = useUser()
 
-const user = ref<Partial<User>>({
-  name: 'Chris',
-  bio: 'Regardless of the past, do not ask the future.',
-  email: 'hizyyv@gmail.com',
-})
-
-onMounted(async () => {
-  try {
-    const response = await fetch('/api/user')
-    if (response.ok) user.value = await response.json()
-  } catch (error) {
-    console.error(error)
-  }
-})
+onMounted(loadUser)
 </script>
 
 <template>
