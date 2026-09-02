@@ -130,7 +130,9 @@ fn photoPlane(
   let sampled = blurredPhoto(texture, coverUv(planeUv, halfSize.x / halfSize.y, imageAspect), 0.009);
   let luminance = dot(sampled, vec3f(0.2126, 0.7152, 0.0722));
   let muted = mix(vec3f(luminance), sampled, 0.48);
-  let toned = mix(muted, muted * 0.72 + vec3f(0.12), clamp(params.darkMode, 0.0, 1.0));
+  let lightTone = muted * 0.72 + vec3f(0.035, 0.040, 0.035);
+  let darkTone = muted * 0.72 + vec3f(0.12);
+  let toned = mix(lightTone, darkTone, clamp(params.darkMode, 0.0, 1.0));
   return vec4f(toned, mask);
 }
 
@@ -159,7 +161,7 @@ fn photoPlane(
   let layerE = photoPlane(
     photoE, uv, params.pointer, params.layoutE.xy, params.layoutE.zw, params.motionE, params.photoAspectE,
   );
-  let photoOpacity = mix(0.15, 0.19, isDark) * params.photoMix;
+  let photoOpacity = mix(0.24, 0.19, isDark) * params.photoMix;
   color = mix(color, layerA.rgb, layerA.a * photoOpacity);
   color = mix(color, layerB.rgb, layerB.a * photoOpacity * 0.88);
   color = mix(color, layerC.rgb, layerC.a * photoOpacity * 0.76);
@@ -169,7 +171,9 @@ fn photoPlane(
   let farParticles = particleLayer(screen, pointer, 3.5, 0.015, 0.0046, 11.0);
   let nearParticles = particleLayer(screen, pointer, 5.8, -0.009, 0.0031, 37.0);
   let particles = farParticles * 0.22 + nearParticles * 0.13;
-  color = color + particles * mix(0.32, 0.48, isDark);
+  let lightParticles = color - particles * 0.34;
+  let darkParticles = color + particles * 0.48;
+  color = mix(lightParticles, darkParticles, isDark);
 
   return vec4f(color, 1.0);
 }
