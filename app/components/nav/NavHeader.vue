@@ -44,10 +44,7 @@ function isActive(path: string) {
     >
       <div v-if="isHome" class="home-menu">
         <button type="button" class="home-menu__trigger" aria-label="Show navigation menu">
-          <i
-            class="home-menu__icon i-hugeicons:left-to-right-list-star color-inherit"
-            aria-hidden="true"
-          />
+          <i class="home-menu__icon i-hugeicons:ai-magic color-inherit" aria-hidden="true" />
         </button>
 
         <div class="home-menu__panel">
