@@ -184,19 +184,13 @@ function isActive(path: string) {
   align-items: center;
   gap: 0.1rem;
   padding: 0.22rem;
-  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
-  border-radius: 0.85rem;
-  background-color: color-mix(in srgb, currentColor 5%, transparent);
-  backdrop-filter: blur(18px) saturate(135%);
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
-  box-shadow: 0 0.65rem 2rem color-mix(in srgb, currentColor 7%, transparent);
 }
 
 .home-menu__link {
   position: relative;
   display: grid;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2rem;
+  height: 2rem;
   place-items: center;
   border-radius: 0.65rem;
   color: inherit;
@@ -225,8 +219,8 @@ function isActive(path: string) {
 }
 
 .home-menu__link-icon {
-  width: 1.12rem;
-  height: 1.12rem;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .home-menu__label {
