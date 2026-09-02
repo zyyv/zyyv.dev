@@ -14,9 +14,11 @@ onMounted(loadUser)
     <div
       class="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center gap-8 md:gap-12"
     >
-      <div class="relative z-1 size-28 flex-none md:size-36">
+      <div class="home-hero__avatar relative z-1 size-28 flex-none md:size-36">
+        <span class="home-hero__avatar-aura" aria-hidden="true" />
+        <span class="home-hero__avatar-orbit" aria-hidden="true" />
         <img
-          class="animate-shape block size-full object-cover shadow-xl motion-reduce:animate-none"
+          class="home-hero__avatar-image animate-shape block size-full object-cover motion-reduce:animate-none"
           src="/avatar.png"
           alt="Chris"
           width="1000"
@@ -84,6 +86,92 @@ onMounted(loadUser)
 <style scoped>
 .home-hero {
   isolation: isolate;
+}
+
+.home-hero__avatar {
+  isolation: isolate;
+}
+
+.home-hero__avatar-aura {
+  position: absolute;
+  z-index: -2;
+  inset: -32%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgb(130 157 218 / 0.34), transparent 42%),
+    radial-gradient(circle at 68% 70%, rgb(248 113 113 / 0.2), transparent 44%);
+  filter: blur(1.1rem);
+  opacity: 0.74;
+  animation: avatar-breathe 5.5s ease-in-out infinite;
+}
+
+.home-hero__avatar-orbit {
+  position: absolute;
+  z-index: -1;
+  inset: -0.7rem;
+  border: 1px solid rgb(87 115 177 / 0.28);
+  border-radius: 48% 52% 46% 54% / 54% 43% 57% 46%;
+  animation: avatar-orbit 11s linear infinite;
+}
+
+.home-hero__avatar-orbit::before,
+.home-hero__avatar-orbit::after {
+  position: absolute;
+  border-radius: 999px;
+  background: #6f8fcf;
+  box-shadow: 0 0 0.8rem rgb(111 143 207 / 0.7);
+  content: '';
+}
+
+.home-hero__avatar-orbit::before {
+  top: 8%;
+  right: 11%;
+  width: 0.34rem;
+  height: 0.34rem;
+}
+
+.home-hero__avatar-orbit::after {
+  bottom: 13%;
+  left: 5%;
+  width: 0.22rem;
+  height: 0.22rem;
+  background: #f38b8b;
+}
+
+.home-hero__avatar-image {
+  box-shadow:
+    0 1.5rem 4rem rgb(35 52 92 / 0.25),
+    inset 0 0 0 1px rgb(255 255 255 / 0.18);
+  transition:
+    filter 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-hero__avatar:hover .home-hero__avatar-image {
+  filter: saturate(1.08) contrast(1.03);
+}
+
+.home-hero__avatar:hover .home-hero__avatar-orbit {
+  animation-duration: 5s;
+}
+
+@keyframes avatar-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes avatar-breathe {
+  0%,
+  100% {
+    opacity: 0.62;
+    transform: scale(0.92);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
 }
 
 .home-hero__title {
@@ -171,6 +259,15 @@ onMounted(loadUser)
 }
 
 @media (max-width: 639.9px) {
+  .home-hero__avatar-aura {
+    inset: -24%;
+    filter: blur(0.85rem);
+  }
+
+  .home-hero__avatar-orbit {
+    inset: -0.55rem;
+  }
+
   .home-hero__title {
     font-size: clamp(2.15rem, 9.5vw, 3rem);
     line-height: 1.04;
@@ -182,6 +279,11 @@ onMounted(loadUser)
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-hero__avatar-aura,
+  .home-hero__avatar-orbit {
+    animation: none;
+  }
+
   .home-hero__socials a {
     transition: none;
   }

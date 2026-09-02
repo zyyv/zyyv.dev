@@ -56,8 +56,11 @@ function isActive(path: string) {
               class="home-menu__link"
               :class="isActive(item.to) ? 'op-100' : 'op-62'"
               :aria-current="isActive(item.to) ? 'page' : undefined"
+              :aria-label="item.label"
             >
-              {{ item.label }}
+              <MeAvatar v-if="item.to === '/'" navigation shared />
+              <i v-else class="home-menu__link-icon" :class="item.icon" aria-hidden="true" />
+              <span class="home-menu__label">{{ item.label }}</span>
             </NuxtLink>
           </div>
         </div>
@@ -178,12 +181,11 @@ function isActive(path: string) {
 .home-menu__links {
   display: flex;
   box-sizing: border-box;
-  height: 1.75rem;
   align-items: center;
-  gap: clamp(0.8rem, 2.2vw, 2rem);
-  padding: 0 0.65rem;
+  gap: 0.1rem;
+  padding: 0.22rem;
   border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
-  border-radius: 0.65rem;
+  border-radius: 0.85rem;
   background-color: color-mix(in srgb, currentColor 5%, transparent);
   backdrop-filter: blur(18px) saturate(135%);
   -webkit-backdrop-filter: blur(18px) saturate(135%);
@@ -191,19 +193,24 @@ function isActive(path: string) {
 }
 
 .home-menu__link {
+  position: relative;
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border-radius: 0.65rem;
   color: inherit;
-  font-size: 0.625rem;
-  font-weight: 500;
-  line-height: 1;
+  font-size: 1.12rem;
   text-decoration: none;
-  white-space: nowrap;
   transition:
+    background-color 180ms ease,
     opacity 180ms ease,
     transform 180ms ease;
 }
 
 .home-menu__link:hover,
 .home-menu__link:focus-visible {
+  background-color: color-mix(in srgb, currentColor 9%, transparent);
   opacity: 1;
   transform: translateY(-1px);
 }
@@ -214,7 +221,36 @@ function isActive(path: string) {
 
 .home-menu__link:focus-visible {
   outline: 2px solid currentColor;
-  outline-offset: 3px;
+  outline-offset: 2px;
+}
+
+.home-menu__link-icon {
+  width: 1.12rem;
+  height: 1.12rem;
+}
+
+.home-menu__label {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  padding: 0.35rem 0.48rem;
+  /* box-shadow: 0 0.5rem 1.25rem rgb(0 0 0 / 0.16); */
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-50%, -0.2rem, 0);
+  transition:
+    opacity 140ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-menu__link:hover .home-menu__label,
+.home-menu__link:focus-visible .home-menu__label {
+  opacity: 1;
+  transform: translate3d(-50%, 0, 0);
 }
 
 .home-menu:hover .home-menu__panel,
@@ -226,10 +262,35 @@ function isActive(path: string) {
   transition-delay: 0s;
 }
 
+@media (max-width: 639.9px) {
+  .home-menu__panel {
+    top: calc(100% + 0.45rem);
+    left: 0;
+    padding-top: 0.4rem;
+    padding-left: 0;
+    transform: translate3d(0, -0.3rem, 0) scale(0.985);
+    transform-origin: left top;
+  }
+
+  .home-menu:hover .home-menu__panel,
+  .home-menu:focus-within .home-menu__panel {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  .home-menu__links {
+    max-width: calc(100vw - 2rem);
+  }
+
+  .home-menu__link {
+    width: clamp(2.2rem, 11vw, 2.65rem);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-menu__trigger,
   .home-menu__panel,
-  .home-menu__link {
+  .home-menu__link,
+  .home-menu__label {
     transition: none;
   }
 }
