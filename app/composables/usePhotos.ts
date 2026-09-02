@@ -17,15 +17,19 @@ interface PublicPhotosOptions {
   // Allow callers to opt into non-blocking or client-only fetching.
   lazy?: boolean
   server?: boolean
+  all?: boolean
+  limit?: number
 }
 
 export function usePublicPhotos(options: PublicPhotosOptions = {}) {
   const endpoint =
     import.meta.dev && import.meta.server ? 'https://zyyv.dev/api/photos' : '/api/photos'
+  const all = options.all ?? true
+  const limit = Math.max(1, Math.min(50, options.limit ?? 24))
 
   return useFetch<PhotoListResponse>(endpoint, {
-    key: 'public-photos',
-    query: { all: '1' },
+    key: all ? 'public-photos' : `public-photos-${limit}`,
+    query: all ? { all: '1' } : { page: 1, limit },
     default: () => ({
       photos: [],
       pagination: { page: 1, limit: 0, total: 0, totalPages: 0 },

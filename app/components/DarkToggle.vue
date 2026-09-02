@@ -54,7 +54,7 @@ const toggleLabel = computed(() =>
       :title="toggleLabel"
       @click="toggleDark"
     >
-      <i class="color-inherit" :class="icon" aria-hidden="true" />
+      <i class="size-5 color-inherit" :class="icon" aria-hidden="true" />
     </button>
   </ClientOnly>
 </template>

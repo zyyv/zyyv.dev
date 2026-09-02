@@ -44,7 +44,10 @@ function isActive(path: string) {
     >
       <div v-if="isHome" class="home-menu">
         <button type="button" class="home-menu__trigger" aria-label="Show navigation menu">
-          <i class="i-hugeicons:left-to-right-list-star color-inherit" aria-hidden="true" />
+          <i
+            class="home-menu__icon i-hugeicons:left-to-right-list-star color-inherit"
+            aria-hidden="true"
+          />
         </button>
 
         <div class="home-menu__panel">
@@ -129,7 +132,6 @@ function isActive(path: string) {
   border: 0;
   border-radius: 0.65rem;
   color: inherit;
-  font-size: 1.12rem;
   background: transparent;
   cursor: pointer;
   opacity: 0.52;
@@ -137,6 +139,11 @@ function isActive(path: string) {
     background-color 180ms ease,
     opacity 180ms ease,
     transform 180ms ease;
+}
+
+.home-menu__icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .home-menu__trigger:hover,
@@ -163,11 +170,12 @@ function isActive(path: string) {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transform: translate3d(-0.5rem, -50%, 0);
+  transform: translate3d(-0.2rem, -50%, 0) scale(0.985);
+  transform-origin: left center;
   transition:
-    opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 0s linear 260ms;
+    opacity 140ms ease-out,
+    transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 160ms;
 }
 
 .home-menu__links {
@@ -217,7 +225,7 @@ function isActive(path: string) {
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
-  transform: translate3d(0, -50%, 0);
+  transform: translate3d(0, -50%, 0) scale(1);
   transition-delay: 0s;
 }
 

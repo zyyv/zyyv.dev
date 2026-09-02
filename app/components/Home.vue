@@ -14,7 +14,7 @@ const streamPhotos = computed(() => randomPhotos.value.slice(0, 22))
 </script>
 
 <template>
-  <div class="home-page w-full min-w-0 overflow-x-clip">
+  <div class="home-page w-full min-w-0 overflow-x-clip text-red/20">
     <HomeHero />
 
     <HomePhotosPreview :photos="streamPhotos" />
@@ -23,7 +23,7 @@ const streamPhotos = computed(() => randomPhotos.value.slice(0, 22))
 
 <style scoped>
 .home-page {
-  background: #e9e9e5;
+  background: transparent;
   color: #11110f;
 }
 
@@ -33,7 +33,7 @@ const streamPhotos = computed(() => randomPhotos.value.slice(0, 22))
 }
 
 :global(.dark .home-page) {
-  background: #11110f;
+  background: transparent;
   color: #e9e9e5;
 }
 

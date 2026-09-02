@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CommandPalette from '~/components/command/CommandPalette.vue'
+import SiteVgpuBackground from '~/components/SiteVgpuBackground.vue'
 import NavHeader from '~/components/nav/NavHeader.vue'
 
 const route = useRoute()
@@ -12,10 +13,20 @@ await refreshSession()
 </script>
 
 <template>
-  <NavHeader />
-  <main>
-    <slot />
-  </main>
-  <SiteFooter v-if="showFooter" />
+  <SiteVgpuBackground />
+  <div class="site-content">
+    <NavHeader />
+    <main>
+      <slot />
+    </main>
+    <SiteFooter v-if="showFooter" />
+  </div>
   <CommandPalette />
 </template>
+
+<style scoped>
+.site-content {
+  position: relative;
+  z-index: 1;
+}
+</style>
