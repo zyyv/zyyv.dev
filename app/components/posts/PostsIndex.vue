@@ -7,6 +7,7 @@ const props = defineProps<{
 }>()
 
 const tags = ref(new Set<string>())
+const searchQuery = shallowRef('')
 
 onMounted(() => {
   const query = new URLSearchParams(window.location.search)
@@ -37,9 +38,16 @@ const availableTags = computed(() =>
 const selectedTags = computed(() => Array.from(tags.value))
 
 const sortedPosts = computed(() => {
-  if (tags.value.size === 0) return props.posts
+  const normalizedQuery = searchQuery.value.trim().toLocaleLowerCase()
+  const matchingPosts = normalizedQuery
+    ? props.posts.filter((post) =>
+        `${post.title} ${post.description}`.toLocaleLowerCase().includes(normalizedQuery),
+      )
+    : props.posts
 
-  return [...props.posts].sort((a, b) => Number(isDimmed(a)) - Number(isDimmed(b)))
+  if (tags.value.size === 0) return matchingPosts
+
+  return [...matchingPosts].sort((a, b) => Number(isDimmed(a)) - Number(isDimmed(b)))
 })
 </script>
 
@@ -51,9 +59,15 @@ const sortedPosts = computed(() => {
       description="Notes on front-end tooling, open source, and the details discovered along the way."
     />
 
-    <PostTagFilter :tags="availableTags" :selected-tags="selectedTags" @toggle="toggleTag" />
+    <PostTagFilter
+      v-model:query="searchQuery"
+      :tags="availableTags"
+      :selected-tags="selectedTags"
+      @toggle="toggleTag"
+    />
 
     <ul
+      v-if="sortedPosts.length"
       class="m-0 grid grid-cols-1 gap-y-[clamp(2.5rem,5vw,4rem)] p-0 rule-1 rule-solid rule-current/10 rule-break-intersection rule-visibility-between mb-[clamp(2.75rem,6vw,4.5rem)]"
     >
       <li
@@ -112,5 +126,7 @@ const sortedPosts = computed(() => {
         </div>
       </li>
     </ul>
+
+    <p v-else class="m-0 text-sm op-48">No matching posts.</p>
   </section>
 </template>

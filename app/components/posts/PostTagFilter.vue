@@ -11,48 +11,32 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const searchQuery = shallowRef('')
+const searchQuery = defineModel<string>('query', { default: '' })
 const selectedTagSet = computed(() => new Set(props.selectedTags))
-
-function fuzzyMatch(value: string, query: string) {
-  const normalizedValue = value.toLocaleLowerCase().replaceAll(/\s+/gu, '')
-  const normalizedQuery = query.toLocaleLowerCase().replaceAll(/\s+/gu, '')
-
-  let queryIndex = 0
-  for (const character of normalizedValue) {
-    if (character === normalizedQuery[queryIndex]) queryIndex += 1
-  }
-
-  return queryIndex === normalizedQuery.length
-}
 
 function getTagTone(tag: string) {
   const hash = Array.from(tag).reduce((total, character) => total + character.codePointAt(0)!, 0)
   return hash % 7
 }
 
-const visibleTags = computed(() =>
-  props.tags
-    .filter((tag) => fuzzyMatch(tag, searchQuery.value))
-    .map((tag) => ({ name: tag, tone: getTagTone(tag) })),
-)
+const tagOptions = computed(() => props.tags.map((tag) => ({ name: tag, tone: getTagTone(tag) })))
 </script>
 
 <template>
-  <section class="tag-filter" aria-label="Filter posts by tag">
+  <section class="tag-filter" aria-label="Search and filter posts">
     <div class="tag-filter__controls">
       <label class="tag-filter__search">
-        <span class="sr-only">Search tags</span>
+        <span class="sr-only">Search posts</span>
         <input
           v-model="searchQuery"
           type="search"
-          placeholder="Search here..."
+          placeholder="Search posts..."
           autocomplete="off"
         />
       </label>
 
       <button
-        v-for="tag in visibleTags"
+        v-for="tag in tagOptions"
         :key="tag.name"
         type="button"
         class="tag-filter__tag"
@@ -66,30 +50,28 @@ const visibleTags = computed(() =>
         <span class="tag-filter__dot" aria-hidden="true" />
         <span>{{ tag.name }}</span>
       </button>
-
-      <p v-if="visibleTags.length === 0" class="tag-filter__empty">No matching tags</p>
     </div>
   </section>
 </template>
 
 <style scoped>
 .tag-filter {
-  margin: 0 0 clamp(3rem, 6vw, 4.5rem);
+  margin: 0 0 clamp(2.5rem, 5vw, 4rem);
 }
 
 .tag-filter__controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .tag-filter__search {
-  width: min(18rem, 100%);
+  width: min(16rem, 100%);
 }
 
 .tag-filter__search input,
 .tag-filter__tag {
-  min-height: 2.75rem;
+  min-height: 2.25rem;
   border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 0;
   background: transparent;
@@ -99,10 +81,10 @@ const visibleTags = computed(() =>
 
 .tag-filter__search input {
   width: 100%;
-  height: 2.75rem;
-  padding: 0 0.85rem;
+  height: 2.25rem;
+  padding: 0 0.7rem;
   outline: none;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
 }
 
 .tag-filter__search input::placeholder {
@@ -123,10 +105,10 @@ const visibleTags = computed(() =>
   align-items: center;
   justify-content: center;
   position: relative;
-  gap: 0.55rem;
-  padding: 0.55rem 0.9rem;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 600;
   opacity: 0.58;
   transition:
@@ -169,8 +151,8 @@ const visibleTags = computed(() =>
 }
 
 .tag-filter__dot {
-  width: 0.4rem;
-  height: 0.4rem;
+  width: 0.3rem;
+  height: 0.3rem;
   flex: none;
   border-radius: 50%;
   background: var(--tag-color);
@@ -200,17 +182,20 @@ const visibleTags = computed(() =>
   --tag-color: #99e83f;
 }
 
-.tag-filter__empty {
-  align-self: center;
-  margin: 0;
-  padding: 0 0.75rem;
-  font-size: 0.76rem;
-  opacity: 0.42;
-}
-
 @media (max-width: 639.9px) {
+  .tag-filter__controls {
+    gap: 0.35rem;
+  }
+
   .tag-filter__search {
     width: 100%;
+  }
+
+  .tag-filter__tag {
+    min-height: 1.75rem;
+    gap: 0.35rem;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.62rem;
   }
 }
 
