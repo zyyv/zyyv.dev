@@ -26,10 +26,7 @@ fn hash21(value: vec2f) -> f32 {
   let aspect = params.resolution.x / max(params.resolution.y, 1.0);
   let point = vec2f(centered.x * aspect, centered.y);
   let radius = length(point);
-  let angle = atan2(point.y, point.x);
   let expansion = mix(0.55, 2.8, params.progress);
-  let ray = 1.0 - smoothstep(0.0, 0.028, abs(fract(angle * 8.8 / 6.28318 + 0.5) - 0.5));
-  let rayMask = smoothstep(0.06, 0.24, radius) * (1.0 - smoothstep(0.72, 1.1, radius));
 
   let dustCell = floor((point / max(0.32 + params.progress * 0.7, 0.01) + vec2f(2.0)) * 34.0);
   let dustRandom = hash21(dustCell);
@@ -38,7 +35,7 @@ fn hash21(value: vec2f) -> f32 {
 
   let core = (1.0 - smoothstep(0.055 * expansion, 0.17 * expansion, radius))
     * smoothstep(0.018 * expansion, 0.07 * expansion, radius);
-  let alpha = ray * rayMask * 0.075 + dust * 0.16 + core * 0.09;
+  let alpha = dust * 0.16 + core * 0.09;
   let tone = mix(vec3f(0.08, 0.085, 0.08), vec3f(0.82, 0.83, 0.80), params.darkMode);
   return vec4f(tone * alpha, alpha);
 }

@@ -168,21 +168,6 @@ function itemStyle(photo: Photo): CSSProperties {
   isolation: isolate;
 }
 
-.photo-stream__gallery::before {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 50%, transparent 0 13%, rgb(0 0 0 / 5%) 58%, rgb(0 0 0 / 18%)),
-    radial-gradient(
-      circle at 50% 50%,
-      color-mix(in srgb, currentColor 7%, transparent),
-      transparent 38%
-    );
-  content: '';
-  pointer-events: none;
-}
-
 .photo-stream__canvas,
 .photo-stream__fallback {
   position: absolute;
