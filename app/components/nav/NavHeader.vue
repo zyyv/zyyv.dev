@@ -9,7 +9,18 @@ const navigation = [
   { label: 'Posts', to: '/posts', icon: 'i-hugeicons:note-edit' },
 ] as const
 
+const adminNavigation = {
+  label: 'Settings',
+  to: '/admin',
+  icon: 'i-hugeicons:settings-02',
+} as const
+
+const { authenticated } = useAdminSession()
 const isHome = computed(() => route.path === '/')
+const visibleNavigation = computed(() =>
+  authenticated.value ? [...navigation, adminNavigation] : navigation,
+)
+const homeNavigation = computed(() => visibleNavigation.value.filter((item) => item.to !== '/'))
 const { mode: photosViewMode, togglePhotosView } = usePhotosViewMode()
 
 const photosToggleLabel = computed(() =>
@@ -50,7 +61,7 @@ function isActive(path: string) {
         <div class="home-menu__panel">
           <div class="home-menu__links">
             <NuxtLink
-              v-for="item in navigation"
+              v-for="item in homeNavigation"
               :key="item.to"
               :to="item.to"
               class="home-menu__link"
@@ -58,32 +69,31 @@ function isActive(path: string) {
               :aria-current="isActive(item.to) ? 'page' : undefined"
               :aria-label="item.label"
             >
-              <MeAvatar v-if="item.to === '/'" navigation shared />
-              <i v-else class="home-menu__link-icon" :class="item.icon" aria-hidden="true" />
+              <i class="home-menu__link-icon" :class="item.icon" aria-hidden="true" />
               <span class="home-menu__label">{{ item.label }}</span>
             </NuxtLink>
           </div>
         </div>
       </div>
 
-      <div v-else class="flex flex-col items-center gap-[0.2rem] lt-md:flex-row">
-        <template v-for="item in navigation" :key="item.to">
+      <div v-else class="side-menu flex flex-col items-center gap-[0.2rem] lt-md:flex-row">
+        <template v-for="item in visibleNavigation" :key="item.to">
           <button
             v-if="item.to === '/photos' && isActive(item.to)"
             type="button"
-            class="relative grid size-[2.35rem] place-items-center rounded-[0.65rem] border-0 color-inherit text-[1.12rem] op-100 [background-color:color-mix(in_srgb,currentColor_14%,transparent)] transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
+            class="side-menu__item relative grid size-[2.35rem] place-items-center rounded-[0.65rem] border-0 color-inherit text-[1.12rem] op-100 [background-color:color-mix(in_srgb,currentColor_14%,transparent)] transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
             :aria-label="photosToggleLabel"
             :aria-pressed="photosViewMode === 'ripplable'"
-            :title="photosToggleLabel"
             @click="togglePhotosView"
           >
             <i class="i-hugeicons:image-03 color-inherit" aria-hidden="true" />
+            <span class="side-menu__label">Photos</span>
           </button>
 
           <NuxtLink
             v-else
             :to="item.to"
-            class="relative color-inherit no-underline transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
+            class="side-menu__item relative color-inherit no-underline transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
             :class="[
               'grid size-[2.35rem] place-items-center rounded-[0.65rem] text-[1.12rem] op-52 hover:[background-color:color-mix(in_srgb,currentColor_9%,transparent)]',
               isActive(item.to)
@@ -92,11 +102,10 @@ function isActive(path: string) {
             ]"
             :aria-current="isActive(item.to) ? 'page' : undefined"
             :aria-label="item.label"
-            :title="item.label"
           >
             <MeAvatar v-if="item.to === '/'" navigation shared />
             <i v-else class="color-inherit" :class="item.icon" aria-hidden="true" />
-            <span class="sr-only">{{ item.label }}</span>
+            <span class="side-menu__label">{{ item.label }}</span>
           </NuxtLink>
         </template>
       </div>
@@ -241,6 +250,29 @@ function isActive(path: string) {
     transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.side-menu__label {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 0.7rem);
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-0.25rem, -50%, 0);
+  transition:
+    opacity 140ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.side-menu__item:hover .side-menu__label,
+.side-menu__item:focus-visible .side-menu__label {
+  opacity: 0.82;
+  transform: translate3d(0, -50%, 0);
+}
+
 .home-menu__link:hover .home-menu__label,
 .home-menu__link:focus-visible .home-menu__label {
   opacity: 1;
@@ -280,11 +312,26 @@ function isActive(path: string) {
   }
 }
 
+@media (max-width: 767.9px) {
+  .side-menu__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-menu__trigger,
   .home-menu__panel,
   .home-menu__link,
-  .home-menu__label {
+  .home-menu__label,
+  .side-menu__label {
     transition: none;
   }
 }

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
+const route = useRoute()
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.state.value === 'dark')
-const { photoSources } = useBackgroundPhotos()
+const routeKey = computed(() => route.fullPath)
+const { photoSources } = useBackgroundPhotos(routeKey)
 const { isReady, isUnavailable } = useVgpuBackground(canvas, isDark, photoSources)
 </script>
 

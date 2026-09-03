@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import type { Photo } from '~/types'
 
 export interface BackgroundPhotoSource {
@@ -52,13 +53,13 @@ function selectBackgroundPhotos(photos: Photo[]) {
   })
 }
 
-export function useBackgroundPhotos() {
+export function useBackgroundPhotos(routeKey: Readonly<Ref<string>>) {
   const photoSources = shallowRef<BackgroundPhotoSource[]>([])
   const { data } = usePublicPhotos({ lazy: true })
 
   watch(
-    () => data.value.photos,
-    (photos) => {
+    [() => data.value.photos, routeKey],
+    ([photos]) => {
       photoSources.value = selectBackgroundPhotos(photos)
     },
     { immediate: true },

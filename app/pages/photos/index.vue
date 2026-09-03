@@ -5,7 +5,6 @@ import PhotosGallery from '~/components/photos/Photos.vue'
 import RipplablePhotos from '~/components/photos/RipplablePhotos.vue'
 
 const route = useRoute()
-const { authenticated } = useAdminSession()
 const photosPageRef = useTemplateRef<HTMLElement>('photosPage')
 const { data: photoResponse } = await usePublicPhotos()
 const photos = computed(() => photoResponse.value.photos)
@@ -93,16 +92,6 @@ useHead({
 
 <template>
   <div ref="photosPage" class="photos-page">
-    <NuxtLink
-      v-if="authenticated"
-      to="/admin/photos"
-      class="photos-admin-link"
-      aria-label="整理照片"
-    >
-      <i class="i-hugeicons:settings-02" aria-hidden="true" />
-      <span>整理照片</span>
-    </NuxtLink>
-
     <Transition
       name="photos-view"
       :mode="isTransitioning ? undefined : 'out-in'"
@@ -145,34 +134,6 @@ useHead({
   overflow: hidden;
   contain: layout;
 }
-.photos-admin-link {
-  position: fixed;
-  z-index: 29;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-height: 2.25rem;
-  padding: 0 0.75rem;
-  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
-  border-radius: 0.65rem;
-  background: color-mix(in srgb, currentColor 7%, transparent);
-  color: inherit;
-  font-size: 0.64rem;
-  text-decoration: none;
-  backdrop-filter: blur(18px) saturate(135%);
-  transition:
-    transform 180ms ease,
-    background-color 180ms ease;
-}
-.photos-admin-link:hover {
-  background: color-mix(in srgb, currentColor 12%, transparent);
-  transform: translateY(-1px);
-}
-.photos-admin-link:active {
-  transform: translateY(1px);
-}
 
 .photos-view-enter-active,
 .photos-view-leave-active {
@@ -192,21 +153,9 @@ useHead({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .photos-admin-link {
-    transition: none;
-  }
   .photos-view-enter-active,
   .photos-view-leave-active {
     transition-duration: 1ms;
-  }
-}
-@media (max-width: 767.9px) {
-  .photos-admin-link {
-    top: 0.65rem;
-    right: 0.65rem;
-  }
-  .photos-admin-link span {
-    display: none;
   }
 }
 </style>
