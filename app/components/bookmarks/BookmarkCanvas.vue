@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { BookmarkNode } from '~/utils/bookmarks'
-import { createBookmarkCanvasLayout } from '~/utils/bookmarkCanvas'
+import { createBookmarkCanvasLayout, ROOT_ID } from '~/utils/bookmarkCanvas'
 import BookmarkInspector from './BookmarkInspector.vue'
 import BookmarkPreviewPopover from './BookmarkPreviewPopover.vue'
 import BookmarkTree from './BookmarkTree.vue'
@@ -14,6 +14,7 @@ const viewport = useTemplateRef<HTMLElement>('viewport')
 const surface = useTemplateRef<HTMLElement>('surface')
 const hoveredId = shallowRef<string | null>(null)
 const selectedId = shallowRef<string | null>(null)
+const selectionHistory = shallowRef<string[]>([])
 const previewX = shallowRef(0)
 const previewY = shallowRef(0)
 const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
@@ -24,10 +25,13 @@ const selectedNode = computed(
   () => layout.value.nodes.find((node) => node.id === selectedId.value && node.item)?.item || null,
 )
 const hoveredNode = computed(
-  () => layout.value.nodes.find((node) => node.id === hoveredId.value && node.item)?.item || null,
+  () =>
+    layout.value.nodes.find((node) => node.id === hoveredId.value && node.item?.kind === 'bookmark')
+      ?.item || null,
 )
 
 const {
+  scale,
   bounds,
   isOverview,
   scaleLabel,
@@ -39,9 +43,40 @@ const {
   onPointerMove,
   onPointerUp,
 } = useCanvasViewport({ viewport, surface, contentWidth, contentHeight })
+const semanticScale = computed(() => Math.min(10, Math.max(1, scale.value ** -0.7)))
+const overviewExpansion = computed(() =>
+  isOverview.value ? Math.min(2.5, Math.max(1, 1 + ((0.36 - scale.value) / 0.325) * 1.5)) : 1,
+)
 
 function selectNode(id: string) {
+  if (id === ROOT_ID) return
+  selectionHistory.value = []
   selectedId.value = selectedId.value === id ? null : id
+}
+
+function inspectNode(id: string) {
+  if (id === ROOT_ID || id === selectedId.value) return
+  if (!layout.value.nodes.some((node) => node.id === id && node.item)) return
+  if (selectedId.value) selectionHistory.value = [...selectionHistory.value, selectedId.value]
+  selectedId.value = id
+}
+
+function inspectPreviousNode() {
+  const previousId = selectionHistory.value.at(-1)
+  if (!previousId) return
+  selectionHistory.value = selectionHistory.value.slice(0, -1)
+  selectedId.value = previousId
+}
+
+function clearSelection() {
+  selectedId.value = null
+  selectionHistory.value = []
+}
+
+function onCanvasClick(event: MouseEvent) {
+  const target = event.target
+  if (target instanceof Element && target.closest('[data-canvas-node], [data-canvas-ui]')) return
+  clearSelection()
 }
 
 function hoverNode(id: string | null, x?: number, y?: number) {
@@ -67,14 +102,14 @@ useEventListener(document, 'keydown', (event) => {
     searchInput.value?.focus()
   }
   if (event.key === 'Escape') {
-    selectedId.value = null
+    clearSelection()
     searchInput.value?.blur()
   }
   if (event.key === '0' && !isTyping) fit()
 })
 
 watch(layout, () => {
-  if (selectedId.value && !layout.value.parentById.has(selectedId.value)) selectedId.value = null
+  if (selectedId.value && !layout.value.parentById.has(selectedId.value)) clearSelection()
 })
 </script>
 
@@ -114,6 +149,7 @@ watch(layout, () => {
       @pointermove="onPointerMove"
       @pointerup="onPointerUp"
       @pointercancel="onPointerUp"
+      @click="onCanvasClick"
     >
       <div class="canvas-grid" aria-hidden="true" />
       <div ref="surface" class="canvas-surface" :class="{ 'is-overview': isOverview }">
@@ -122,6 +158,8 @@ watch(layout, () => {
           :hovered-id="hoveredId"
           :selected-id="selectedId"
           :overview="isOverview"
+          :semantic-scale="semanticScale"
+          :overview-expansion="overviewExpansion"
           :bounds="bounds"
           @hover="hoverNode"
           @select="selectNode"
@@ -133,8 +171,10 @@ watch(layout, () => {
         v-if="selectedNode"
         :key="selectedNode.id"
         :node="selectedNode"
-        @close="selectedId = null"
-        @select="selectNode"
+        :can-go-back="selectionHistory.length > 0"
+        @back="inspectPreviousNode"
+        @close="clearSelection"
+        @select="inspectNode"
         @open="openNode"
       />
 
@@ -159,7 +199,7 @@ watch(layout, () => {
 .bookmark-canvas {
   --canvas-bg: rgb(233 233 229 / 0.38);
   --canvas-ink: #11110f;
-  --canvas-node: rgb(242 242 237 / 0.9);
+  --canvas-node: #f2f2ed;
   --canvas-node-active: #f5f5f0;
   --canvas-root: #f7f7f2;
   --canvas-icon: rgb(17 17 15 / 0.055);
@@ -181,7 +221,7 @@ watch(layout, () => {
 .dark .bookmark-canvas {
   --canvas-bg: rgb(17 17 15 / 0.42);
   --canvas-ink: #e9e9e5;
-  --canvas-node: rgb(27 27 24 / 0.9);
+  --canvas-node: #1b1b18;
   --canvas-node-active: #23231f;
   --canvas-root: #20201c;
   --canvas-icon: rgb(233 233 229 / 0.07);
@@ -309,18 +349,6 @@ watch(layout, () => {
   top: 0;
   left: 0;
   transform-origin: 0 0;
-}
-.canvas-surface.is-overview :deep(.canvas-node--folder .canvas-node__main),
-.canvas-surface.is-overview :deep(.canvas-node--root .canvas-node__main) {
-  transform: scale(2);
-}
-.canvas-surface.is-overview :deep(.canvas-node--folder .canvas-node__main:hover),
-.canvas-surface.is-overview :deep(.canvas-node--folder .canvas-node__main:focus-visible),
-.canvas-surface.is-overview :deep(.canvas-node--folder.is-active .canvas-node__main),
-.canvas-surface.is-overview :deep(.canvas-node--folder.is-selected .canvas-node__main),
-.canvas-surface.is-overview :deep(.canvas-node--root .canvas-node__main:hover),
-.canvas-surface.is-overview :deep(.canvas-node--root .canvas-node__main:focus-visible) {
-  transform: translateY(-2px) scale(2.04);
 }
 .canvas-empty {
   position: absolute;

@@ -2,8 +2,12 @@
 import type { BookmarkNode } from '~/utils/bookmarks'
 import { bookmarkHost } from '~/utils/bookmarks'
 
-const props = defineProps<{ node: BookmarkNode }>()
+const props = defineProps<{
+  node: BookmarkNode
+  canGoBack: boolean
+}>()
 const emit = defineEmits<{
+  back: []
   close: []
   select: [id: string]
   open: [node: BookmarkNode]
@@ -15,8 +19,25 @@ const host = computed(() => bookmarkHost(props.node.url))
 <template>
   <aside data-canvas-ui class="canvas-inspector" aria-live="polite" @pointerdown.stop @wheel.stop>
     <header class="canvas-inspector__header">
-      <h2>{{ node.title }}</h2>
-      <button type="button" aria-label="关闭节点详情" @click.stop="emit('close')">
+      <button
+        class="canvas-inspector__back"
+        type="button"
+        aria-label="返回上一层"
+        :disabled="!canGoBack"
+        @click.stop="emit('back')"
+      >
+        <i class="i-hugeicons:arrow-left-01" />
+      </button>
+      <h2>
+        <i v-if="node.kind === 'folder'" class="i-hugeicons:folder-02" aria-hidden="true" />
+        <span>{{ node.title }}</span>
+      </h2>
+      <button
+        class="canvas-inspector__close"
+        type="button"
+        aria-label="关闭节点详情"
+        @click.stop="emit('close')"
+      >
         <i class="i-hugeicons:cancel-01" />
       </button>
     </header>
@@ -30,7 +51,12 @@ const host = computed(() => bookmarkHost(props.node.url))
             @click="emit('select', child.id)"
             @dblclick="child.kind === 'bookmark' && emit('open', child)"
           >
-            {{ child.title }}
+            <i
+              v-if="child.kind === 'folder'"
+              class="i-hugeicons:folder-02 canvas-inspector__folder-icon"
+              aria-hidden="true"
+            />
+            <span>{{ child.title }}</span>
           </button>
         </li>
       </ul>
@@ -84,10 +110,14 @@ const host = computed(() => bookmarkHost(props.node.url))
 .canvas-inspector__header {
   display: grid;
   min-height: 2.65rem;
-  grid-template-columns: minmax(0, 1fr) 2.65rem;
+  grid-template-columns: 2.65rem minmax(0, 1fr) 2.65rem;
   border-bottom: 1px dashed var(--canvas-line-strong);
 }
 .canvas-inspector__header h2 {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.45rem;
   overflow: hidden;
   margin: 0;
   padding: 0.78rem 0.85rem;
@@ -97,15 +127,29 @@ const host = computed(() => bookmarkHost(props.node.url))
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.canvas-inspector__header h2 span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .canvas-inspector__header button {
   display: grid;
   padding: 0;
   border: 0;
-  border-left: 1px dashed var(--canvas-line-strong);
   place-items: center;
   background: transparent;
   color: inherit;
   cursor: pointer;
+}
+.canvas-inspector__back {
+  border-right: 1px dashed var(--canvas-line-strong) !important;
+}
+.canvas-inspector__back:disabled {
+  opacity: 0.18;
+  cursor: default;
+}
+.canvas-inspector__close {
+  border-left: 1px dashed var(--canvas-line-strong) !important;
 }
 .canvas-inspector__header button:hover,
 .canvas-inspector__header button:focus-visible {
@@ -121,8 +165,10 @@ const host = computed(() => bookmarkHost(props.node.url))
   border-top: 1px dashed var(--canvas-line-strong);
 }
 .canvas-inspector__folder button {
-  display: block;
+  display: flex;
   width: 100%;
+  align-items: center;
+  gap: 0.5rem;
   overflow: hidden;
   padding: 0.72rem 0.85rem;
   border: 0;
@@ -134,6 +180,16 @@ const host = computed(() => bookmarkHost(props.node.url))
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.canvas-inspector__folder button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.canvas-inspector__folder-icon {
+  flex: 0 0 auto;
+  font-size: 0.82rem;
+  opacity: 0.68;
 }
 .canvas-inspector__folder button:hover,
 .canvas-inspector__folder button:focus-visible {

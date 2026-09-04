@@ -44,8 +44,8 @@ onMounted(loadBookmarks)
   height: 100%;
   place-content: center;
   justify-items: center;
-  background: color-mix(in srgb, #e9e9e5 52%, transparent);
-  backdrop-filter: blur(1rem) saturate(0.85);
+  /* background: color-mix(in srgb, #e9e9e5 52%, transparent); */
+  /* backdrop-filter: blur(1rem) saturate(0.85); */
 }
 .dark .bookmarks-loading {
   background: color-mix(in srgb, #11110f 52%, transparent);

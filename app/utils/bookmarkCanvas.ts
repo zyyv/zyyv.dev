@@ -1,5 +1,4 @@
 import type { BookmarkNode } from '~/utils/bookmarks'
-import { mc } from 'magic-color'
 
 export interface BookmarkCanvasNode {
   id: string
@@ -9,6 +8,7 @@ export interface BookmarkCanvasNode {
   y: number
   depth: number
   childCount: number
+  size: number
   direction: -1 | 0 | 1
   branchColor: string
 }
@@ -41,26 +41,35 @@ export interface BookmarkCanvasLayout {
 const ROOT_ID = '__bookmark_root__'
 const NODE_WIDTH = 196
 const NODE_HEIGHT = 62
-const LEVEL_GAP = 330
-const LEAF_GAP = 112
-const CANVAS_PADDING = 320
-const branchColorCache = new Map<string, string>()
+const ROOT_WIDTH = 152
+const FOLDER_MIN_SIZE = 64
+const FOLDER_MAX_SIZE = 120
+const FIRST_RING_RADIUS = 430
+const RING_GAP = 290
+const NODE_GAP = 30
+const LANE_GAP = NODE_HEIGHT + NODE_GAP
+const CANVAS_PADDING = 260
+const TAU = Math.PI * 2
 
-function randomBranchColor(id: string) {
-  const cached = branchColorCache.get(id)
-  if (cached) return cached
-  const color = mc.random('hex')
-  branchColorCache.set(id, color)
-  return color
+function branchColor(id: string) {
+  let hash = 0
+  for (let index = 0; index < id.length; index += 1) {
+    hash = (hash * 31 + id.charCodeAt(index)) | 0
+  }
+  return `hsl(${Math.abs(hash) % 360} 62% 56%)`
 }
 
 interface PositionedNode {
   item: BookmarkNode
   depth: number
-  y: number
+  angle: number
   childCount: number
-  direction: -1 | 1
   branchColor: string
+}
+
+interface Point {
+  x: number
+  y: number
 }
 
 function descendantCount(node: BookmarkNode): number {
@@ -72,84 +81,131 @@ function leafSlotCount(node: BookmarkNode): number {
   return node.children.reduce((total, child) => total + leafSlotCount(child), 0)
 }
 
-function maximumDepth(nodes: readonly BookmarkNode[], depth = 1): number {
-  return nodes.reduce(
-    (maximum, node) =>
-      Math.max(maximum, node.children.length ? maximumDepth(node.children, depth + 1) : depth),
-    depth,
+function folderSize(childCount: number) {
+  return Math.min(FOLDER_MAX_SIZE, FOLDER_MIN_SIZE + Math.sqrt(childCount) * 5.5)
+}
+
+function cardsOverlap(left: Point, right: Point) {
+  return (
+    Math.abs(left.x - right.x) < NODE_WIDTH + NODE_GAP &&
+    Math.abs(left.y - right.y) < NODE_HEIGHT + NODE_GAP
   )
 }
 
-function stableOffset(id: string) {
-  let hash = 0
-  for (let index = 0; index < id.length; index += 1) hash = (hash * 31 + id.charCodeAt(index)) | 0
-  return ((Math.abs(hash) % 7) - 3) * 9
+function rectangleEdgePoint(from: Point, to: Point, halfWidth: number, halfHeight: number) {
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const divisor = Math.max(Math.abs(dx) / halfWidth, Math.abs(dy) / halfHeight)
+  if (!divisor) return from
+  return { x: from.x + dx / divisor, y: from.y + dy / divisor }
 }
 
-function splitBranches(tree: readonly BookmarkNode[]) {
-  const left: BookmarkNode[] = []
-  const right: BookmarkNode[] = []
-  let leftWeight = 0
-  let rightWeight = 0
+function nodeHalfSize(node: BookmarkCanvasNode) {
+  if (node.id === ROOT_ID) return { width: ROOT_WIDTH / 2, height: NODE_HEIGHT / 2 }
+  if (node.item?.kind === 'folder') return { width: node.size / 2, height: node.size / 2 }
+  return { width: NODE_WIDTH / 2, height: NODE_HEIGHT / 2 }
+}
 
-  for (const node of tree) {
-    const weight = leafSlotCount(node)
-    if (leftWeight <= rightWeight) {
-      left.push(node)
-      leftWeight += weight
-    } else {
-      right.push(node)
-      rightWeight += weight
-    }
+function edgePath(parent: BookmarkCanvasNode, child: BookmarkCanvasNode, center: Point) {
+  const parentSize = nodeHalfSize(parent)
+  const childSize = nodeHalfSize(child)
+  const start = rectangleEdgePoint(parent, child, parentSize.width, parentSize.height)
+  const end = rectangleEdgePoint(child, parent, childSize.width, childSize.height)
+  const distance = Math.hypot(end.x - start.x, end.y - start.y)
+  const controlDistance = Math.max(70, Math.min(distance * 0.42, RING_GAP * 0.72))
+  const parentDistance = Math.hypot(parent.x - center.x, parent.y - center.y)
+  const childDistance = Math.hypot(child.x - center.x, child.y - center.y)
+  const parentUnit = parentDistance
+    ? { x: (parent.x - center.x) / parentDistance, y: (parent.y - center.y) / parentDistance }
+    : { x: (child.x - parent.x) / distance, y: (child.y - parent.y) / distance }
+  const childUnit = {
+    x: (child.x - center.x) / childDistance,
+    y: (child.y - center.y) / childDistance,
+  }
+  const first = {
+    x: start.x + parentUnit.x * controlDistance,
+    y: start.y + parentUnit.y * controlDistance,
+  }
+  const second = {
+    x: end.x - childUnit.x * controlDistance,
+    y: end.y - childUnit.y * controlDistance,
   }
 
-  return { left, right, leftWeight, rightWeight }
+  return `M ${start.x} ${start.y} C ${first.x} ${first.y}, ${second.x} ${second.y}, ${end.x} ${end.y}`
 }
 
 export function createBookmarkCanvasLayout(tree: readonly BookmarkNode[]): BookmarkCanvasLayout {
-  const { left, right, leftWeight, rightWeight } = splitBranches(tree)
-  const maxDepth = Math.max(maximumDepth(left), maximumDepth(right))
-  const width = Math.max(1900, maxDepth * LEVEL_GAP * 2 + CANVAS_PADDING * 2)
-  const height = Math.max(1100, Math.max(leftWeight, rightWeight, 1) * LEAF_GAP + 520)
-  const centerX = width / 2
-  const centerY = height / 2
+  const leafCount = Math.max(
+    1,
+    tree.reduce((total, node) => total + leafSlotCount(node), 0),
+  )
   const positioned: PositionedNode[] = []
+  let slotCursor = 0
 
-  function placeSide(nodes: readonly BookmarkNode[], direction: -1 | 1, leafCount: number) {
-    let cursor = 0
-    const sideNodes: PositionedNode[] = []
+  function place(node: BookmarkNode, depth: number, branchColor: string, startSlot: number) {
+    const slots = leafSlotCount(node)
+    let childCursor = startSlot
 
-    function place(node: BookmarkNode, depth: number, branchColor: string): number {
-      let y: number
-      if (!node.children.length) {
-        y = cursor * LEAF_GAP
-        cursor += 1
-      } else {
-        const childPositions = node.children.map((child) => place(child, depth + 1, branchColor))
-        y = childPositions.reduce((sum, position) => sum + position, 0) / childPositions.length
-      }
-      sideNodes.push({
-        item: node,
-        depth,
-        y,
-        childCount: descendantCount(node),
-        direction,
-        branchColor,
-      })
-      return y
+    for (const child of node.children) {
+      place(child, depth + 1, branchColor, childCursor)
+      childCursor += leafSlotCount(child)
     }
 
-    for (const node of nodes) place(node, 1, randomBranchColor(node.id))
-    const span = Math.max(0, (leafCount - 1) * LEAF_GAP)
-    const offset = centerY - span / 2
-    for (const node of sideNodes) {
-      node.y += offset
-      positioned.push(node)
+    // A complete circle makes both canvas axes useful. The center of the node's leaf
+    // interval keeps related descendants in one sector and reduces cross-branch interference.
+    const angle = -Math.PI + ((startSlot + slots / 2) / leafCount) * TAU
+    positioned.push({
+      item: node,
+      depth,
+      angle,
+      childCount: descendantCount(node),
+      branchColor,
+    })
+  }
+
+  for (const node of tree) {
+    place(node, 1, branchColor(node.id), slotCursor)
+    slotCursor += leafSlotCount(node)
+  }
+
+  const nodesByDepth = new Map<number, PositionedNode[]>()
+  for (const node of positioned) {
+    const ring = nodesByDepth.get(node.depth) || []
+    ring.push(node)
+    nodesByDepth.set(node.depth, ring)
+  }
+
+  const polarById = new Map<string, { angle: number; radius: number }>()
+  const placedPoints: Point[] = []
+  const maximumDepth = Math.max(0, ...nodesByDepth.keys())
+  for (let depth = 1; depth <= maximumDepth; depth += 1) {
+    const ring = (nodesByDepth.get(depth) || []).toSorted((left, right) => left.angle - right.angle)
+    for (const node of ring) {
+      const parentRadius = node.item.parentId ? (polarById.get(node.item.parentId)?.radius ?? 0) : 0
+      const minimumRadius = Math.max(FIRST_RING_RADIUS, parentRadius + RING_GAP)
+      let radius = minimumRadius
+      let point = { x: Math.cos(node.angle) * radius, y: Math.sin(node.angle) * radius }
+
+      // Dense logical levels spill onto concentric lanes. This fills radial whitespace
+      // instead of inflating one enormous ring while retaining each branch's sector.
+      while (placedPoints.some((placed) => cardsOverlap(placed, point))) {
+        radius += LANE_GAP
+        point = { x: Math.cos(node.angle) * radius, y: Math.sin(node.angle) * radius }
+      }
+
+      polarById.set(node.item.id, { angle: node.angle, radius })
+      placedPoints.push(point)
     }
   }
 
-  placeSide(left, -1, leftWeight)
-  placeSide(right, 1, rightWeight)
+  const outerRadius = Math.max(0, ...[...polarById.values()].map((position) => position.radius))
+  const canvasSize = Math.max(
+    1100,
+    Math.ceil((outerRadius + Math.hypot(NODE_WIDTH, NODE_HEIGHT) / 2 + CANVAS_PADDING) * 2),
+  )
+  const centerX = canvasSize / 2
+  const centerY = canvasSize / 2
+  const center = { x: centerX, y: centerY }
 
   const nodes: BookmarkCanvasNode[] = [
     {
@@ -160,6 +216,7 @@ export function createBookmarkCanvasLayout(tree: readonly BookmarkNode[]): Bookm
       y: centerY,
       depth: 0,
       childCount: positioned.length,
+      size: ROOT_WIDTH,
       direction: 0,
       branchColor: '#ef6259',
     },
@@ -167,16 +224,18 @@ export function createBookmarkCanvasLayout(tree: readonly BookmarkNode[]): Bookm
   const parentById = new Map<string, string | null>([[ROOT_ID, null]])
 
   for (const entry of positioned) {
+    const position = polarById.get(entry.item.id)!
     const parentId = entry.item.parentId || ROOT_ID
     nodes.push({
       id: entry.item.id,
       item: entry.item,
       parentId,
-      x: centerX + entry.direction * (entry.depth * LEVEL_GAP + stableOffset(entry.item.id)),
-      y: entry.y,
+      x: centerX + Math.cos(position.angle) * position.radius,
+      y: centerY + Math.sin(position.angle) * position.radius,
       depth: entry.depth,
       childCount: entry.childCount,
-      direction: entry.direction,
+      size: entry.item.kind === 'folder' ? folderSize(entry.childCount) : NODE_WIDTH,
+      direction: Math.cos(entry.angle) < 0 ? -1 : 1,
       branchColor: entry.branchColor,
     })
     parentById.set(entry.item.id, parentId)
@@ -188,23 +247,24 @@ export function createBookmarkCanvasLayout(tree: readonly BookmarkNode[]): Bookm
     if (!node.parentId) continue
     const parent = nodeById.get(node.parentId)
     if (!parent) continue
-    const direction = node.direction || 1
-    const startX = parent.x + direction * (parent.id === ROOT_ID ? 76 : NODE_WIDTH / 2)
-    const endX = node.x - direction * (NODE_WIDTH / 2)
-    const controlDistance = Math.max(70, Math.abs(endX - startX) * 0.52)
-    const firstX = startX + direction * controlDistance
-    const secondX = endX - direction * controlDistance
-    const bend = (stableOffset(node.id) || direction * 13) * 0.78
     edges.push({
       id: `${parent.id}:${node.id}`,
       parentId: parent.id,
       childId: node.id,
-      path: `M ${startX} ${parent.y} C ${firstX} ${parent.y + bend}, ${secondX} ${node.y - bend}, ${endX} ${node.y}`,
+      path: edgePath(parent, node, center),
       branchColor: node.branchColor,
     })
   }
 
-  return { width, height, centerX, centerY, nodes, edges, parentById }
+  return {
+    width: canvasSize,
+    height: canvasSize,
+    centerX,
+    centerY,
+    nodes,
+    edges,
+    parentById,
+  }
 }
 
 export function bookmarkAncestorIds(
@@ -221,8 +281,7 @@ export function bookmarkAncestorIds(
 }
 
 export function bookmarkNodeInBounds(node: BookmarkCanvasNode, bounds: BookmarkCanvasBounds) {
-  const halfWidth = node.id === ROOT_ID ? 90 : NODE_WIDTH / 2
-  const halfHeight = NODE_HEIGHT / 2
+  const { width: halfWidth, height: halfHeight } = nodeHalfSize(node)
   return (
     node.x + halfWidth >= bounds.left &&
     node.x - halfWidth <= bounds.right &&

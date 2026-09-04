@@ -132,6 +132,7 @@ export function useCanvasViewport(options: UseCanvasViewportOptions) {
   })
 
   return {
+    scale: readonly(scale),
     bounds: readonly(bounds),
     isOverview,
     scaleLabel,
