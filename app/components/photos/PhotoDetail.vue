@@ -48,8 +48,14 @@ const activeReactions = computed(() =>
 )
 const basicDetails = computed<DetailRow[]>(() => {
   if (!detailPhoto.value) return []
+  const isVideo = detailPhoto.value.mediaType === 'video'
 
   return [
+    {
+      icon: isVideo ? 'i-hugeicons:video-01' : 'i-hugeicons:image-03',
+      label: 'Type',
+      value: isVideo ? 'Video' : 'Photo',
+    },
     { icon: 'i-hugeicons:file-01', label: 'Filename', value: detailPhoto.value.filename },
     {
       icon: 'i-hugeicons:maximize-01',
@@ -63,7 +69,7 @@ const basicDetails = computed<DetailRow[]>(() => {
     },
     {
       icon: 'i-hugeicons:image-03',
-      label: 'Compressed',
+      label: isVideo ? 'Poster' : 'Compressed',
       value: detailPhoto.value.compressedSizeFormatted,
     },
     {
@@ -279,6 +285,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               @click="emit('select', item)"
             >
               <img :src="item.thumbnail" :alt="item.filename" loading="lazy" decoding="async" />
+              <i v-if="item.mediaType === 'video'" class="i-hugeicons:play" aria-hidden="true" />
             </button>
           </footer>
         </section>
@@ -570,6 +577,18 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.photo-dialog__filmstrip button > i {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 1rem;
+  height: 1rem;
+  padding: 0.32rem;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 58%);
+  color: white;
+  transform: translate(-50%, -50%);
 }
 
 @media (hover: hover) and (pointer: fine) {

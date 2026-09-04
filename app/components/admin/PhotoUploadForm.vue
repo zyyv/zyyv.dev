@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import type { PhotoUploadPayload } from '~/composables/useAdminPhotos'
-import { preparePhotoUpload } from '~/utils/photoMetadata'
+import { getMediaType, prepareMediaUpload } from '~/utils/photoMetadata'
 
 defineProps<{ busy: boolean }>()
 const emit = defineEmits<{ submit: [payload: PhotoUploadPayload] }>()
 
 const input = useTemplateRef<HTMLInputElement>('input')
 const file = shallowRef<File | null>(null)
-const preview = ref<string | null>(null)
-const isPrivate = ref(false)
-const processing = ref(false)
-const localError = ref<string | null>(null)
-const dragging = ref(false)
+const preview = shallowRef<string | null>(null)
+const isPrivate = shallowRef(false)
+const processing = shallowRef(false)
+const localError = shallowRef<string | null>(null)
+const dragging = shallowRef(false)
+const selectedMediaType = computed(() => (file.value ? getMediaType(file.value) : null))
 
 function revokePreview() {
   if (preview.value) URL.revokeObjectURL(preview.value)
@@ -21,12 +22,14 @@ function revokePreview() {
 function selectFile(nextFile?: File) {
   if (!nextFile) return
   localError.value = null
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(nextFile.type)) {
-    localError.value = '仅支持 JPEG、PNG 和 WebP 图片。'
+  const mediaType = getMediaType(nextFile)
+  if (!mediaType) {
+    localError.value = '仅支持 JPEG、PNG、WebP 图片，以及 MP4、WebM 视频。'
     return
   }
-  if (nextFile.size > 50 * 1024 * 1024) {
-    localError.value = '原图不能超过 50 MB。'
+  const maxSize = 50
+  if (nextFile.size > maxSize * 1024 * 1024) {
+    localError.value = `${mediaType === 'video' ? '视频' : '原图'}不能超过 ${maxSize} MB。`
     return
   }
   revokePreview()
@@ -44,7 +47,7 @@ async function submit() {
   processing.value = true
   localError.value = null
   try {
-    const metadata = await preparePhotoUpload(file.value)
+    const metadata = await prepareMediaUpload(file.value)
     emit('submit', { file: file.value, private: isPrivate.value, ...metadata })
   } catch (error) {
     localError.value = error instanceof Error ? error.message : '图片解析失败'
@@ -69,9 +72,9 @@ onBeforeUnmount(revokePreview)
     <div class="upload-heading">
       <div>
         <span>01</span>
-        <h2 id="upload-title">新增图片</h2>
+        <h2 id="upload-title">新增图片或视频</h2>
       </div>
-      <p>上传一张原图，自动生成 2560px 压缩图与 600px 缩略图。</p>
+      <p>图片自动压缩；视频保留原文件，并从画面中生成两档 WebP 封面。</p>
     </div>
 
     <div
@@ -82,17 +85,26 @@ onBeforeUnmount(revokePreview)
       @dragleave.prevent="dragging = false"
       @drop.prevent="onDrop"
     >
-      <img v-if="preview" :src="preview" alt="待上传图片预览" />
+      <video
+        v-if="preview && selectedMediaType === 'video'"
+        :src="preview"
+        muted
+        loop
+        playsinline
+        controls
+        aria-label="待上传视频预览"
+      />
+      <img v-else-if="preview" :src="preview" alt="待上传图片预览" />
       <button v-else type="button" @click="input?.click()">
         <i class="i-hugeicons:image-upload" aria-hidden="true" />
-        <strong>拖入原图</strong>
-        <small>或点击选择，最大 50 MB</small>
+        <strong>拖入图片或视频</strong>
+        <small>图片与视频最大 50 MB</small>
       </button>
       <input
         ref="input"
         class="sr-only"
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
         @change="selectFile(($event.target as HTMLInputElement).files?.[0])"
       />
       <div v-if="file" class="file-overlay">
@@ -100,7 +112,7 @@ onBeforeUnmount(revokePreview)
           <strong>{{ file.name }}</strong>
           <span>{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
         </div>
-        <button type="button" aria-label="重新选择图片" @click="input?.click()">
+        <button type="button" aria-label="重新选择媒体" @click="input?.click()">
           <i class="i-hugeicons:edit-02" aria-hidden="true" />
         </button>
       </div>
@@ -118,7 +130,7 @@ onBeforeUnmount(revokePreview)
         :disabled="!file || busy || processing"
         @click="submit"
       >
-        <span>{{ busy ? '正在写入 R2' : processing ? '正在生成图片变体' : '上传并处理' }}</span>
+        <span>{{ busy ? '正在写入 R2' : processing ? '正在生成预览资源' : '上传并处理' }}</span>
         <i class="i-hugeicons:arrow-up-right-01" aria-hidden="true" />
       </button>
     </div>
@@ -181,7 +193,8 @@ onBeforeUnmount(revokePreview)
   transform: scale(0.995);
 }
 
-.drop-zone > img {
+.drop-zone > img,
+.drop-zone > video {
   width: 100%;
   height: 100%;
   max-height: 28rem;

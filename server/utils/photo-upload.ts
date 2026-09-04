@@ -2,9 +2,12 @@ import type { PhotoExif } from '~/types'
 import type { R2BucketBinding } from '../types/cloudflare'
 
 export type PhotoUploadVariant = 'origin' | 'compressed' | 'thumbnail'
+export type PhotoMediaType = 'image' | 'video'
 
 export interface FinalizePhotoUploadBody {
   filename?: string
+  mediaType?: PhotoMediaType
+  originContentType?: string
   compressedContentType?: string
   thumbnailContentType?: string
   width?: number
@@ -23,9 +26,27 @@ export const PHOTO_UPLOAD_LIMITS: Record<PhotoUploadVariant, number> = {
 }
 
 export const PHOTO_UPLOAD_CONTENT_TYPES: Record<PhotoUploadVariant, ReadonlySet<string>> = {
-  origin: new Set(['image/jpeg', 'image/png', 'image/webp']),
+  origin: new Set(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm']),
   compressed: new Set(['image/jpeg', 'image/png', 'image/webp']),
   thumbnail: new Set(['image/jpeg', 'image/png', 'image/webp']),
+}
+
+export function validatePhotoMediaType(value: string | undefined): PhotoMediaType {
+  if (value === 'image' || value === 'video') return value
+  throw createError({ statusCode: 400, statusMessage: '媒体类型无效' })
+}
+
+export function validateOriginContentType(value: string | undefined, mediaType: PhotoMediaType) {
+  const contentType = value?.trim().toLowerCase()
+  const expectedPrefix = mediaType === 'video' ? 'video/' : 'image/'
+  if (
+    !contentType ||
+    !contentType.startsWith(expectedPrefix) ||
+    !PHOTO_UPLOAD_CONTENT_TYPES.origin.has(contentType)
+  ) {
+    throw createError({ statusCode: 415, statusMessage: '原始文件类型与媒体类型不匹配' })
+  }
+  return contentType
 }
 
 export function validatePhotoUploadId(id: string | undefined) {
@@ -66,7 +87,13 @@ export function validatePhotoUploadContentType(
 ) {
   const contentType = value?.trim().toLowerCase()
   if (!contentType || !PHOTO_UPLOAD_CONTENT_TYPES[variant].has(contentType)) {
-    throw createError({ statusCode: 415, statusMessage: '仅支持 JPEG、PNG 和 WebP 图片' })
+    throw createError({
+      statusCode: 415,
+      statusMessage:
+        variant === 'origin'
+          ? '仅支持 JPEG、PNG、WebP 图片，以及 MP4、WebM 视频'
+          : '预览资源仅支持 JPEG、PNG 和 WebP 图片',
+    })
   }
   return contentType
 }

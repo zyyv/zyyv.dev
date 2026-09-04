@@ -2,6 +2,7 @@ import type { Photo, PhotoExif, PhotoListResponse } from '~/types'
 
 export interface PhotoUploadPayload {
   file: File
+  mediaType: 'image' | 'video'
   compressed: File
   thumbnail: File
   width: number
@@ -76,7 +77,12 @@ export function useAdminPhotos() {
     try {
       const upload = await $fetch<{ id: string }>('/api/admin/photo-uploads', {
         method: 'POST',
-        body: { filename: payload.file.name, ...variantContentTypes },
+        body: {
+          filename: payload.file.name,
+          mediaType: payload.mediaType,
+          originContentType: payload.file.type,
+          ...variantContentTypes,
+        },
       })
       uploadId = upload.id
       const uploads = await Promise.allSettled([
@@ -92,6 +98,8 @@ export function useAdminPhotos() {
         method: 'POST',
         body: {
           filename: payload.file.name,
+          mediaType: payload.mediaType,
+          originContentType: payload.file.type,
           ...variantContentTypes,
           width: payload.width,
           height: payload.height,

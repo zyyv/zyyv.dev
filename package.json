@@ -44,6 +44,7 @@
     "better-sqlite3": "^13.0.3",
     "blurhash": "^2.0.5",
     "magic-color": "^2.2.5",
+    "media-chrome": "^4.19.2",
     "nuxt": "^4.5.2",
     "octokit": "^5.0.5",
     "ripplable": "^0.3.0",

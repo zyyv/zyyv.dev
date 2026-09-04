@@ -51,6 +51,7 @@ export interface PhotoExif {
 export interface Photo {
   id: string
   filename: string
+  mediaType: 'image' | 'video'
 
   origin: string
   originSize: number

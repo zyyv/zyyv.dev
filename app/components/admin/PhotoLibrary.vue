@@ -56,6 +56,9 @@ function photoDate(photo: Photo) {
       <article v-for="photo in photos" :key="photo.id" class="photo-card">
         <button class="photo-preview" type="button" @click="emit('edit', photo)">
           <img :src="photo.thumbnail" :alt="photo.filename" loading="lazy" />
+          <span v-if="photo.mediaType === 'video'" class="video-badge">
+            <i class="i-hugeicons:play" aria-hidden="true" /> 视频
+          </span>
           <span v-if="photo.private" class="private-badge">
             <i class="i-hugeicons:square-lock-02" aria-hidden="true" /> 私密
           </span>
@@ -201,6 +204,20 @@ function photoDate(photo: Photo) {
   color: #f2f2ee;
   font-size: 0.58rem;
   opacity: 1 !important;
+  backdrop-filter: blur(10px);
+}
+.video-badge {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.4rem;
+  background: rgb(17 17 15 / 64%);
+  color: #f2f2ee;
+  font-size: 0.58rem;
   backdrop-filter: blur(10px);
 }
 .photo-meta {

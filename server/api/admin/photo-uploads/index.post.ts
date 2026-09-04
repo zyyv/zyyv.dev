@@ -4,6 +4,8 @@ import {
   type FinalizePhotoUploadBody,
   photoUploadKeys,
   validatePhotoFilename,
+  validateOriginContentType,
+  validatePhotoMediaType,
 } from '../../../utils/photo-upload'
 
 export default defineEventHandler(async (event) => {
@@ -11,9 +13,18 @@ export default defineEventHandler(async (event) => {
   const { DB, PHOTOS } = useCloudflareBindings(event)
   const body =
     await readBody<
-      Pick<FinalizePhotoUploadBody, 'filename' | 'compressedContentType' | 'thumbnailContentType'>
+      Pick<
+        FinalizePhotoUploadBody,
+        | 'filename'
+        | 'mediaType'
+        | 'originContentType'
+        | 'compressedContentType'
+        | 'thumbnailContentType'
+      >
     >(event)
   const filename = validatePhotoFilename(body.filename)
+  const mediaType = validatePhotoMediaType(body.mediaType)
+  validateOriginContentType(body.originContentType, mediaType)
   const keys = photoUploadKeys(filename, body.compressedContentType, body.thumbnailContentType)
   const [record, original, compressed, thumbnail] = await Promise.all([
     DB.prepare(

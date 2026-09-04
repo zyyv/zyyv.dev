@@ -29,7 +29,7 @@ function formatExposure(value?: number) {
     <aside class="editor" aria-labelledby="editor-title">
       <header>
         <div>
-          <span>编辑图片</span>
+          <span>编辑{{ photo.mediaType === 'video' ? '视频' : '图片' }}</span>
           <h2 id="editor-title">{{ photo.filename }}</h2>
         </div>
         <button type="button" aria-label="关闭编辑面板" @click="emit('close')">
@@ -53,13 +53,13 @@ function formatExposure(value?: number) {
           <input v-model="isPrivate" type="checkbox" />
         </label>
 
-        <div class="exif-heading">
+        <div v-if="photo.mediaType === 'image'" class="exif-heading">
           <span>EXIF</span>
           <small
             >{{ photo.width }} × {{ photo.height }} · {{ photo.compressedSizeFormatted }}</small
           >
         </div>
-        <div class="exif-grid">
+        <div v-if="photo.mediaType === 'image'" class="exif-grid">
           <label class="field"
             ><span>相机品牌</span><input v-model="exif.make" placeholder="—"
           /></label>
@@ -81,7 +81,9 @@ function formatExposure(value?: number) {
             ><input v-model.number="exif.focalLength" type="number" step="0.1" placeholder="—"
           /></label>
         </div>
-        <p class="exposure-readout">当前快门：{{ formatExposure(exif.exposureTime) }}</p>
+        <p v-if="photo.mediaType === 'image'" class="exposure-readout">
+          当前快门：{{ formatExposure(exif.exposureTime) }}
+        </p>
 
         <div class="editor-actions">
           <button type="button" @click="emit('close')">取消</button>

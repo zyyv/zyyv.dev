@@ -3,6 +3,7 @@ import type { CSSProperties } from 'vue'
 import type { Photo, PhotoReactionType } from '~/types'
 import { isImagePreloaded, preloadImage } from '~/utils/preloadImage'
 import PhotoReactions from './PhotoReactions.vue'
+import PhotoVideoPlayer from './PhotoVideoPlayer.vue'
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
 
@@ -63,8 +64,10 @@ const canvasClasses = computed(() => ({
   'is-animating': isAnimating.value,
   'is-checkerboard': useCheckerboard.value,
   'is-dragging': isDragging.value,
+  'is-video': displayedPhoto.value?.mediaType === 'video',
   [`is-${direction.value}`]: true,
 }))
+const isDisplayedVideo = computed(() => displayedPhoto.value?.mediaType === 'video')
 const progressStyle = computed<CSSProperties>(() => ({
   strokeDashoffset: `${50.27 * (1 - loadProgress.value / 100)}`,
 }))
@@ -265,11 +268,11 @@ onBeforeUnmount(() => {
     ref="imageCanvas"
     class="photo-detail-canvas"
     :class="canvasClasses"
-    @wheel="handleWheel"
-    @pointerdown="handlePointerDown"
-    @pointermove="handlePointerMove"
-    @pointerup="handlePointerEnd"
-    @pointercancel="handlePointerEnd"
+    @wheel="isDisplayedVideo ? undefined : handleWheel($event)"
+    @pointerdown="isDisplayedVideo ? undefined : handlePointerDown($event)"
+    @pointermove="isDisplayedVideo ? undefined : handlePointerMove($event)"
+    @pointerup="isDisplayedVideo ? undefined : handlePointerEnd($event)"
+    @pointercancel="isDisplayedVideo ? undefined : handlePointerEnd($event)"
   >
     <template v-if="!useCheckerboard">
       <div
@@ -318,7 +321,18 @@ onBeforeUnmount(() => {
       v-if="displayedPhoto"
       class="photo-detail-canvas__media photo-detail-canvas__media--current"
     >
+      <PhotoVideoPlayer
+        v-if="isDisplayedVideo"
+        :key="displayedPhoto.id"
+        :photo="displayedPhoto"
+        @pointerdown.stop
+        @pointermove.stop
+        @pointerup.stop
+        @pointercancel.stop
+        @wheel.stop
+      />
       <img
+        v-else
         :key="displayedPhoto.id"
         ref="canvasImage"
         class="photo-detail-canvas__image photo-detail-canvas__image--current photo-detail-canvas__image--thumbnail"
@@ -333,7 +347,7 @@ onBeforeUnmount(() => {
         :style="currentImageStyle"
       />
       <img
-        v-if="compressedImageSrc"
+        v-if="compressedImageSrc && !isDisplayedVideo"
         class="photo-detail-canvas__image photo-detail-canvas__image--current photo-detail-canvas__image--compressed"
         :class="{
           'is-visible': isFullImageLoaded,
@@ -349,7 +363,9 @@ onBeforeUnmount(() => {
     </div>
 
     <figcaption>
-      <span>Scroll to zoom · Drag to move</span>
+      <span>{{
+        isDisplayedVideo ? 'Use the player controls to play video' : 'Scroll to zoom · Drag to move'
+      }}</span>
       <span v-if="loadFailed" class="photo-detail-canvas__load-error" role="status">
         Compressed image unavailable · showing thumbnail
       </span>
@@ -367,10 +383,10 @@ onBeforeUnmount(() => {
         />
       </Transition>
 
-      <div class="photo-detail-canvas__controls" aria-label="Image canvas controls">
+      <div class="photo-detail-canvas__controls" aria-label="Media controls">
         <button
           type="button"
-          aria-label="React to this photo"
+          :aria-label="`React to this ${isDisplayedVideo ? 'video' : 'photo'}`"
           aria-haspopup="dialog"
           :aria-expanded="showReactions"
           title="React to this photo"
@@ -379,6 +395,7 @@ onBeforeUnmount(() => {
           <i class="i-hugeicons:smile" aria-hidden="true" />
         </button>
         <button
+          v-if="!isDisplayedVideo"
           type="button"
           :aria-label="
             useCheckerboard
@@ -398,10 +415,17 @@ onBeforeUnmount(() => {
             aria-hidden="true"
           />
         </button>
-        <button type="button" aria-label="Zoom out" title="Zoom out" @click.stop="zoomOut">
+        <button
+          v-if="!isDisplayedVideo"
+          type="button"
+          aria-label="Zoom out"
+          title="Zoom out"
+          @click.stop="zoomOut"
+        >
           <i class="i-hugeicons:zoom-out-area" aria-hidden="true" />
         </button>
         <button
+          v-if="!isDisplayedVideo"
           type="button"
           class="photo-detail-canvas__zoom-value"
           aria-label="Reset image view"
@@ -410,7 +434,13 @@ onBeforeUnmount(() => {
         >
           {{ zoomLabel }}
         </button>
-        <button type="button" aria-label="Zoom in" title="Zoom in" @click.stop="zoomIn">
+        <button
+          v-if="!isDisplayedVideo"
+          type="button"
+          aria-label="Zoom in"
+          title="Zoom in"
+          @click.stop="zoomIn"
+        >
           <i class="i-hugeicons:zoom-in-area" aria-hidden="true" />
         </button>
         <button
@@ -426,7 +456,7 @@ onBeforeUnmount(() => {
           />
         </button>
         <button
-          v-if="displayedPhoto && showLoading"
+          v-if="displayedPhoto && showLoading && !isDisplayedVideo"
           type="button"
           class="photo-detail-canvas__download-progress"
           :aria-label="`Loading compressed image, ${loadProgress}%`"
@@ -455,8 +485,8 @@ onBeforeUnmount(() => {
           v-else-if="displayedPhoto"
           :href="`/api/photos/${displayedPhoto.id}/download`"
           :download="displayedPhoto.filename"
-          aria-label="Download original image"
-          title="Download original image"
+          :aria-label="`Download original ${isDisplayedVideo ? 'video' : 'image'}`"
+          :title="`Download original ${isDisplayedVideo ? 'video' : 'image'}`"
           @pointerdown.stop
           @click.stop
         >
@@ -511,6 +541,11 @@ onBeforeUnmount(() => {
 
 .photo-detail-canvas.is-dragging {
   cursor: grabbing;
+}
+
+.photo-detail-canvas.is-video {
+  cursor: default;
+  touch-action: auto;
 }
 
 .photo-detail-canvas__background,

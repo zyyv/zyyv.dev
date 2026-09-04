@@ -64,7 +64,7 @@ onMounted(() => loadPhotos(1))
   <div class="admin-workspace">
     <header class="workspace-header">
       <div>
-        <span>PHOTO OPERATIONS</span>
+        <span>MEDIA OPERATIONS</span>
         <h1>Archive control.</h1>
       </div>
       <div class="workspace-status">
@@ -114,7 +114,7 @@ onMounted(() => loadPhotos(1))
     >
       <span>不可撤销</span>
       <h2 id="delete-title">删除 {{ deleteTarget.filename }}？</h2>
-      <p>这会同时删除 D1 记录和 R2 中的原图、压缩图与缩略图。</p>
+      <p>这会同时删除 D1 记录和 R2 中的原始媒体与两档预览资源。</p>
       <div>
         <button type="button" @click="deleteTarget = null">取消</button>
         <button type="button" :disabled="mutating" @click="confirmDelete">

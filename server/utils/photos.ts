@@ -6,6 +6,7 @@ import type { D1DatabaseBinding } from '../types/cloudflare'
 export interface PhotoRow {
   id: string
   filename: string
+  media_type: 'image' | 'video'
   origin_key: string
   origin_size: number
   compressed_key: string
@@ -44,6 +45,7 @@ export function rowToPhoto(
   return {
     id: row.id,
     filename: row.filename,
+    mediaType: row.media_type || 'image',
     origin,
     originSize: row.origin_size,
     originSizeFormatted: formatPhotoSize(row.origin_size),

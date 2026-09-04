@@ -6,6 +6,8 @@ import {
   PHOTO_UPLOAD_LIMITS,
   photoUploadKeys,
   validatePhotoFilename,
+  validateOriginContentType,
+  validatePhotoMediaType,
   validatePhotoUploadId,
 } from '../../../../utils/photo-upload'
 import { getPhotoRow, rowToPhoto } from '../../../../utils/photos'
@@ -16,6 +18,8 @@ export default defineEventHandler(async (event) => {
   const id = validatePhotoUploadId(getRouterParam(event, 'id'))
   const body = await readBody<FinalizePhotoUploadBody>(event)
   const filename = validatePhotoFilename(body.filename)
+  const mediaType = validatePhotoMediaType(body.mediaType)
+  const originContentType = validateOriginContentType(body.originContentType, mediaType)
   const width = Number(body.width)
   const height = Number(body.height)
   const blurhash = body.blurhash?.trim()
@@ -37,7 +41,10 @@ export default defineEventHandler(async (event) => {
     PHOTOS.head(keys.thumbnailKey),
   ])
   if (!origin || !compressed || !thumbnail) {
-    throw createError({ statusCode: 400, statusMessage: '图片文件尚未完整上传' })
+    throw createError({ statusCode: 400, statusMessage: '媒体文件尚未完整上传' })
+  }
+  if (origin.httpMetadata?.contentType !== originContentType) {
+    throw createError({ statusCode: 400, statusMessage: '原始文件类型校验失败' })
   }
   if (
     origin.size > PHOTO_UPLOAD_LIMITS.origin ||
@@ -52,14 +59,15 @@ export default defineEventHandler(async (event) => {
   try {
     await DB.prepare(
       `INSERT INTO photos (
-        id, filename, origin_key, origin_size, compressed_key, compressed_size,
+        id, filename, media_type, origin_key, origin_size, compressed_key, compressed_size,
         thumbnail_key, thumbnail_size, width, height, blurhash, is_private,
         exif_json, created_at, modified_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
       .bind(
         id,
         filename,
+        mediaType,
         keys.originalKey,
         origin.size,
         keys.compressedKey,

@@ -41,6 +41,12 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/content', '@unocss/nuxt', '@vueuse/nuxt'],
 
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag.startsWith('media-'),
+    },
+  },
+
   experimental: {
     viewTransition: true,
   },

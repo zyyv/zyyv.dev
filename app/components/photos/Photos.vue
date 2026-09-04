@@ -2,6 +2,7 @@
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
 import PhotoEmptyState from '~/components/photos/PhotoEmptyState.vue'
+import PhotoCardMedia from '~/components/photos/PhotoCardMedia.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -85,11 +86,10 @@ onMounted(() => {
             :aria-label="`View ${item.filename}`"
             @click="openPreview(item, $event)"
           >
-            <ImgBlurHash
-              :src="item.thumbnail"
-              :blurhash="item.blurhash"
-              :aspect-ratio="item.width / item.height"
+            <PhotoCardMedia
+              :photo="item"
               class="photo-card__image"
+              :style="{ '--media-aspect-ratio': `${item.width} / ${item.height}` }"
             />
             <PhotosPhotoHoverInfo :photo="item" />
           </button>
@@ -153,28 +153,5 @@ onMounted(() => {
 .photo-card:focus-visible :deep(.photo-hover-info) {
   opacity: 1;
   transform: translateY(0);
-}
-
-.photo-card__image {
-  display: block;
-  width: 100%;
-  height: auto;
-  transform: scale(1.002);
-  transition:
-    transform 480ms cubic-bezier(0.16, 1, 0.3, 1),
-    filter 320ms ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .photo-card:hover .photo-card__image {
-    filter: brightness(0.88) saturate(0.96);
-    transform: scale(1.025);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .photo-card__image {
-    transition: none;
-  }
 }
 </style>
