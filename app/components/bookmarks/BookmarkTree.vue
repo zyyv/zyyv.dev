@@ -12,8 +12,9 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  hover: [id: string | null]
+  hover: [id: string | null, x?: number, y?: number]
   select: [id: string]
+  open: [id: string]
 }>()
 
 const focusId = computed(() => props.hoveredId || props.selectedId)
@@ -53,6 +54,7 @@ const visibleEdges = computed(() => {
         class="bookmark-tree__edge"
         :class="{ 'is-active': activeIds.has(edge.childId) }"
         :d="edge.path"
+        :style="{ '--branch-color': edge.branchColor }"
         pathLength="1"
       />
       <circle
@@ -62,6 +64,7 @@ const visibleEdges = computed(() => {
         :cx="node.x"
         :cy="node.y"
         r="7"
+        :style="{ '--branch-color': node.branchColor }"
       />
     </svg>
 
@@ -72,8 +75,9 @@ const visibleEdges = computed(() => {
       :node="node"
       :active="activeIds.has(node.id)"
       :selected="selectedId === node.id"
-      @activate="emit('hover', $event)"
+      @activate="(id, x, y) => emit('hover', id, x, y)"
       @select="emit('select', $event)"
+      @open="emit('open', $event)"
     />
   </div>
 </template>
@@ -93,7 +97,7 @@ const visibleEdges = computed(() => {
 }
 .bookmark-tree__edge {
   fill: none;
-  stroke: var(--canvas-line);
+  stroke: color-mix(in srgb, var(--branch-color) 54%, var(--canvas-line));
   stroke-width: 1.15;
   stroke-dasharray: 2 8;
   stroke-linecap: round;
@@ -106,12 +110,12 @@ const visibleEdges = computed(() => {
 }
 .bookmark-tree__leaf {
   fill: var(--canvas-node);
-  stroke: var(--canvas-line);
+  stroke: var(--branch-color);
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
 .bookmark-tree__edge.is-active {
-  stroke: var(--canvas-accent);
+  stroke: var(--branch-color);
   stroke-width: 2.25;
   stroke-dasharray: 1 0;
 }

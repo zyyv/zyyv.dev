@@ -3,35 +3,26 @@ import { buildBookmarkTree, filterBookmarkTree } from '~/utils/bookmarks'
 import BookmarkCanvas from './BookmarkCanvas.vue'
 
 const query = shallowRef('')
-const selectedTag = shallowRef('')
 const { bookmarks, loading, error, loadBookmarks } = useBookmarks()
 
 const tree = computed(() => buildBookmarkTree(bookmarks.value))
-const filteredTree = computed(() => filterBookmarkTree(tree.value, query.value, selectedTag.value))
-const tags = computed(() => [...new Set(bookmarks.value.flatMap((item) => item.tags))].sort())
-const bookmarkCount = computed(
-  () => bookmarks.value.filter((item) => item.kind === 'bookmark').length,
-)
-const folderCount = computed(() => bookmarks.value.filter((item) => item.kind === 'folder').length)
+const filteredTree = computed(() => filterBookmarkTree(tree.value, query.value, ''))
 onMounted(loadBookmarks)
 </script>
 
 <template>
   <div class="bookmarks-page">
     <div v-if="loading" class="bookmarks-loading" aria-label="正在加载书签">
-      <div class="bookmarks-loading__root" />
-      <span v-for="index in 7" :key="index" :style="{ '--index': index }" />
+      <div class="bookmarks-loading__mark" aria-hidden="true">
+        <i class="i-hugeicons:book-open-02" />
+        <span />
+      </div>
+      <p>Organizing bookmarks</p>
     </div>
 
-    <BookmarkCanvas
-      v-else
-      v-model:query="query"
-      v-model:tag="selectedTag"
-      :items="filteredTree"
-      :tags="tags"
-      :bookmark-count="bookmarkCount"
-      :folder-count="folderCount"
-    />
+    <Transition name="bookmarks-reveal" appear>
+      <BookmarkCanvas v-if="!loading" v-model:query="query" :items="filteredTree" />
+    </Transition>
 
     <p v-if="error" class="bookmarks-error" role="alert">
       <i class="i-hugeicons:alert-02" aria-hidden="true" /> {{ error }}
@@ -46,38 +37,50 @@ onMounted(loadBookmarks)
   overflow: hidden;
 }
 .bookmarks-loading {
-  position: relative;
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
   height: 100%;
-  overflow: hidden;
-  background-image: radial-gradient(
-    circle,
-    color-mix(in srgb, currentColor 12%, transparent) 0.75px,
-    transparent 0.9px
-  );
-  background-position: center;
-  background-size: 22px 22px;
+  place-content: center;
+  justify-items: center;
+  background: color-mix(in srgb, #e9e9e5 52%, transparent);
+  backdrop-filter: blur(1rem) saturate(0.85);
 }
-.bookmarks-loading span {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 9rem;
-  height: 3.5rem;
-  border-radius: 0.85rem;
-  background: color-mix(in srgb, currentColor 7%, transparent);
-  animation: bookmark-pulse 900ms calc(var(--index) * 70ms) ease-in-out infinite alternate;
-  transform: rotate(calc(var(--index) * 51deg)) translateX(20rem)
-    rotate(calc(var(--index) * -51deg));
+.dark .bookmarks-loading {
+  background: color-mix(in srgb, #11110f 52%, transparent);
 }
-.bookmarks-loading__root {
+.bookmarks-loading__mark {
+  position: relative;
+  display: grid;
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 1rem;
+  place-items: center;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  box-shadow: inset 0 1px color-mix(in srgb, white 16%, transparent);
+  font-size: 1.15rem;
+  animation: loading-breathe 1.6s ease-in-out infinite;
+}
+.bookmarks-loading__mark span {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5rem;
-  height: 5rem;
+  right: 0.55rem;
+  bottom: 0.55rem;
+  width: 0.32rem;
+  height: 0.32rem;
   border-radius: 50%;
-  background: color-mix(in srgb, currentColor 10%, transparent);
-  transform: translate(-50%, -50%);
+  background: #ef6259;
+  box-shadow: 0 0 0.75rem #ef6259;
+}
+.bookmarks-loading p {
+  margin: 0.8rem 0 0;
+  font:
+    0.58rem ui-monospace,
+    monospace;
+  letter-spacing: 0.08em;
+  opacity: 0.46;
+  text-transform: uppercase;
 }
 .bookmarks-error {
   position: fixed;
@@ -101,23 +104,40 @@ onMounted(loadBookmarks)
   background: color-mix(in srgb, #181816 90%, transparent);
   color: #ef6259;
 }
-@keyframes bookmark-pulse {
-  to {
-    opacity: 0.42;
+@keyframes loading-breathe {
+  50% {
+    transform: translateY(-0.22rem);
+    box-shadow:
+      inset 0 1px color-mix(in srgb, white 18%, transparent),
+      0 0.8rem 2.5rem color-mix(in srgb, currentColor 9%, transparent);
   }
+}
+.bookmarks-reveal-enter-active {
+  transition:
+    opacity 520ms ease,
+    clip-path 720ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bookmarks-reveal-enter-from {
+  opacity: 0;
+  clip-path: inset(48% 12% round 1.5rem);
+  transform: scale(0.985);
 }
 @media (max-width: 600px) {
   .bookmarks-error {
     bottom: 5.4rem;
   }
-  .bookmarks-loading span {
-    transform: rotate(calc(var(--index) * 51deg)) translateX(10rem)
-      rotate(calc(var(--index) * -51deg));
-  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bookmarks-loading span {
+  .bookmarks-loading__mark {
     animation: none;
+  }
+  .bookmarks-reveal-enter-active {
+    transition: opacity 160ms ease;
+  }
+  .bookmarks-reveal-enter-from {
+    clip-path: none;
+    transform: none;
   }
 }
 </style>

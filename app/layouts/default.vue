@@ -5,7 +5,6 @@ import NavHeader from '~/components/nav/NavHeader.vue'
 
 const route = useRoute()
 const { refreshSession } = useAdminSession()
-const showVgpuBackground = computed(() => !route.path.startsWith('/bookmarks'))
 const showFooter = computed(
   () =>
     !route.path.startsWith('/photos') &&
@@ -17,7 +16,7 @@ if (!route.path.startsWith('/bookmarks')) await refreshSession()
 </script>
 
 <template>
-  <SiteVgpuBackground v-if="showVgpuBackground" />
+  <SiteVgpuBackground />
   <div class="site-content">
     <NavHeader />
     <main>

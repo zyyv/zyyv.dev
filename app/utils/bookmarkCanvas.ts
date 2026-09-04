@@ -1,4 +1,5 @@
 import type { BookmarkNode } from '~/utils/bookmarks'
+import { mc } from 'magic-color'
 
 export interface BookmarkCanvasNode {
   id: string
@@ -9,6 +10,7 @@ export interface BookmarkCanvasNode {
   depth: number
   childCount: number
   direction: -1 | 0 | 1
+  branchColor: string
 }
 
 export interface BookmarkCanvasEdge {
@@ -16,6 +18,7 @@ export interface BookmarkCanvasEdge {
   parentId: string
   childId: string
   path: string
+  branchColor: string
 }
 
 export interface BookmarkCanvasBounds {
@@ -41,6 +44,15 @@ const NODE_HEIGHT = 62
 const LEVEL_GAP = 330
 const LEAF_GAP = 112
 const CANVAS_PADDING = 320
+const branchColorCache = new Map<string, string>()
+
+function randomBranchColor(id: string) {
+  const cached = branchColorCache.get(id)
+  if (cached) return cached
+  const color = mc.random('hex')
+  branchColorCache.set(id, color)
+  return color
+}
 
 interface PositionedNode {
   item: BookmarkNode
@@ -48,6 +60,7 @@ interface PositionedNode {
   y: number
   childCount: number
   direction: -1 | 1
+  branchColor: string
 }
 
 function descendantCount(node: BookmarkNode): number {
@@ -106,20 +119,27 @@ export function createBookmarkCanvasLayout(tree: readonly BookmarkNode[]): Bookm
     let cursor = 0
     const sideNodes: PositionedNode[] = []
 
-    function place(node: BookmarkNode, depth: number): number {
+    function place(node: BookmarkNode, depth: number, branchColor: string): number {
       let y: number
       if (!node.children.length) {
         y = cursor * LEAF_GAP
         cursor += 1
       } else {
-        const childPositions = node.children.map((child) => place(child, depth + 1))
+        const childPositions = node.children.map((child) => place(child, depth + 1, branchColor))
         y = childPositions.reduce((sum, position) => sum + position, 0) / childPositions.length
       }
-      sideNodes.push({ item: node, depth, y, childCount: descendantCount(node), direction })
+      sideNodes.push({
+        item: node,
+        depth,
+        y,
+        childCount: descendantCount(node),
+        direction,
+        branchColor,
+      })
       return y
     }
 
-    for (const node of nodes) place(node, 1)
+    for (const node of nodes) place(node, 1, randomBranchColor(node.id))
     const span = Math.max(0, (leafCount - 1) * LEAF_GAP)
     const offset = centerY - span / 2
     for (const node of sideNodes) {
@@ -141,6 +161,7 @@ export function createBookmarkCanvasLayout(tree: readonly BookmarkNode[]): Bookm
       depth: 0,
       childCount: positioned.length,
       direction: 0,
+      branchColor: '#ef6259',
     },
   ]
   const parentById = new Map<string, string | null>([[ROOT_ID, null]])
@@ -156,6 +177,7 @@ export function createBookmarkCanvasLayout(tree: readonly BookmarkNode[]): Bookm
       depth: entry.depth,
       childCount: entry.childCount,
       direction: entry.direction,
+      branchColor: entry.branchColor,
     })
     parentById.set(entry.item.id, parentId)
   }
@@ -178,6 +200,7 @@ export function createBookmarkCanvasLayout(tree: readonly BookmarkNode[]): Bookm
       parentId: parent.id,
       childId: node.id,
       path: `M ${startX} ${parent.y} C ${firstX} ${parent.y + bend}, ${secondX} ${node.y - bend}, ${endX} ${node.y}`,
+      branchColor: node.branchColor,
     })
   }
 

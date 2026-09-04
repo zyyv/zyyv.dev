@@ -92,7 +92,12 @@ export function useCanvasViewport(options: UseCanvasViewportOptions) {
   }
 
   function onPointerDown(event: PointerEvent) {
-    if (event.button !== 0 || (event.target as HTMLElement).closest('[data-canvas-node]')) return
+    const target = event.target as HTMLElement
+    if (
+      event.button !== 0 ||
+      target.closest('[data-canvas-node], [data-canvas-ui], button, input, a, select, textarea')
+    )
+      return
     pointerId = event.pointerId
     dragOrigin = { x: event.clientX, y: event.clientY }
     panOrigin = { x, y }

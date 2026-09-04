@@ -30,6 +30,9 @@ importers:
       blurhash:
         specifier: ^2.0.5
         version: 2.0.5
+      magic-color:
+        specifier: ^2.2.5
+        version: 2.2.5
       nuxt:
         specifier: ^4.5.2
         version: 4.5.2(@babel/plugin-proposal-decorators@7.29.7(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7(supports-color@10.2.2)))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7(supports-color@10.2.2)))(@oxc-project/types@0.142.0)(@parcel/watcher@2.5.6)(@types/node@26.4.0)(@vue/compiler-sfc@3.5.40)(better-sqlite3@13.0.3)(cac@6.7.14)(db0@0.3.4(better-sqlite3@13.0.3))(esbuild@0.28.1)(ioredis@5.11.1(supports-color@10.2.2))(lightningcss@1.33.0)(magicast@0.5.4)(oxc-parser@0.139.0)(oxlint@1.80.0)(rolldown@1.2.2)(rollup-plugin-visualizer@7.0.1(rolldown@1.2.2)(rollup@4.62.2))(rollup@4.62.2)(srvx@0.11.22)(supports-color@10.2.2)(terser@5.49.0)(tsx@4.23.1)(typescript@6.0.3)(vite@8.2.0(@types/node@26.4.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0))(vue-tsc@3.3.11(typescript@6.0.3))(webpack@5.108.4(cssnano@8.0.2(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))(yaml@2.9.0)
@@ -927,6 +930,18 @@ packages:
 
   '@lhlyu/vue-virtual-waterfall@1.0.9':
     resolution: {integrity: sha512-bpJAlPzoIPCClnwmfIUkKtOFqiAi9u0fKx1dFSUJWLaEpr1LapQI/Y1ktvhYJuE2JjLR9L0XWH9G1a/bCakErQ==}
+
+  '@magic-color/core@2.2.5':
+    resolution: {integrity: sha512-fW6ZWQN1ltfOrYGvypJlLheo3/Sitgmfr0pYmG27fpJ239Acet5RdSHk2GdmiyzUNXJJXPdA+/egXMd6oM/kNg==}
+
+  '@magic-color/shared@2.2.5':
+    resolution: {integrity: sha512-RR1O6iJBqD29Fp0IH+ymFZf1F/QqTH8GfJuosaY/nl0Zxfe/Zrevym6O43vPnC4+tEKvK2e6PmcIxPQHlJ79bA==}
+
+  '@magic-color/theme@2.2.5':
+    resolution: {integrity: sha512-HsWrOFwNWG3eN0PxzuMJV2Gz1v8TnNhePaSNgrZfB8ml5gSq0+Ar5EHGGNfcc8b8XZS+m3U6N0OcMLLNrzdQMQ==}
+
+  '@magic-color/transformer@2.2.5':
+    resolution: {integrity: sha512-VFxkqLXm5ZHmhUFqG5D94tkKn7idIJ44qToSctvqSt1E+vuIkKyOvTfikTJ6dkKHRWEDFYsTcnCM0pj41sbPBA==}
 
   '@mapbox/node-pre-gyp@2.0.3':
     resolution: {integrity: sha512-uwPAhccfFJlsfCxMYTwOdVfOz3xqyj8xYL3zJj8f0pb30tLohnnFPhLuqp4/qoEz8sNxe4SESZedcBojRefIzg==}
@@ -3889,6 +3904,9 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
+  magic-color@2.2.5:
+    resolution: {integrity: sha512-NoJ5q9gFoOEFRi+B0HAF4V0fFx6I1mpyVWoqsCiOPSjcEGlgXPQbJW1HUsp7Pv+cpBbtAXZiX/A9O5K3byomvQ==}
+
   magic-regexp@0.10.0:
     resolution: {integrity: sha512-Uly1Bu4lO1hwHUW0CQeSWuRtzCMNO00CmXtS8N6fyvB3B979GOEEeAkiTUDsmbYLAbvpUS/Kt5c4ibosAzVyVg==}
 
@@ -6510,6 +6528,21 @@ snapshots:
       '@vueuse/core': 14.4.0(vue@3.5.39(typescript@6.0.3))
     transitivePeerDependencies:
       - vue
+
+  '@magic-color/core@2.2.5':
+    dependencies:
+      '@magic-color/shared': 2.2.5
+      '@magic-color/transformer': 2.2.5
+
+  '@magic-color/shared@2.2.5': {}
+
+  '@magic-color/theme@2.2.5':
+    dependencies:
+      '@magic-color/core': 2.2.5
+
+  '@magic-color/transformer@2.2.5':
+    dependencies:
+      '@magic-color/shared': 2.2.5
 
   '@mapbox/node-pre-gyp@2.0.3(supports-color@10.2.2)':
     dependencies:
@@ -9784,6 +9817,11 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  magic-color@2.2.5:
+    dependencies:
+      '@magic-color/core': 2.2.5
+      '@magic-color/theme': 2.2.5
 
   magic-regexp@0.10.0:
     dependencies:
