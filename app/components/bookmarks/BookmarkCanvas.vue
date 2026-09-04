@@ -42,7 +42,14 @@ const {
   onPointerDown,
   onPointerMove,
   onPointerUp,
-} = useCanvasViewport({ viewport, surface, contentWidth, contentHeight })
+  onPointerCancel,
+} = useCanvasViewport({
+  viewport,
+  surface,
+  contentWidth,
+  contentHeight,
+  onBackgroundTap: clearSelection,
+})
 const semanticScale = computed(() => Math.min(10, Math.max(1, scale.value ** -0.7)))
 const overviewExpansion = computed(() =>
   isOverview.value ? Math.min(2.5, Math.max(1, 1 + ((0.36 - scale.value) / 0.325) * 1.5)) : 1,
@@ -71,12 +78,6 @@ function inspectPreviousNode() {
 function clearSelection() {
   selectedId.value = null
   selectionHistory.value = []
-}
-
-function onCanvasClick(event: MouseEvent) {
-  const target = event.target
-  if (target instanceof Element && target.closest('[data-canvas-node], [data-canvas-ui]')) return
-  clearSelection()
 }
 
 function hoverNode(id: string | null, x?: number, y?: number) {
@@ -148,8 +149,8 @@ watch(layout, () => {
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"
       @pointerup="onPointerUp"
-      @pointercancel="onPointerUp"
-      @click="onCanvasClick"
+      @pointercancel="onPointerCancel"
+      @lostpointercapture="onPointerCancel"
     >
       <div class="canvas-grid" aria-hidden="true" />
       <div ref="surface" class="canvas-surface" :class="{ 'is-overview': isOverview }">

@@ -11,6 +11,7 @@ interface UseCanvasViewportOptions {
   surface: Readonly<ShallowRef<HTMLElement | null>>
   contentWidth: Readonly<Ref<number>>
   contentHeight: Readonly<Ref<number>>
+  onBackgroundTap?: () => void
 }
 
 export function useCanvasViewport(options: UseCanvasViewportOptions) {
@@ -23,6 +24,8 @@ export function useCanvasViewport(options: UseCanvasViewportOptions) {
   let dragOrigin: CanvasPoint | null = null
   let panOrigin: CanvasPoint | null = null
   let pointerId: number | null = null
+  let pointerType = ''
+  let hasDragged = false
   let boundsTimer: ReturnType<typeof setTimeout> | null = null
 
   function updateBounds() {
@@ -95,26 +98,47 @@ export function useCanvasViewport(options: UseCanvasViewportOptions) {
     const target = event.target as HTMLElement
     if (
       event.button !== 0 ||
+      pointerId !== null ||
       target.closest('[data-canvas-node], [data-canvas-ui], button, input, a, select, textarea')
     )
       return
     pointerId = event.pointerId
+    pointerType = event.pointerType
+    hasDragged = false
     dragOrigin = { x: event.clientX, y: event.clientY }
     panOrigin = { x, y }
     options.viewport.value?.setPointerCapture(event.pointerId)
-    options.viewport.value?.classList.add('is-dragging')
   }
 
   function onPointerMove(event: PointerEvent) {
     if (pointerId !== event.pointerId || !dragOrigin || !panOrigin) return
-    x = panOrigin.x + event.clientX - dragOrigin.x
-    y = panOrigin.y + event.clientY - dragOrigin.y
+    const deltaX = event.clientX - dragOrigin.x
+    const deltaY = event.clientY - dragOrigin.y
+    const dragThreshold = pointerType === 'mouse' ? 5 : 10
+    if (!hasDragged && Math.hypot(deltaX, deltaY) < dragThreshold) return
+    hasDragged = true
+    options.viewport.value?.classList.add('is-dragging')
+    x = panOrigin.x + deltaX
+    y = panOrigin.y + deltaY
     render()
   }
 
   function onPointerUp(event: PointerEvent) {
     if (pointerId !== event.pointerId) return
+    const wasBackgroundTap = !hasDragged
+    resetPointer()
+    if (wasBackgroundTap) options.onBackgroundTap?.()
+  }
+
+  function onPointerCancel(event: PointerEvent) {
+    if (pointerId !== event.pointerId) return
+    resetPointer()
+  }
+
+  function resetPointer() {
     pointerId = null
+    pointerType = ''
+    hasDragged = false
     dragOrigin = null
     panOrigin = null
     options.viewport.value?.classList.remove('is-dragging')
@@ -143,5 +167,6 @@ export function useCanvasViewport(options: UseCanvasViewportOptions) {
     onPointerDown,
     onPointerMove,
     onPointerUp,
+    onPointerCancel,
   }
 }
