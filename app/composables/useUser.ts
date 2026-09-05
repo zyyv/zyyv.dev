@@ -4,7 +4,7 @@ const defaultUser: Partial<User> = {
   name: 'Chris',
   bio: 'Regardless of the past, do not ask the future',
   email: 'hizyyv@gmail.com',
-  avatar_url: '/avatar.png',
+  avatar_url: '/avatar.webp',
 }
 
 export function useUser() {

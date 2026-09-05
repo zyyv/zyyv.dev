@@ -17,7 +17,7 @@ const avatarStyle = computed(() => ({
   viewTransitionName: props.shared ? 'site-avatar' : 'none',
 }))
 
-const avatarUrl = computed(() => user.value.avatar_url || '/avatar.png')
+const avatarUrl = computed(() => user.value.avatar_url || '/avatar.webp')
 
 onMounted(loadUser)
 </script>

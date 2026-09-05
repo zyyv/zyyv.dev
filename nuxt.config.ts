@@ -134,7 +134,7 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@chris_zyyv' },
       ],
-      link: [{ rel: 'icon', type: 'image/x-icon', href: '/avatar.png' }],
+      link: [{ rel: 'icon', type: 'image/x-icon', href: '/avatar.webp' }],
       script: [
         {
           innerHTML:

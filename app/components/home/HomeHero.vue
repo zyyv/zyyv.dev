@@ -19,7 +19,7 @@ onMounted(loadUser)
         <span class="home-hero__avatar-orbit" aria-hidden="true" />
         <img
           class="home-hero__avatar-image animate-shape block size-full object-cover motion-reduce:animate-none"
-          src="/avatar.png"
+          src="/avatar.webp"
           alt="Chris"
           width="1000"
           height="1000"
