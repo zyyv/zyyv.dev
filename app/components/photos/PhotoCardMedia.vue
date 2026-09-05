@@ -4,6 +4,13 @@ import type { Photo } from '~/types'
 const props = defineProps<{ photo: Photo }>()
 const video = useTemplateRef<HTMLVideoElement>('video')
 const isVideo = computed(() => props.photo.mediaType === 'video')
+const formatDuration = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.floor(seconds % 60)
+  const pad = (num: number) => num.toString().padStart(2, '0')
+  return `${pad(minutes)}:${pad(remainingSeconds)}`
+}
+const duration = ref(formatDuration(0))
 
 async function playPreview() {
   if (!isVideo.value || !video.value) return
@@ -22,6 +29,11 @@ function stopPreview() {
 }
 
 onBeforeUnmount(stopPreview)
+
+function handleVideoLoadedMetadata(event: Event) {
+  const target = event.target as HTMLVideoElement
+  duration.value = formatDuration(target.duration)
+}
 </script>
 
 <template>
@@ -37,6 +49,7 @@ onBeforeUnmount(stopPreview)
       loop
       playsinline
       preload="none"
+      @loadedmetadata="handleVideoLoadedMetadata"
     />
     <ImgBlurHash
       v-else
@@ -45,10 +58,10 @@ onBeforeUnmount(stopPreview)
       :aspect-ratio="photo.width / photo.height"
       class="photo-card-media__visual"
     />
-    <span v-if="isVideo" class="photo-card-media__badge" aria-hidden="true">
-      <i class="i-hugeicons:play" />
-      VIDEO
-    </span>
+  </span>
+  <span v-if="isVideo" class="photo-card-media__badge" aria-hidden="true">
+    <i class="i-hugeicons:video-ai" />
+    {{ duration }}
   </span>
 </template>
 
@@ -79,9 +92,9 @@ onBeforeUnmount(stopPreview)
   right: 0.65rem;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.35rem 0.45rem;
-  border-radius: 0.35rem;
+  gap: 0.25rem;
+  padding: 4px 6px;
+  border-radius: 999px;
   background: rgb(12 12 11 / 52%);
   color: white;
   font-size: 0.55rem;
