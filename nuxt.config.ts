@@ -101,7 +101,6 @@ export default defineNuxtConfig({
     routeRules: {
       '/admin/**': { ssr: false },
       '/fonts/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
-      '/icons/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
     },
     prerender: {
       crawlLinks: true,
