@@ -125,7 +125,6 @@ export function useSiteStats() {
         new Blob([JSON.stringify(payload)], { type: 'application/json' }),
       )
     }
-    window.addEventListener('pagehide', endVisit)
 
     if (import.meta.dev) {
       stats.value = { ...stats.value, onlineVisitors: 1 }
@@ -135,8 +134,13 @@ export function useSiteStats() {
     let reconnectTimer: number | undefined
     let reconnectAttempts = 0
     let disposed = false
+    let presencePaused = false
 
     function connectPresence() {
+      if (socket?.readyState === WebSocket.OPEN || socket?.readyState === WebSocket.CONNECTING)
+        return
+
+      presencePaused = false
       const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
       const url = new URL('/api/presence', `${protocol}//${location.host}`)
       url.searchParams.set('visitorId', presenceVisitorId)
@@ -157,7 +161,7 @@ export function useSiteStats() {
         }
       })
       socket.addEventListener('close', () => {
-        if (disposed) return
+        if (disposed || presencePaused) return
         const delay = Math.min(1000 * 2 ** reconnectAttempts, MAX_RECONNECT_DELAY)
         reconnectAttempts += 1
         reconnectTimer = window.setTimeout(connectPresence, delay)
@@ -165,14 +169,35 @@ export function useSiteStats() {
       socket.addEventListener('error', () => socket?.close())
     }
 
+    function disconnectPresence() {
+      presencePaused = true
+      if (reconnectTimer !== undefined) {
+        window.clearTimeout(reconnectTimer)
+        reconnectTimer = undefined
+      }
+      socket?.close(1000, 'Page hidden')
+      socket = null
+    }
+
+    function handlePageHide() {
+      endVisit()
+      disconnectPresence()
+    }
+
+    function handlePageShow(event: PageTransitionEvent) {
+      if (event.persisted && !import.meta.dev) connectPresence()
+    }
+
+    window.addEventListener('pagehide', handlePageHide)
+    window.addEventListener('pageshow', handlePageShow)
     if (!import.meta.dev) connectPresence()
 
     onScopeDispose(() => {
       disposed = true
       stopRouteWatcher()
-      window.removeEventListener('pagehide', endVisit)
-      if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer)
-      socket?.close(1000, 'Page closed')
+      window.removeEventListener('pagehide', handlePageHide)
+      window.removeEventListener('pageshow', handlePageShow)
+      disconnectPresence()
     })
   }
 
