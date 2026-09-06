@@ -31,8 +31,8 @@ const childrenById = computed(() => {
 const activeIds = computed(() => {
   const ids = bookmarkAncestorIds(props.selectedId, props.layout.parentById)
   const queue = props.selectedId ? [props.selectedId] : []
-  while (queue.length) {
-    const id = queue.shift()!
+  for (let index = 0; index < queue.length; index++) {
+    const id = queue[index]!
     for (const childId of childrenById.value.get(id) || []) {
       ids.add(childId)
       queue.push(childId)
@@ -53,7 +53,7 @@ const visibleNodes = computed(() => {
   if (props.overview) {
     return props.layout.nodes.filter((node) => !node.item || node.item.kind === 'folder')
   }
-  if (!props.bounds) return props.layout.nodes
+  if (!props.bounds) return []
   return props.layout.nodes.filter((node) => bookmarkNodeInBounds(node, props.bounds!))
 })
 const visibleNodeIds = computed(() => new Set(visibleNodes.value.map((node) => node.id)))

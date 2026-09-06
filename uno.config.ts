@@ -1,11 +1,11 @@
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
 import { symbols } from '@unocss/core'
 import { PHOTO_REACTIONS } from './shared/constants/photo-reactions'
+import { FLUENT_ICON_ASSETS } from './shared/constants/fluent-icon-assets'
 import { socialLinks } from './app/utils/socialLinks'
 import {
   presetTypography,
   presetIcons,
-  presetWebFonts,
   defineConfig,
   presetAttributify,
   presetWind4,
@@ -59,17 +59,6 @@ export default defineConfig<Theme>({
         'td-borders': ['#e4e4e7', '#44403c'],
       },
     }),
-    presetWebFonts({
-      provider: 'fontsource',
-      timeouts: {
-        warning: 3000,
-        failure: 10000,
-      },
-      fonts: {
-        dm: 'DM Sans',
-        londrina: 'Londrina Outline',
-      },
-    }),
   ],
   transformers: [transformerDirectives(), transformerCompileClass(), transformerVariantGroup()],
   safelist: [
@@ -78,6 +67,20 @@ export default defineConfig<Theme>({
   ],
   blocklist: [/^\./u, /^[a-z][\w-]*::/u],
   rules: [
+    [
+      /^i-fluent-emoji:(.+)$/,
+      ([, name]) => {
+        const url = name && FLUENT_ICON_ASSETS[name]
+        if (!url) return
+        return {
+          display: 'inline-block',
+          width: '1.2em',
+          height: '1.2em',
+          'vertical-align': 'text-bottom',
+          background: `url("${url}") center / contain no-repeat`,
+        }
+      },
+    ],
     // 隐藏滚动条
     [
       'scroll-none',
@@ -125,6 +128,8 @@ export default defineConfig<Theme>({
   ],
   theme: {
     font: {
+      dm: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
+      londrina: "'Londrina Outline', sans-serif",
       dank: 'dank',
     },
     colors: {

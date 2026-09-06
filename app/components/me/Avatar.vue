@@ -33,7 +33,6 @@ onMounted(loadUser)
     :style="avatarStyle"
   >
     <ImgBlurHash
-      mode="bg"
       :src="avatarUrl"
       blurhash="L4A1l2Mx0FN402eiyEx|00-;%MIV"
       alt="Avatar"

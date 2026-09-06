@@ -2,11 +2,12 @@
 import PostsIndex from '~/components/posts/PostsIndex.vue'
 import { toPostPreview } from '~/utils/posts'
 
-const { data: postDocuments } = await useAsyncData('posts-index', () =>
-  queryCollection('posts').order('date', 'DESC').all(),
-)
+const { data: postDocuments } = await useAsyncData('posts-index', async () => {
+  const documents = await queryCollection('posts').order('date', 'DESC').all()
+  return documents.map(toPostPreview)
+})
 
-const posts = computed(() => (postDocuments.value ?? []).map((post) => toPostPreview(post)))
+const posts = computed(() => postDocuments.value ?? [])
 
 useSeoMeta({
   title: 'Posts - Chris',

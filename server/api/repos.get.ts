@@ -49,13 +49,21 @@ function toRepo(repo: BaseRepo): RepoWithTopics {
   }
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => {
-      setTimeout(() => reject(new Error(`GitHub repos request timed out after ${ms}ms`)), ms)
-    }),
-  ])
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`GitHub repos request timed out after ${ms}ms`)),
+          ms,
+        )
+      }),
+    ])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
 }
 
 async function fetchUserRepos(client: ReturnType<typeof useOctokit>): Promise<BaseRepo[]> {
@@ -130,13 +138,17 @@ async function fetchReposFromGitHub() {
 
   return Object.fromEntries(
     Object.entries(repoGroups)
-      .filter(([_, repos]) => repos.length > 0)
+      .filter(([, repos]) => repos.length > 0)
       .map(([group, repos]) => [group, repos.map(({ topics: _topics, ...repo }) => repo)]),
   )
 }
 
-export default defineEventHandler(async () => {
-  if (reposCache && reposCache.expiresAt > Date.now()) return reposCache.payload
+export default defineEventHandler(async (event) => {
+  const cacheControl = 'public, max-age=600, stale-while-revalidate=3600'
+  if (reposCache && reposCache.expiresAt > Date.now()) {
+    setResponseHeader(event, 'Cache-Control', cacheControl)
+    return reposCache.payload
+  }
 
   try {
     const payload = await withTimeout(fetchReposFromGitHub(), 15000)
@@ -146,6 +158,7 @@ export default defineEventHandler(async () => {
       payload,
     }
 
+    setResponseHeader(event, 'Cache-Control', cacheControl)
     return payload
   } catch (error) {
     console.warn('Failed to fetch GitHub repos.', error)

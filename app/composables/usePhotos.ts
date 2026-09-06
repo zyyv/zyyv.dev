@@ -65,9 +65,9 @@ export function usePhotos(initialPhotos: Photo[] = []) {
   const loading = ref(false)
   const currentPage = ref(1)
   const pageSize = ref(24)
-  const allPhotos = ref<Photo[]>([]) // 存储所有已加载的照片
-  const sourcePhotos = ref<Photo[]>(initialPhotos)
-  const hasMore = ref(true) // 是否还有更多数据
+  const allPhotos = shallowRef<Photo[]>(initialPhotos.slice(0, pageSize.value)) // 存储所有已加载的照片
+  const sourcePhotos = shallowRef<Photo[]>(initialPhotos)
+  const hasMore = ref(initialPhotos.length > pageSize.value) // 是否还有更多数据
   const error = ref<string | null>(null) // 错误状态
 
   async function getPhotosPayload(page: number): Promise<PhotosPayload> {
@@ -88,7 +88,7 @@ export function usePhotos(initialPhotos: Photo[] = []) {
 
       if (response?.photos) {
         if (append) {
-          allPhotos.value.push(...response.photos)
+          allPhotos.value = [...allPhotos.value, ...response.photos]
         } else {
           allPhotos.value = response.photos
         }

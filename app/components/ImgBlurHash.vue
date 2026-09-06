@@ -1,73 +1,66 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 import { decode } from 'blurhash'
 
-// Props
 interface Props {
-  mode?: string
   blurhash?: string
   src: string
   srcset?: string
   aspectRatio?: number
+  loading?: 'lazy' | 'eager'
+  alt?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  mode: 'img',
   aspectRatio: 1,
+  loading: 'lazy',
+  alt: '',
 })
+const image = useTemplateRef<HTMLImageElement>('image')
+const visible = useElementVisibility(image)
+const placeholder = shallowRef<string>()
+const loaded = shallowRef(false)
 
-// Refs and state
-const placeholderSrc = ref<string>()
-const isLoaded = ref(false)
-const isImgMode = props.mode === 'img'
-const attrs = useAttrs()
-const url = computed(() =>
-  isLoaded.value || !placeholderSrc.value ? props.src : placeholderSrc.value,
+watch(
+  () => props.src,
+  () => {
+    loaded.value = false
+  },
 )
-
-// Utility function for creating a data URL from an array of pixels
-function getDataUrlFromArr(arr: Uint8ClampedArray, w: number, h: number) {
-  if (typeof w === 'undefined' || typeof h === 'undefined') w = h = Math.sqrt(arr.length / 4)
-
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')!
-
-  canvas.width = w
-  canvas.height = h
-
-  const imgData = ctx.createImageData(w, h)
-  imgData.data.set(arr)
-  ctx.putImageData(imgData, 0, 0)
-
-  return canvas.toDataURL()
-}
-
-onMounted(() => {
-  // Decode the blurhash if available
-  if (props.blurhash) {
+watch([visible, () => props.blurhash], ([isVisible, hash]) => {
+  placeholder.value = undefined
+  if (!isVisible || !hash || loaded.value || image.value?.complete) return
+  try {
     const width = 32
-    const height = Math.round(32 / props.aspectRatio)
-    const pixels = decode(props.blurhash, width, height)
-    placeholderSrc.value = getDataUrlFromArr(pixels, width, height)
+    const height = Math.max(1, Math.min(64, Math.round(width / props.aspectRatio)))
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const context = canvas.getContext('2d')
+    if (!context) return
+    const pixels = context.createImageData(width, height)
+    pixels.data.set(decode(hash, width, height))
+    context.putImageData(pixels, 0, 0)
+    placeholder.value = canvas.toDataURL()
+  } catch {
+    // Invalid optional metadata must never prevent the real image from loading.
   }
-
-  // Create a temporary image to check when the image has loaded
-  const img = document.createElement('img')
-  img.onload = () => {
-    isLoaded.value = true
-  }
-  img.src = props.src
-  if (props.srcset) img.srcset = props.srcset
-
-  // Fallback to mark as loaded after a timeout in case the image takes too long
-  setTimeout(() => {
-    isLoaded.value = true
-  }, 3000)
 })
 </script>
 
 <template>
-  <img v-if="isImgMode" v-bind="attrs" :src="url" :srcset object-cover />
-  <div v-else v-bind="attrs" :style="{ backgroundImage: `url(${url})`, backgroundSize: 'cover' }" />
-  <!-- <img v-if="isImgMode" v-bind="attrs" :src="url" :srcset object-cover>
-  <div v-else v-bind="attrs" :style="{ backgroundImage: `url(${url})`, backgroundSize: 'cover' }" /> -->
+  <img
+    ref="image"
+    :src="src"
+    :srcset="srcset"
+    :alt="alt"
+    :loading="loading"
+    decoding="async"
+    class="object-cover"
+    :style="{
+      aspectRatio,
+      backgroundImage: !loaded && placeholder ? `url(${placeholder})` : undefined,
+      backgroundSize: 'cover',
+    }"
+    @load="loaded = true"
+  />
 </template>

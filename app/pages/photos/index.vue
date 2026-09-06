@@ -85,9 +85,21 @@ useSeoMeta({
   twitterImage: 'https://zyyv.dev/og.png#1',
 })
 
-useHead({
-  link: [{ rel: 'canonical', href: 'https://zyyv.dev/photos' }],
-})
+useHead(() => ({
+  link: [
+    { rel: 'canonical', href: 'https://zyyv.dev/photos' },
+    ...(mode.value === 'waterfall' && !sharedPhotoId.value && photos.value[0]
+      ? [
+          {
+            rel: 'preload' as const,
+            as: 'image' as const,
+            href: photos.value[0].thumbnail,
+            fetchpriority: 'high' as const,
+          },
+        ]
+      : []),
+  ],
+}))
 </script>
 
 <template>

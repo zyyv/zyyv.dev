@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { Photo } from '~/types'
 
-const props = defineProps<{ photo: Photo }>()
+const props = withDefaults(defineProps<{ photo: Photo; loading?: 'eager' | 'lazy' }>(), {
+  loading: 'lazy',
+})
 const video = useTemplateRef<HTMLVideoElement>('video')
 const isVideo = computed(() => props.photo.mediaType === 'video')
 const formatDuration = (seconds: number) => {
@@ -54,6 +56,10 @@ function handleVideoLoadedMetadata(event: Event) {
     <ImgBlurHash
       v-else
       :src="photo.thumbnail"
+      :alt="photo.filename"
+      :loading="loading"
+      :width="photo.width"
+      :height="photo.height"
       :blurhash="photo.blurhash"
       :aspect-ratio="photo.width / photo.height"
       class="photo-card-media__visual"

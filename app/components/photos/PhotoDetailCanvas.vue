@@ -3,7 +3,7 @@ import type { CSSProperties } from 'vue'
 import type { Photo, PhotoReactionType } from '~/types'
 import { isImagePreloaded, preloadImage } from '~/utils/preloadImage'
 import PhotoReactions from './PhotoReactions.vue'
-import PhotoVideoPlayer from './PhotoVideoPlayer.vue'
+const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
 

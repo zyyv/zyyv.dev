@@ -55,7 +55,7 @@ function selectBackgroundPhotos(photos: Photo[]) {
 
 export function useBackgroundPhotos(routeKey: Readonly<Ref<string>>) {
   const photoSources = shallowRef<BackgroundPhotoSource[]>([])
-  const { data } = usePublicPhotos({ lazy: true })
+  const { data } = usePublicPhotos({ lazy: true, server: false, all: false, limit: 24 })
 
   watch(
     [() => data.value.photos, routeKey],

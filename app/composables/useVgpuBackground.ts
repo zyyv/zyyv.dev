@@ -243,6 +243,7 @@ export function useVgpuBackground(
   function syncMotionPreference() {
     loop?.stop()
     loop = undefined
+    if (document.hidden) return
     if (reducedMotion?.matches) renderStatic()
     else startLoop()
   }
@@ -383,6 +384,7 @@ export function useVgpuBackground(
 
     reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     reducedMotion.addEventListener('change', syncMotionPreference)
+    document.addEventListener('visibilitychange', syncMotionPreference)
     window.addEventListener('pointermove', handlePointerMove, { passive: true })
 
     void (async () => {
@@ -451,6 +453,7 @@ export function useVgpuBackground(
   onBeforeUnmount(() => {
     disposed = true
     reducedMotion?.removeEventListener('change', syncMotionPreference)
+    document.removeEventListener('visibilitychange', syncMotionPreference)
     window.removeEventListener('pointermove', handlePointerMove)
     disposeGpuResources()
   })

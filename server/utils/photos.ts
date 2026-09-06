@@ -70,20 +70,28 @@ export async function getPhotoRow(database: D1DatabaseBinding, id: string) {
   return database.prepare('SELECT * FROM photos WHERE id = ?').bind(id).first<PhotoRow>()
 }
 
-export async function listPublicPhotos(database: D1DatabaseBinding) {
-  const [photosResult, reactionsResult] = await database.batch([
-    database.prepare('SELECT * FROM photos WHERE is_private = 0 ORDER BY created_at DESC, id DESC'),
-    database.prepare(
-      `SELECT photo_reactions.photo_id, photo_reactions.reaction, COUNT(*) AS count
-       FROM photo_reactions
-       INNER JOIN photos ON photos.id = photo_reactions.photo_id
-       WHERE photos.is_private = 0
-       GROUP BY photo_reactions.photo_id, photo_reactions.reaction`,
+export async function listPublicPhotos(
+  database: D1DatabaseBinding,
+  pagination?: { limit: number; offset: number },
+) {
+  const publicIds = `SELECT id FROM photos WHERE is_private = 0${pagination ? ' ORDER BY created_at DESC, id DESC LIMIT ?1 OFFSET ?2' : ''}`
+  const bindPage = (sql: string) => {
+    const statement = database.prepare(sql)
+    return pagination ? statement.bind(pagination.limit, pagination.offset) : statement
+  }
+  const statements = [
+    bindPage(
+      `SELECT * FROM photos WHERE is_private = 0 ORDER BY created_at DESC, id DESC${pagination ? ' LIMIT ?1 OFFSET ?2' : ''}`,
     ),
-  ])
+    bindPage(`SELECT photo_id, reaction, COUNT(*) AS count FROM photo_reactions
+      WHERE photo_id IN (${publicIds}) GROUP BY photo_id, reaction`),
+  ]
+  if (pagination)
+    statements.push(database.prepare('SELECT COUNT(*) AS total FROM photos WHERE is_private = 0'))
+  const [photosResult, reactionsResult, countResult] = await database.batch(statements)
   const reactionsByPhoto = new Map<string, PhotoReactionCounts>()
 
-  for (const row of reactionsResult.results as unknown as Array<{
+  for (const row of reactionsResult!.results as unknown as Array<{
     photo_id: string
     reaction: keyof PhotoReactionCounts
     count: number
@@ -93,7 +101,11 @@ export async function listPublicPhotos(database: D1DatabaseBinding) {
     reactionsByPhoto.set(row.photo_id, counts)
   }
 
-  return (photosResult.results as unknown as PhotoRow[]).map((row) =>
+  const photos = (photosResult!.results as unknown as PhotoRow[]).map((row) =>
     rowToPhoto(row, reactionsByPhoto.get(row.id)),
   )
+  const total = countResult
+    ? Number((countResult.results[0] as { total: number }).total)
+    : photos.length
+  return { photos, total }
 }

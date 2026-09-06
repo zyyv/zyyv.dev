@@ -41,6 +41,13 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/content', '@unocss/nuxt', '@vueuse/nuxt'],
 
+  hooks: {
+    'build:manifest'(manifest) {
+      // Preserve preload hints for this page, but fetch optional chunks only on demand.
+      for (const resource of Object.values(manifest)) resource.prefetch = false
+    },
+  },
+
   vue: {
     compilerOptions: {
       isCustomElement: (tag) => tag.startsWith('media-'),
@@ -48,6 +55,7 @@ export default defineNuxtConfig({
   },
 
   experimental: {
+    defaults: { nuxtLink: { prefetchOn: { interaction: true, visibility: false } } },
     viewTransition: true,
   },
 
@@ -89,8 +97,11 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    compressPublicAssets: true,
     routeRules: {
       '/admin/**': { ssr: false },
+      '/fonts/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
+      '/icons/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
     },
     prerender: {
       crawlLinks: true,
@@ -125,8 +136,7 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         {
           name: 'viewport',
-          content:
-            'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0',
+          content: 'width=device-width, initial-scale=1.0',
         },
         { name: 'author', content: 'Chris' },
         { name: 'keywords', content: 'Chris, Blog, Portfolio' },
@@ -134,7 +144,16 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@chris_zyyv' },
       ],
-      link: [{ rel: 'icon', type: 'image/x-icon', href: '/avatar.webp' }],
+      link: [
+        { rel: 'icon', type: 'image/webp', href: '/avatar.webp' },
+        {
+          rel: 'preload',
+          as: 'font',
+          type: 'font/woff2',
+          href: '/fonts/dm-sans-latin-wght-normal-9fea608a947e.woff2',
+          crossorigin: '',
+        },
+      ],
       script: [
         {
           innerHTML:

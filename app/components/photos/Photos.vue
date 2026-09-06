@@ -27,17 +27,12 @@ const {
   isEmpty,
   handleScroll,
   calcItemHeight,
-  initPhotos,
   refreshPhotos,
 } = usePhotos(props.photos)
 
 function openPreview(photo: Photo, event: MouseEvent) {
   emit('open', photo, event.currentTarget as HTMLElement)
 }
-
-onMounted(() => {
-  initPhotos()
-})
 </script>
 
 <template>
@@ -88,6 +83,7 @@ onMounted(() => {
           >
             <PhotoCardMedia
               :photo="item"
+              :loading="item.id === photos[0]?.id ? 'eager' : 'lazy'"
               class="photo-card__image"
               :style="{ '--media-aspect-ratio': `${item.width} / ${item.height}` }"
             />

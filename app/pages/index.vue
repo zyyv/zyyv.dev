@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import Home from '~/components/Home.vue'
 
-const { data: photoResponse } = await usePublicPhotos()
-const photos = computed(() => photoResponse.value.photos)
-
 useSeoMeta({
   title: 'Chris',
   description: 'Regardless of the past, do not ask the future.',
@@ -18,10 +15,13 @@ useSeoMeta({
 })
 
 useHead({
-  link: [{ rel: 'canonical', href: 'https://zyyv.dev/' }],
+  link: [
+    { rel: 'canonical', href: 'https://zyyv.dev/' },
+    { rel: 'preload', as: 'image', href: '/avatar.webp', fetchpriority: 'high' },
+  ],
 })
 </script>
 
 <template>
-  <Home :photos="photos" />
+  <Home />
 </template>

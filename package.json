@@ -32,6 +32,7 @@
     "lint:fix": "oxlint --fix . && oxfmt .",
     "format": "oxfmt .",
     "typecheck": "nuxt typecheck",
+    "check:photo-pagination": "node scripts/check-photo-pagination.mjs",
     "taze": "taze major -wIr",
     "upload:local-photos": "esno scripts/upload-local-photos.ts",
     "import:bookmarks": "esno scripts/import-bookmarks.ts"

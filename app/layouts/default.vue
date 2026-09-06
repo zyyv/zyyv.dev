@@ -12,7 +12,8 @@ const showFooter = computed(
     !route.path.startsWith('/admin'),
 )
 
-if (!route.path.startsWith('/bookmarks')) await refreshSession()
+if (route.path.startsWith('/admin')) await refreshSession()
+else onMounted(() => void refreshSession())
 </script>
 
 <template>

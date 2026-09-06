@@ -1,16 +1,29 @@
 <script setup lang="ts">
-const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
-const route = useRoute()
-const colorMode = useColorMode()
-const isDark = computed(() => colorMode.state.value === 'dark')
-const routeKey = computed(() => route.fullPath)
-const { photoSources } = useBackgroundPhotos(routeKey)
-const { isReady, isUnavailable } = useVgpuBackground(canvas, isDark, photoSources)
+// Keep the CSS backdrop in SSR; load the GPU renderer after hydration is idle.
+const enabled = shallowRef(false)
+const isReady = shallowRef(false)
+const reducedMotion = usePreferredReducedMotion()
+const desktopPointer = useMediaQuery('(min-width: 768px) and (pointer: fine)')
+const canAnimate = computed(
+  () => enabled.value && desktopPointer.value && reducedMotion.value !== 'reduce',
+)
+
+onNuxtReady(() => {
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+  enabled.value = 'gpu' in navigator && !connection?.saveData
+})
+watch(canAnimate, () => {
+  isReady.value = false
+})
 </script>
 
 <template>
   <div class="vgpu-background" :class="{ 'vgpu-background--ready': isReady }" aria-hidden="true">
-    <canvas v-if="!isUnavailable" ref="canvas" class="vgpu-background__canvas" />
+    <LazySiteBackgroundCanvas
+      v-if="canAnimate"
+      class="vgpu-background__canvas"
+      @ready="isReady = $event"
+    />
     <div class="vgpu-background__fallback" />
     <div class="vgpu-background__veil" />
   </div>

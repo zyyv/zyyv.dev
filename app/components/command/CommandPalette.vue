@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import CommandTerminal from '~/components/command/CommandTerminal.vue'
+import type CommandTerminal from '~/components/command/CommandTerminal.vue'
+
+const AsyncCommandTerminal = defineAsyncComponent(() => import('./CommandTerminal.vue'))
 import { nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
 
 const route = useRoute()
 const isOpen = shallowRef(false)
 const terminalRef = useTemplateRef<InstanceType<typeof CommandTerminal>>('terminal')
+watch(terminalRef, (terminal) => {
+  if (isOpen.value) terminal?.focus()
+})
 
 function closePanel() {
   isOpen.value = false
@@ -56,7 +61,7 @@ defineExpose({ openPanel, closePanel })
 
     <Transition name="terminal-window">
       <div v-if="isOpen" class="command-palette__positioner">
-        <CommandTerminal
+        <AsyncCommandTerminal
           ref="terminal"
           :input="input"
           :transcript="transcript"

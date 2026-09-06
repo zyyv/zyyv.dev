@@ -1,27 +1,38 @@
 <script setup lang="ts">
-import type { Photo } from '~/types'
-import HomePhotosPreview from './home/HomePhotosPreview.vue'
 import HomeHero from './home/HomeHero.vue'
-import { seededShuffle } from '~/utils/shuffle'
 
-const props = defineProps<{
-  photos: Photo[]
-}>()
-
-const photoSeed = useState('home-photo-seed', () => Math.random())
-const randomPhotos = computed(() => seededShuffle(props.photos, photoSeed.value))
-const streamPhotos = computed(() => randomPhotos.value.slice(0, 22))
+const photoSection = useTemplateRef<HTMLElement>('photoSection')
+const showPhotos = shallowRef(false)
+const { stop } = useIntersectionObserver(
+  photoSection,
+  ([entry]) => {
+    if (!entry?.isIntersecting) return
+    showPhotos.value = true
+    stop()
+  },
+  { rootMargin: '400px' },
+)
 </script>
 
 <template>
   <div class="home-page w-full min-w-0 overflow-x-clip text-red/20">
     <HomeHero />
 
-    <HomePhotosPreview :photos="streamPhotos" />
+    <div id="photos" ref="photoSection" class="home-photo-section">
+      <LazyHomePhotoSection v-if="showPhotos" />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.home-photo-section {
+  min-height: 340dvh;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-photo-section {
+    min-height: 100dvh;
+  }
+}
 .home-page {
   background: transparent;
   color: #11110f;

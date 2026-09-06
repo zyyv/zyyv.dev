@@ -49,7 +49,7 @@ function itemStyle(photo: Photo): CSSProperties {
 </script>
 
 <template>
-  <section id="photos" class="photo-stream" aria-labelledby="photos-title">
+  <section class="photo-stream" aria-label="Photography">
     <header class="photo-stream__header">
       <div class="photo-stream__intro">
         <p>Light, weather, and ordinary moments worth keeping.</p>
@@ -84,7 +84,14 @@ function itemStyle(photo: Photo): CSSProperties {
             :style="itemStyle(photo)"
           >
             <span class="photo-stream__media">
-              <img :src="photo.thumbnail" alt="" loading="lazy" />
+              <img
+                :src="`/api/photo-assets/${encodeURIComponent(photo.id)}/thumbnail`"
+                :width="photo.width"
+                :height="photo.height"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
               <span class="photo-stream__number">{{ String(index + 1).padStart(2, '0') }}</span>
             </span>
           </figure>

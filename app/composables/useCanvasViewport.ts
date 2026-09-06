@@ -29,6 +29,7 @@ export function useCanvasViewport(options: UseCanvasViewportOptions) {
   let boundsTimer: ReturnType<typeof setTimeout> | null = null
 
   function updateBounds() {
+    if (boundsTimer) clearTimeout(boundsTimer)
     boundsTimer = null
     const viewport = options.viewport.value
     if (!viewport) return
@@ -71,6 +72,7 @@ export function useCanvasViewport(options: UseCanvasViewportOptions) {
     x = (viewport.clientWidth - options.contentWidth.value * scale.value) / 2
     y = (viewport.clientHeight - options.contentHeight.value * scale.value) / 2
     render()
+    updateBounds()
   }
 
   function zoom(nextScale: number, origin?: CanvasPoint) {

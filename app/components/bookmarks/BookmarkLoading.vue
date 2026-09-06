@@ -10,7 +10,6 @@ const emit = defineEmits<{
 const progress = shallowRef(0)
 const displayProgress = computed(() => Math.min(100, Math.round(progress.value)))
 let intervalId: ReturnType<typeof setInterval> | null = null
-let completionId: ReturnType<typeof setTimeout> | null = null
 
 function stopProgress() {
   if (!intervalId) return
@@ -28,17 +27,30 @@ function updateProgress() {
   if (!props.ready || progress.value < 100) return
 
   stopProgress()
-  completionId = setTimeout(() => emit('complete'), 280)
+  emit('complete')
 }
 
+watch(
+  () => props.ready,
+  (ready) => {
+    if (ready) {
+      stopProgress()
+      progress.value = 100
+      emit('complete')
+    }
+  },
+  { immediate: true },
+)
+
 onMounted(() => {
-  intervalId = setInterval(updateProgress, 40)
-  updateProgress()
+  if (!props.ready) {
+    intervalId = setInterval(updateProgress, 100)
+    updateProgress()
+  }
 })
 
 onBeforeUnmount(() => {
   stopProgress()
-  if (completionId) clearTimeout(completionId)
 })
 </script>
 
