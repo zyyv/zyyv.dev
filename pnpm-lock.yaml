@@ -186,6 +186,9 @@ importers:
       '@unocss/preset-wind4':
         specifier: ^66.10.0
         version: 66.10.0
+      '@unocss/processor-lightningcss':
+        specifier: ^66.10.0
+        version: 66.10.0
       esno:
         specifier: ^4.8.0
         version: 4.8.0
@@ -2351,9 +2354,6 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@26.4.0':
-    resolution: {integrity: sha512-faiGnoIrLH/V8cibOMEAZ8pMw6oXqSukl29ra4mN8GdaB2ZewzeaLj+INpV5N+Z1eKWzY+IzaIZH2EIR6YZRNQ==}
-
   '@types/node@26.4.1':
     resolution: {integrity: sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA==}
 
@@ -2466,6 +2466,9 @@ packages:
 
   '@unocss/preset-wind@66.10.0':
     resolution: {integrity: sha512-tgHsl8Y41MzD0q/0ruBPN8fBSZ+Mu6zbmQCZTnki2pLOOQUcM38V6vnedvMRsv4DOXydGx/GElPuFwEgP3BVgQ==}
+
+  '@unocss/processor-lightningcss@66.10.0':
+    resolution: {integrity: sha512-MG1kTdSpZfEM3i9lQVFnhgzdUQIz03STLY9BTG5FcvXrAtN5tV1Z/Z/8hzPV8JEePaXoR1E03I/n2chvXWQXzw==}
 
   '@unocss/reset@66.10.0':
     resolution: {integrity: sha512-zFPjCW38mZOsFPurRtdosYGk9IkZ5hpgxoaKxqrSqLv776bl427G6RCmOz6UorHlUiurqsMlyZxodnVSfViGHA==}
@@ -8137,10 +8140,6 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@26.4.0':
-    dependencies:
-      undici-types: 8.3.0
-
   '@types/node@26.4.1':
     dependencies:
       undici-types: 8.3.0
@@ -8349,6 +8348,11 @@ snapshots:
     dependencies:
       '@unocss/core': 66.10.0
       '@unocss/preset-wind3': 66.10.0
+
+  '@unocss/processor-lightningcss@66.10.0':
+    dependencies:
+      '@unocss/core': 66.10.0
+      lightningcss: 1.33.0
 
   '@unocss/reset@66.10.0': {}
 
@@ -10030,7 +10034,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 26.4.0
+      '@types/node': 26.4.1
       merge-stream: 2.0.0
       supports-color: 8.1.1
 

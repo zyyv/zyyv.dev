@@ -2,6 +2,7 @@ import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
 import { symbols } from '@unocss/core'
 import { PHOTO_REACTIONS } from './shared/constants/photo-reactions'
 import { socialLinks } from './app/utils/socialLinks'
+import processorLightningCSS from '@unocss/processor-lightningcss'
 import {
   presetTypography,
   presetIcons,
@@ -60,6 +61,14 @@ export default defineConfig<Theme>({
     }),
   ],
   transformers: [transformerDirectives(), transformerCompileClass(), transformerVariantGroup()],
+  processors: [
+    processorLightningCSS({
+      targets: {
+        chrome: 111 << 16,
+        safari: 15 << 16,
+      },
+    }),
+  ],
   safelist: [
     ...PHOTO_REACTIONS.map((reaction) => reaction.icon),
     ...socialLinks.map((link) => link.icon),
