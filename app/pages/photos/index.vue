@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onBeforeRouteLeave } from 'vue-router'
 import type { Photo } from '~/types'
 import PhotoDetail from '~/components/photos/PhotoDetail.vue'
 import PhotosGallery from '~/components/photos/Photos.vue'
@@ -37,6 +38,13 @@ async function closePreview() {
     currentPhoto.value = null
   })
 }
+
+onBeforeRouteLeave(() => {
+  if (!showPreview.value) return
+
+  void closePreview()
+  return false
+})
 
 function showPrevPhoto() {
   const photo = photos.value[currentIndex.value - 1]
