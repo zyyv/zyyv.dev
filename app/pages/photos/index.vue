@@ -6,10 +6,12 @@ import PhotosGallery from '~/components/photos/Photos.vue'
 import RipplablePhotos from '~/components/photos/RipplablePhotos.vue'
 
 const route = useRoute()
+const router = useRouter()
 const photosPageRef = useTemplateRef<HTMLElement>('photosPage')
 const { data: photoResponse } = await usePublicPhotos()
 const photos = computed(() => photoResponse.value.photos)
 const currentPhoto = shallowRef<Photo | null>(null)
+const syncingPhotoQuery = shallowRef(false)
 const showPreview = computed(() => currentPhoto.value !== null)
 const sharedPhotoId = computed(() =>
   typeof route.query.photo === 'string' ? route.query.photo : null,
@@ -26,10 +28,29 @@ const {
   closePhoto,
 } = usePhotoDialogViewTransition({ sourceRoot: photosPageRef })
 
+async function syncPhotoQuery(photoId: string | null) {
+  const currentPhotoQuery = typeof route.query.photo === 'string' ? route.query.photo : null
+  if (!import.meta.client || currentPhotoQuery === photoId) return
+
+  syncingPhotoQuery.value = true
+  try {
+    await router.replace({
+      query: {
+        ...route.query,
+        photo: photoId ?? undefined,
+      },
+    })
+  } finally {
+    await nextTick()
+    syncingPhotoQuery.value = false
+  }
+}
+
 async function openPreview(photo: Photo, source: HTMLElement | null = null) {
   await openPhoto(source, () => {
     currentPhoto.value = photo
   })
+  await syncPhotoQuery(photo.id)
 }
 
 async function closePreview() {
@@ -37,6 +58,7 @@ async function closePreview() {
   await closePhoto(currentPhoto.value.id, () => {
     currentPhoto.value = null
   })
+  await syncPhotoQuery(null)
 }
 
 onBeforeRouteLeave(() => {
@@ -48,21 +70,25 @@ onBeforeRouteLeave(() => {
 
 function showPrevPhoto() {
   const photo = photos.value[currentIndex.value - 1]
-  if (photo) currentPhoto.value = photo
+  if (photo) void openPreview(photo)
 }
 
 function showNextPhoto() {
   const photo = photos.value[currentIndex.value + 1]
-  if (photo) currentPhoto.value = photo
+  if (photo) void openPreview(photo)
 }
 
 function openSharedPhoto(photoId: string | null) {
   if (!photoId) return
+  if (currentPhoto.value?.id === photoId) return
   const photo = photos.value.find((item) => item.id === photoId)
   if (photo) void openPreview(photo)
 }
 
-watch(sharedPhotoId, openSharedPhoto)
+watch(sharedPhotoId, (photoId) => {
+  if (syncingPhotoQuery.value) return
+  openSharedPhoto(photoId)
+})
 
 onMounted(() => {
   openSharedPhoto(sharedPhotoId.value)
