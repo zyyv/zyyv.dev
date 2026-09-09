@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
 import {
   getPhotoFilmstripCacheKey,
@@ -10,28 +11,19 @@ import {
 const PRELOAD_RADIUS = 2
 const SCROLL_SAVE_THROTTLE = 120
 
-interface Props {
-  photos: readonly Photo[]
-  activePhotoId: string
-}
-
-interface Emits {
-  select: [photo: Photo]
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const { photos, photo: selectedPhoto, actions } = usePhotoDetailContext()
 const filmstripRef = useTemplateRef<HTMLElement>('filmstrip')
 const thumbnailRefs = new Map<string, HTMLElement>()
 const imageLoadState = usePhotoImageLoadState()
 const scrollCache = usePhotoFilmstripScroll()
 const hasRestoredScroll = shallowRef(false)
 const collectionKey = computed(() =>
-  getPhotoFilmstripCacheKey(props.photos.map((photo) => photo.id)),
+  getPhotoFilmstripCacheKey(photos.value.map((photo) => photo.id)),
 )
 const activeIndex = computed(() =>
-  props.photos.findIndex((photo) => photo.id === props.activePhotoId),
+  photos.value.findIndex((photo) => photo.id === selectedPhoto.value?.id),
 )
+const activePhotoId = computed(() => selectedPhoto.value?.id ?? '')
 
 let scrollFrame: number | undefined
 let preloadTimer: ReturnType<typeof setTimeout> | undefined
@@ -46,7 +38,7 @@ function setThumbnailRef(element: Element | ComponentPublicInstance | null, phot
 }
 
 function scrollActivePhoto(behavior: ScrollBehavior = 'smooth') {
-  thumbnailRefs.get(props.activePhotoId)?.scrollIntoView({
+  thumbnailRefs.get(activePhotoId.value)?.scrollIntoView({
     behavior,
     block: 'nearest',
     inline: 'center',
@@ -100,9 +92,9 @@ function scheduleThumbnailPreload() {
     if (index < 0) return
 
     const start = Math.max(0, index - PRELOAD_RADIUS)
-    const end = Math.min(props.photos.length, index + PRELOAD_RADIUS + 1)
-    for (const photo of props.photos.slice(start, end)) {
-      if (photo.id === props.activePhotoId) continue
+    const end = Math.min(photos.value.length, index + PRELOAD_RADIUS + 1)
+    for (const photo of photos.value.slice(start, end)) {
+      if (photo.id === activePhotoId.value) continue
       if (imageLoadState.isLoaded(photo.thumbnail)) continue
       void imageLoadState.preload(photo.thumbnail, { expectedBytes: photo.thumbnailSize })
     }
@@ -119,7 +111,7 @@ watch(
 )
 
 watch(
-  () => props.activePhotoId,
+  activePhotoId,
   async (_photoId, previousPhotoId) => {
     scheduleThumbnailPreload()
     if (!hasRestoredScroll.value || previousPhotoId === undefined) return
@@ -169,7 +161,7 @@ onBeforeUnmount(() => {
       :aria-label="`View ${item.filename || item.id}`"
       :aria-current="item.id === activePhotoId ? 'true' : undefined"
       data-cuelume-toggle="page"
-      @click="emit('select', item)"
+      @click="actions.select(item)"
     >
       <ImgBlurHash
         :src="item.thumbnail"

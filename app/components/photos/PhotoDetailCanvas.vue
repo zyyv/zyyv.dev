@@ -1,17 +1,13 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
 import type { CSSProperties } from 'vue'
-import type {
-  Photo,
-  PhotoPreviewLoadingState,
-  PhotoPreviewVariant,
-  PhotoReactionType,
-} from '~/types'
+import type { Photo, PhotoPreviewLoadingState, PhotoPreviewVariant } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { usePhotoImage, usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
 import PhotoBlurhashPreview from './PhotoBlurhashPreview.vue'
 const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
-type SwipeDirection = 'prev' | 'next'
 
 const COMPRESSED_IMAGE_MAX_WIDTH = 2560
 const SWIPE_MIN_DISTANCE = 48
@@ -23,26 +19,16 @@ interface SwipeStart {
   y: number
 }
 
-interface Props {
-  photo: Photo
-  photos: Photo[]
-  reactionError: string | null
-  reactionSaving: boolean
-  previewVariant: PhotoPreviewVariant
-}
-
-interface Emits {
-  displayedChange: [photo: Photo]
-  loadingChange: [loading: boolean, progress: number]
-  activeVariantChange: [variant: PhotoPreviewVariant]
-  previewLoadingChange: [loading: PhotoPreviewLoadingState]
-  react: [reaction: PhotoReactionType]
-  swipe: [direction: SwipeDirection]
-  zoomChange: [label: string]
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const detailContext = usePhotoDetailContext()
+const {
+  photo: selectedPhoto,
+  photos,
+  previewVariant,
+  checkerboard,
+  hasPrev,
+  hasNext,
+  actions,
+} = detailContext
 const imageLoadState = usePhotoImageLoadState()
 const preferredMotion = usePreferredReducedMotion()
 const displayedPhoto = shallowRef<Photo | null>(null)
@@ -60,7 +46,10 @@ const isAnimating = shallowRef(false)
 const showLoading = shallowRef(false)
 const loadProgress = shallowRef(0)
 const loadFailed = shallowRef(false)
-const useCheckerboard = defineModel<boolean>('checkerboard', { default: false })
+const useCheckerboard = computed({
+  get: () => checkerboard.value,
+  set: (value: boolean) => actions.setCheckerboard(value),
+})
 const {
   canvasRef,
   imageStyle,
@@ -92,15 +81,15 @@ const canvasClasses = computed(() => ({
 const isDisplayedVideo = computed(() => displayedPhoto.value?.mediaType === 'video')
 const activePreviewVariant = computed<PhotoPreviewVariant>(() => {
   if (
-    props.previewVariant === 'compressed' &&
+    previewVariant.value === 'compressed' &&
     !isDisplayedVideo.value &&
     !thumbnailImage.isLoaded.value &&
     !isFullImageLoaded.value
   ) {
     return 'blurhash'
   }
-  if (props.previewVariant === 'compressed' && !isFullImageLoaded.value) return 'thumbnail'
-  return props.previewVariant
+  if (previewVariant.value === 'compressed' && !isFullImageLoaded.value) return 'thumbnail'
+  return previewVariant.value
 })
 const isVariantPreviewVisible = computed(
   () => !isDisplayedVideo.value && activePreviewVariant.value !== 'compressed',
@@ -110,7 +99,7 @@ const previewLoading = computed<PhotoPreviewLoadingState>(() => ({
   compressed: !isDisplayedVideo.value && compressedImage.isLoading.value,
   origin:
     !isDisplayedVideo.value &&
-    props.previewVariant === 'origin' &&
+    previewVariant.value === 'origin' &&
     !originImage.isLoaded.value &&
     !originImage.hasError.value,
   blurhash: false,
@@ -144,15 +133,17 @@ const activeTouchPointers = new Set<number>()
 
 watch(
   [showLoading, loadProgress],
-  ([loading, progress]) => emit('loadingChange', loading, progress),
+  ([loading, progress]) => actions.setDownloadProgress(loading, progress),
   { immediate: true },
 )
-watch(zoomLabel, (label) => emit('zoomChange', label), { immediate: true })
-watch(activePreviewVariant, (variant) => emit('activeVariantChange', variant), { immediate: true })
-watch(previewLoading, (loading) => emit('previewLoadingChange', loading), { immediate: true })
+watch(zoomLabel, (label) => actions.setZoomLabel(label), { immediate: true })
+watch(activePreviewVariant, (variant) => actions.setActivePreviewVariant(variant), {
+  immediate: true,
+})
+watch(previewLoading, (loading) => actions.setPreviewLoading(loading), { immediate: true })
 
 watch(
-  [() => props.previewVariant, () => displayedPhoto.value?.id],
+  [previewVariant, () => displayedPhoto.value?.id],
   ([variant]) => {
     const photo = displayedPhoto.value
     if (variant !== 'origin' || !photo || photo.mediaType !== 'image') return
@@ -161,23 +152,19 @@ watch(
   { immediate: true },
 )
 
-defineExpose({
-  resetCanvas,
-  zoomIn,
-  zoomOut,
-})
+actions.registerCanvasControls({ reset: resetCanvas, zoomIn, zoomOut })
 
 watch(
-  () => props.photo,
+  selectedPhoto,
   (photo) => {
-    void displayPhoto(photo)
+    if (photo) void displayPhoto(photo)
   },
   { immediate: true },
 )
 
 function getPhotoIndex(photo: Photo | null): number {
   if (!photo) return -1
-  return props.photos.findIndex((item) => item.id === photo.id)
+  return photos.value.findIndex((item) => item.id === photo.id)
 }
 
 function getDirection(from: Photo | null, to: Photo): SwitchDirection {
@@ -191,7 +178,7 @@ function preloadNeighbors(photo: Photo) {
   const index = getPhotoIndex(photo)
   if (index < 0) return
 
-  const neighbors = [props.photos[index - 1], props.photos[index + 1]].filter((p) => !!p)
+  const neighbors = [photos.value[index - 1], photos.value[index + 1]].filter((p) => !!p)
 
   Promise.all(
     neighbors.map((neighbor) =>
@@ -258,7 +245,15 @@ function handleCanvasPointerEnd(event: PointerEvent) {
   const isHorizontalSwipe =
     Math.abs(deltaX) >= SWIPE_MIN_DISTANCE && Math.abs(deltaX) > Math.abs(deltaY) * SWIPE_AXIS_RATIO
 
-  if (isHorizontalSwipe) emit('swipe', deltaX > 0 ? 'prev' : 'next')
+  if (!isHorizontalSwipe) return
+
+  const direction = deltaX > 0 ? 'prev' : 'next'
+  const canNavigate = direction === 'prev' ? hasPrev.value : hasNext.value
+  if (!canNavigate) return
+
+  play('page')
+  if (direction === 'prev') actions.previous()
+  else actions.next()
 }
 
 function handleCanvasPointerCancel(event: PointerEvent) {
@@ -327,7 +322,7 @@ async function displayPhoto(photo: Photo) {
   loadFailed.value = false
   showLoading.value = !hasCachedCompressedImage
   resetCanvas()
-  emit('displayedChange', photo)
+  actions.setDisplayedPhoto(photo)
 
   const thumbnailLoadingPromise =
     photo.mediaType === 'image' && !hasCachedThumbnail
@@ -398,6 +393,7 @@ async function displayPhoto(photo: Photo) {
 }
 
 onBeforeUnmount(() => {
+  actions.registerCanvasControls(null)
   requestId += 1
   if (transitionTimer) clearTimeout(transitionTimer)
 })
@@ -461,14 +457,7 @@ onBeforeUnmount(() => {
       v-if="displayedPhoto"
       class="photo-detail-canvas__media photo-detail-canvas__media--current"
     >
-      <PhotoVideoPlayer
-        v-if="isDisplayedVideo"
-        :key="displayedPhoto.id"
-        :photo="displayedPhoto"
-        :reaction-error="reactionError"
-        :reaction-saving="reactionSaving"
-        @react="emit('react', $event)"
-      />
+      <PhotoVideoPlayer v-if="isDisplayedVideo" :key="displayedPhoto.id" />
       <img
         v-else
         ref="canvasImage"

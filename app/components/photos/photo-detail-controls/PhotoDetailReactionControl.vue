@@ -1,28 +1,12 @@
 <script setup lang="ts">
-import type { Photo, PhotoReactionType } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import PhotoReactions from '../PhotoReactions.vue'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
 
-interface Props {
-  photo: Photo
-  busy?: boolean
-  disabled?: boolean
-  error?: string | null
-}
-
-interface Emits {
-  react: [reaction: PhotoReactionType]
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  busy: false,
-  disabled: false,
-  error: null,
-})
-const emit = defineEmits<Emits>()
+const { detailPhoto, reactionError, reactionSaving, actions } = usePhotoDetailContext()
 const showReactions = shallowRef(false)
 const reactionControl = useTemplateRef<HTMLElement>('reactionControl')
-const mediaLabel = computed(() => (props.photo.mediaType === 'video' ? 'video' : 'photo'))
+const mediaLabel = computed(() => (detailPhoto.value?.mediaType === 'video' ? 'video' : 'photo'))
 const label = computed(() => `React to this ${mediaLabel.value}`)
 
 onClickOutside(reactionControl, () => {
@@ -40,17 +24,17 @@ onKeyStroke('Escape', () => {
       <PhotoReactions
         v-show="showReactions"
         class="photo-detail-reaction-control__popover"
-        :busy="props.busy"
-        :disabled="props.disabled"
-        :error="props.error"
-        @react="emit('react', $event)"
+        :busy="reactionSaving"
+        :disabled="reactionSaving"
+        :error="reactionError"
+        @react="actions.react"
       />
     </Transition>
 
     <PhotoDetailControlButton
       :label="label"
       icon="i-hugeicons:smile"
-      :disabled="props.disabled"
+      :disabled="reactionSaving"
       :expanded="showReactions"
       has-popup="dialog"
       @click="showReactions = !showReactions"

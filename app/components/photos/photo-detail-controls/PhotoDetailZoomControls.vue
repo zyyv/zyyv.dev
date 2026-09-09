@@ -1,18 +1,8 @@
 <script setup lang="ts">
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
 
-interface Props {
-  zoomLabel: string
-}
-
-interface Emits {
-  zoomIn: []
-  zoomOut: []
-  reset: []
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const { zoomLabel, actions } = usePhotoDetailContext()
 </script>
 
 <template>
@@ -20,18 +10,18 @@ const emit = defineEmits<Emits>()
     <PhotoDetailControlButton
       label="Zoom out"
       icon="i-hugeicons:zoom-out-area"
-      @click="emit('zoomOut')"
+      @click="actions.zoomOut"
     />
     <PhotoDetailControlButton
-      :label="`Reset image view, ${props.zoomLabel}`"
-      :text="props.zoomLabel"
+      :label="`Reset image view, ${zoomLabel}`"
+      :text="zoomLabel"
       variant="value"
-      @click="emit('reset')"
+      @click="actions.resetZoom"
     />
     <PhotoDetailControlButton
       label="Zoom in"
       icon="i-hugeicons:zoom-in-area"
-      @click="emit('zoomIn')"
+      @click="actions.zoomIn"
     />
   </div>
 </template>

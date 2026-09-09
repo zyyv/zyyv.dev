@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { play } from 'cuelume'
-import type { Photo, PhotoPreviewLoadingState, PhotoPreviewVariant } from '~/types'
+import type { Photo } from '~/types'
+import { providePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { providePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
 import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
@@ -23,48 +24,35 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const detailContext = providePhotoDetailContext({
+  photo: () => props.photo,
+  photos: () => props.photos,
+  visible: () => props.visible,
+  onClose: () => emit('close'),
+  onPrevious: () => emit('prev'),
+  onNext: () => emit('next'),
+  onSelect: (photo) => emit('select', photo),
+})
+const {
+  photo: selectedPhoto,
+  photos,
+  detailPhoto,
+  currentIndex,
+  hasPrev,
+  hasNext,
+  visible,
+  actions,
+} = detailContext
 providePhotoImageLoadState()
 const dialogRef = useTemplateRef<HTMLElement>('dialog')
-const displayedPhoto = shallowRef<Photo | null>(null)
-const previewVariant = shallowRef<PhotoPreviewVariant>('compressed')
-const activePreviewVariant = shallowRef<PhotoPreviewVariant>('thumbnail')
-const checkerboard = shallowRef(false)
-const zoomLabel = shallowRef('100%')
-const downloadLoading = shallowRef(false)
-const downloadProgress = shallowRef(0)
-const previewLoading = shallowRef<PhotoPreviewLoadingState>({
-  thumbnail: false,
-  compressed: false,
-  origin: false,
-  blurhash: false,
-})
-const canvas = useTemplateRef<InstanceType<typeof PhotoDetailCanvas>>('canvas')
-
-const currentIndex = computed(() => {
-  if (!props.photo || !props.photos.length) return -1
-  return props.photos.findIndex((photo) => photo.id === props.photo?.id)
-})
-const detailPhoto = computed(() => displayedPhoto.value ?? props.photo)
-const downloadVariant = computed<PhotoPreviewVariant>(() =>
-  detailPhoto.value?.mediaType === 'image' ? activePreviewVariant.value : 'origin',
-)
-const {
-  counts: reactionCounts,
-  saving: reactionSaving,
-  error: reactionError,
-  react,
-} = usePhotoReactions(detailPhoto)
-const hasPrev = computed(() => currentIndex.value > 0)
-const hasNext = computed(() => currentIndex.value < props.photos.length - 1)
 
 watch(
-  [currentIndex, () => props.visible],
-  async ([index, visible], [, wasVisible]) => {
-    if (!visible || index < 0) {
-      displayedPhoto.value = null
+  [currentIndex, visible],
+  async ([index, isVisible]) => {
+    if (!isVisible || index < 0) {
+      actions.setDisplayedPhoto(null)
       return
     }
-    if (!wasVisible) displayedPhoto.value = props.photo
 
     await nextTick()
     dialogRef.value?.focus({ preventScroll: true })
@@ -72,85 +60,28 @@ watch(
   { flush: 'post' },
 )
 
-watch(
-  () => props.photo?.id,
-  () => {
-    previewVariant.value = 'compressed'
-    activePreviewVariant.value = 'thumbnail'
-  },
-)
-
 function handleKeydown(event: KeyboardEvent) {
-  if (!props.visible) return
+  if (!visible.value) return
 
   if (event.key === 'Escape') {
     play('droplet')
-    emit('close')
+    actions.close()
     return
   }
   if (event.key === 'ArrowLeft' && hasPrev.value) {
     play('page')
-    emit('prev')
+    actions.previous()
     return
   }
   if (event.key === 'ArrowRight' && hasNext.value) {
     play('page')
-    emit('next')
-  }
-}
-
-function handleDisplayedChange(photo: Photo) {
-  displayedPhoto.value = photo
-}
-
-function handleCanvasLoadingChange(loading: boolean, progress: number) {
-  downloadLoading.value = loading
-  downloadProgress.value = progress
-}
-
-function handleCanvasPreviewLoadingChange(loading: PhotoPreviewLoadingState) {
-  previewLoading.value = loading
-}
-
-function handleCanvasZoomChange(label: string) {
-  zoomLabel.value = label
-}
-
-function zoomIn() {
-  canvas.value?.zoomIn()
-}
-
-function zoomOut() {
-  canvas.value?.zoomOut()
-}
-
-function resetZoom() {
-  canvas.value?.resetCanvas()
-}
-
-function handlePreviewChange(variant: PhotoPreviewVariant) {
-  if (detailPhoto.value?.mediaType !== 'image') return
-  previewVariant.value = variant
-}
-
-function handleActiveVariantChange(variant: PhotoPreviewVariant) {
-  activePreviewVariant.value = variant
-}
-
-function handleSwipe(direction: 'prev' | 'next') {
-  if (direction === 'prev' && hasPrev.value) {
-    play('page')
-    emit('prev')
-  }
-  if (direction === 'next' && hasNext.value) {
-    play('page')
-    emit('next')
+    actions.next()
   }
 }
 
 function handleBackdropMouseDown() {
   play('droplet')
-  emit('close')
+  actions.close()
 }
 
 onMounted(() => document.addEventListener('keydown', handleKeydown))
@@ -161,7 +92,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   <Teleport to="body">
     <Transition name="photo-dialog" :css="!transitioning">
       <div
-        v-if="visible && photo"
+        v-if="visible && selectedPhoto"
         class="photo-dialog__backdrop"
         @mousedown.self="handleBackdropMouseDown"
       >
@@ -192,7 +123,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 title="Close"
                 data-cuelume-hover="tick"
                 data-cuelume-toggle="droplet"
-                @click="emit('close')"
+                @click="actions.close"
               >
                 <i class="i-hugeicons:cancel-01" aria-hidden="true" />
               </button>
@@ -208,27 +139,12 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 aria-label="Previous photo"
                 data-cuelume-hover="tick"
                 data-cuelume-toggle="page"
-                @click="emit('prev')"
+                @click="actions.previous"
               >
                 <i class="i-hugeicons:arrow-left-01" aria-hidden="true" />
               </button>
 
-              <PhotoDetailCanvas
-                ref="canvas"
-                v-model:checkerboard="checkerboard"
-                :photo="photo"
-                :photos="photos"
-                :reaction-error="reactionError"
-                :reaction-saving="reactionSaving"
-                :preview-variant="previewVariant"
-                @displayed-change="handleDisplayedChange"
-                @active-variant-change="handleActiveVariantChange"
-                @loading-change="handleCanvasLoadingChange"
-                @preview-loading-change="handleCanvasPreviewLoadingChange"
-                @react="react"
-                @swipe="handleSwipe"
-                @zoom-change="handleCanvasZoomChange"
-              />
+              <PhotoDetailCanvas />
 
               <button
                 v-if="hasNext"
@@ -237,7 +153,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 aria-label="Next photo"
                 data-cuelume-hover="tick"
                 data-cuelume-toggle="page"
-                @click="emit('next')"
+                @click="actions.next"
               >
                 <i class="i-hugeicons:arrow-right-01" aria-hidden="true" />
               </button>
@@ -247,37 +163,13 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               v-if="detailPhoto && detailPhoto.mediaType !== 'video'"
               class="photo-dialog__controls"
             >
-              <PhotoDetailControls
-                v-model:checkerboard="checkerboard"
-                :photo="detailPhoto"
-                :reaction-error="reactionError"
-                :reaction-saving="reactionSaving"
-                :download-loading="downloadLoading"
-                :download-progress="downloadProgress"
-                :download-variant="downloadVariant"
-                :zoom-label="zoomLabel"
-                @react="react"
-                @zoom-in="zoomIn"
-                @zoom-out="zoomOut"
-                @reset-zoom="resetZoom"
-              />
+              <PhotoDetailControls />
             </div>
 
-            <PhotoDetailMetadata
-              v-if="detailPhoto"
-              :photo="detailPhoto"
-              :reaction-counts="reactionCounts"
-              :preview-variant="activePreviewVariant"
-              :preview-loading="previewLoading"
-              @preview-change="handlePreviewChange"
-            />
+            <PhotoDetailMetadata v-if="detailPhoto" />
           </div>
 
-          <PhotoDetailFilmstrip
-            :photos="photos"
-            :active-photo-id="photo.id"
-            @select="emit('select', $event)"
-          />
+          <PhotoDetailFilmstrip />
         </section>
       </div>
     </Transition>

@@ -1,4 +1,7 @@
 import type { Photo, PhotoListResponse } from '~/types'
+import type { MaybeRefOrGetter } from 'vue'
+
+const PHOTO_PAGE_SIZE = 24
 
 interface PhotosPayload {
   photos: Photo[]
@@ -40,7 +43,7 @@ export function usePublicPhotos(options: PublicPhotosOptions = {}) {
   })
 }
 
-function createPhotosPayload(photos: Photo[], page: number, limit: number): PhotosPayload {
+function createPhotosPayload(photos: readonly Photo[], page: number, limit: number): PhotosPayload {
   const offset = (page - 1) * limit
   const total = photos.length
   const totalPages = Math.ceil(total / limit)
@@ -60,18 +63,15 @@ function createPhotosPayload(photos: Photo[], page: number, limit: number): Phot
   }
 }
 
-export function usePhotos(initialPhotos: Photo[] = []) {
-  // 加载状态
-  const loading = ref(false)
-  const currentPage = ref(1)
-  const pageSize = ref(24)
-  const allPhotos = shallowRef<Photo[]>(initialPhotos.slice(0, pageSize.value)) // 存储所有已加载的照片
-  const sourcePhotos = shallowRef<Photo[]>(initialPhotos)
-  const hasMore = ref(initialPhotos.length > pageSize.value) // 是否还有更多数据
-  const error = ref<string | null>(null) // 错误状态
+export function usePhotos(initialPhotos: MaybeRefOrGetter<readonly Photo[]> = []) {
+  const loading = shallowRef(false)
+  const currentPage = shallowRef(1)
+  const allPhotos = shallowRef<Photo[]>([])
+  const sourcePhotos = computed(() => toValue(initialPhotos))
+  const error = shallowRef<string | null>(null)
 
   async function getPhotosPayload(page: number): Promise<PhotosPayload> {
-    return createPhotosPayload(sourcePhotos.value, page, pageSize.value)
+    return createPhotosPayload(sourcePhotos.value, page, PHOTO_PAGE_SIZE)
   }
 
   // 加载照片数据
@@ -93,7 +93,7 @@ export function usePhotos(initialPhotos: Photo[] = []) {
           allPhotos.value = response.photos
         }
 
-        hasMore.value = response.pagination?.hasNext || false
+        currentPage.value = page
       }
     } catch (err: any) {
       console.error('Failed to load photos:', err)
@@ -116,8 +116,7 @@ export function usePhotos(initialPhotos: Photo[] = []) {
       return
     }
 
-    currentPage.value++
-    await loadPhotos(currentPage.value, true)
+    await loadPhotos(currentPage.value + 1, true)
   }
 
   // 监听滚动事件
@@ -150,8 +149,13 @@ export function usePhotos(initialPhotos: Photo[] = []) {
   function resetPhotos() {
     allPhotos.value = []
     currentPage.value = 1
-    hasMore.value = sourcePhotos.value.length ? sourcePhotos.value.length > pageSize.value : true
     loading.value = false
+  }
+
+  function syncPhotos(photos: readonly Photo[]) {
+    allPhotos.value = photos.slice(0, PHOTO_PAGE_SIZE)
+    currentPage.value = 1
+    error.value = null
   }
 
   // 初始加载
@@ -165,8 +169,11 @@ export function usePhotos(initialPhotos: Photo[] = []) {
     await loadPhotos(1)
   }
 
+  watch(sourcePhotos, syncPhotos, { immediate: true })
+
   // 获取照片总数
-  const totalPhotos = computed(() => allPhotos.value.length)
+  const hasMore = computed(() => allPhotos.value.length < sourcePhotos.value.length)
+  const totalPhotos = computed(() => sourcePhotos.value.length)
 
   // 检查是否为空状态
   const isEmpty = computed(() => !loading.value && allPhotos.value.length === 0)

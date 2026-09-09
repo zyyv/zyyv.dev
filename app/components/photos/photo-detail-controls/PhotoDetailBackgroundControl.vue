@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
 
-const checkerboard = defineModel<boolean>({ required: true })
+const { checkerboard, actions } = usePhotoDetailContext()
 const label = computed(() =>
   checkerboard.value ? 'Use blurred image background' : 'Use transparency checkerboard background',
 )
@@ -13,6 +14,6 @@ const icon = computed(() => (checkerboard.value ? 'i-hugeicons:blur' : 'i-hugeic
     :label="label"
     :icon="icon"
     :pressed="checkerboard"
-    @click="checkerboard = !checkerboard"
+    @click="actions.setCheckerboard(!checkerboard)"
   />
 </template>

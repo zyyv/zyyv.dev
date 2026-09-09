@@ -1,27 +1,18 @@
 <script setup lang="ts">
-import type { Photo, PhotoPreviewVariant } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import type { PhotoPreviewVariant } from '~/types'
 import { getPhotoDownloadFilename, getPhotoDownloadUrl } from '~/utils/photoDownload'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
 
-const props = withDefaults(
-  defineProps<{
-    photo: Photo
-    variant?: PhotoPreviewVariant
-    loading?: boolean
-    progress?: number
-  }>(),
-  {
-    variant: 'origin',
-    loading: false,
-    progress: 0,
-  },
-)
+const { detailPhoto, activePreviewVariant, downloadLoading, downloadProgress } =
+  usePhotoDetailContext()
+const photo = computed(() => detailPhoto.value)
 
-const mediaLabel = computed(() => (props.photo.mediaType === 'video' ? 'video' : 'image'))
+const mediaLabel = computed(() => (photo.value?.mediaType === 'video' ? 'video' : 'image'))
 const downloadVariant = computed<PhotoPreviewVariant>(() =>
-  props.photo.mediaType === 'image' ? props.variant : 'origin',
+  photo.value?.mediaType === 'image' ? activePreviewVariant.value : 'origin',
 )
-const isLoading = computed(() => props.loading && downloadVariant.value === 'compressed')
+const isLoading = computed(() => downloadLoading.value && downloadVariant.value === 'compressed')
 const variantLabel = computed(() => {
   if (downloadVariant.value === 'origin') return 'original'
   if (downloadVariant.value === 'blurhash') return 'BlurHash'
@@ -35,12 +26,12 @@ const label = computed(() =>
       : `Download ${variantLabel.value} ${mediaLabel.value}`,
 )
 const href = computed(() =>
-  isLoading.value
+  !photo.value || isLoading.value
     ? undefined
-    : getPhotoDownloadUrl(props.photo.id, downloadVariant.value, props.photo.blurhash),
+    : getPhotoDownloadUrl(photo.value.id, downloadVariant.value, photo.value.blurhash),
 )
 const filename = computed(() =>
-  getPhotoDownloadFilename(props.photo.filename, downloadVariant.value),
+  getPhotoDownloadFilename(photo.value?.filename ?? 'photo', downloadVariant.value),
 )
 </script>
 
@@ -51,6 +42,6 @@ const filename = computed(() =>
     :href="href"
     :download="filename"
     :loading="isLoading"
-    :progress="props.progress"
+    :progress="downloadProgress"
   />
 </template>

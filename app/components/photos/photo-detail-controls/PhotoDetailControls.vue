@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Photo, PhotoPreviewVariant, PhotoReactionType } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import PhotoDetailBackgroundControl from './PhotoDetailBackgroundControl.vue'
 import PhotoDetailDownloadControl from './PhotoDetailDownloadControl.vue'
 import PhotoDetailReactionControl from './PhotoDetailReactionControl.vue'
@@ -7,37 +7,13 @@ import PhotoDetailShareControl from './PhotoDetailShareControl.vue'
 import PhotoDetailZoomControls from './PhotoDetailZoomControls.vue'
 
 interface Props {
-  photo: Photo
   variant?: 'dialog' | 'media'
-  reactionError?: string | null
-  reactionSaving?: boolean
-  reactionDisabled?: boolean
-  downloadLoading?: boolean
-  downloadProgress?: number
-  downloadVariant?: PhotoPreviewVariant
-  zoomLabel?: string
-}
-
-interface Emits {
-  react: [reaction: PhotoReactionType]
-  zoomIn: []
-  zoomOut: []
-  resetZoom: []
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'dialog',
-  reactionError: null,
-  reactionSaving: false,
-  reactionDisabled: false,
-  downloadLoading: false,
-  downloadProgress: 0,
-  downloadVariant: 'origin',
-  zoomLabel: '100%',
 })
-const emit = defineEmits<Emits>()
-const checkerboard = defineModel<boolean>('checkerboard', { default: false })
-const isVideo = computed(() => props.photo.mediaType === 'video')
+const { isVideo } = usePhotoDetailContext()
 const controlsClasses = computed(() => [
   'photo-detail-controls',
   `photo-detail-controls--${props.variant}`,
@@ -47,39 +23,23 @@ const controlsClasses = computed(() => [
 <template>
   <div :class="controlsClasses" role="group" aria-label="Media actions" @pointerdown.stop>
     <div class="photo-detail-controls__item">
-      <PhotoDetailReactionControl
-        :photo="props.photo"
-        :disabled="props.reactionDisabled"
-        :busy="props.reactionSaving"
-        :error="props.reactionError"
-        @react="emit('react', $event)"
-      />
+      <PhotoDetailReactionControl />
     </div>
 
     <div v-if="!isVideo" class="photo-detail-controls__item">
-      <PhotoDetailBackgroundControl v-model="checkerboard" />
+      <PhotoDetailBackgroundControl />
     </div>
 
     <div v-if="!isVideo" class="photo-detail-controls__item">
-      <PhotoDetailZoomControls
-        :zoom-label="props.zoomLabel"
-        @zoom-in="emit('zoomIn')"
-        @zoom-out="emit('zoomOut')"
-        @reset="emit('resetZoom')"
-      />
+      <PhotoDetailZoomControls />
     </div>
 
     <div class="photo-detail-controls__item">
-      <PhotoDetailShareControl :photo="props.photo" />
+      <PhotoDetailShareControl />
     </div>
 
     <div class="photo-detail-controls__item">
-      <PhotoDetailDownloadControl
-        :photo="props.photo"
-        :variant="props.downloadVariant"
-        :loading="props.downloadLoading"
-        :progress="props.downloadProgress"
-      />
+      <PhotoDetailDownloadControl />
     </div>
   </div>
 </template>
