@@ -192,8 +192,8 @@ async function readExif(file: File): Promise<PhotoExif | undefined> {
     lens: data.LensModel,
     dateTime: toIsoString(data.DateTimeOriginal || data.DateTime),
   }
-  if (typeof data.GPSLatitude === 'number' && typeof data.GPSLongitude === 'number') {
-    exif.gps = { latitude: data.GPSLatitude, longitude: data.GPSLongitude }
+  if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+    exif.gps = { latitude: data.latitude, longitude: data.longitude }
   }
   return exif
 }

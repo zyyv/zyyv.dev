@@ -11,6 +11,7 @@ import {
   validatePhotoUploadId,
 } from '../../../../utils/photo-upload'
 import { getPhotoRow, rowToPhoto } from '../../../../utils/photos'
+import { enrichPhotoExif } from '../../../../utils/photo-location'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -56,6 +57,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const now = new Date().toISOString()
+  const exif = await enrichPhotoExif(body.exif)
   try {
     await DB.prepare(
       `INSERT INTO photos (
@@ -78,7 +80,7 @@ export default defineEventHandler(async (event) => {
         height,
         blurhash,
         body.private ? 1 : 0,
-        body.exif ? JSON.stringify(body.exif) : null,
+        exif ? JSON.stringify(exif) : null,
         now,
         now,
       )

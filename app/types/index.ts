@@ -33,6 +33,18 @@ export interface Repo {
 }
 export type User = Endpoints['GET /user']['response']['data']
 
+export interface PhotoLocation {
+  provider: 'nominatim'
+  displayName: string
+  road?: string
+  city?: string
+  state?: string
+  country?: string
+  osmType?: string
+  osmId?: number
+  osmUrl?: string
+}
+
 export interface PhotoExif {
   make?: string
   model?: string
@@ -46,6 +58,7 @@ export interface PhotoExif {
     latitude?: number
     longitude?: number
   }
+  location?: PhotoLocation
 }
 
 export interface Photo {

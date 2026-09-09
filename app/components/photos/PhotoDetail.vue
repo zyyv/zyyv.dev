@@ -24,6 +24,12 @@ interface DetailRow {
   value: string
 }
 
+interface LocationDisplay {
+  title: string
+  context: string
+  href?: string
+}
+
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const dialogRef = useTemplateRef<HTMLElement>('dialog')
@@ -106,6 +112,19 @@ const captureDetails = computed<DetailRow[]>(() => {
       ? { icon: 'i-hugeicons:clock-01', label: 'Captured', value: formatDate(exif.dateTime) }
       : null,
   ].filter((detail): detail is DetailRow => detail !== null)
+})
+const locationDetails = computed<LocationDisplay | null>(() => {
+  const location = detailPhoto.value?.exif?.location
+  if (!location) return null
+
+  const title = location.road || location.displayName.split(/[,，]/)[0]?.trim() || 'Mapped location'
+  const context = [location.city, location.state].filter(Boolean).join(' · ')
+
+  return {
+    title,
+    context: context || location.displayName,
+    href: location.osmUrl,
+  }
 })
 
 watch(
@@ -243,7 +262,10 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 </dl>
               </section>
 
-              <section v-if="captureDetails.length" class="photo-dialog__detail-group">
+              <section
+                v-if="captureDetails.length || locationDetails"
+                class="photo-dialog__detail-group"
+              >
                 <h3>Capture</h3>
                 <dl>
                   <div v-for="detail in captureDetails" :key="detail.label">
@@ -252,6 +274,33 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                       <span>{{ detail.label }}</span>
                     </dt>
                     <dd>{{ detail.value }}</dd>
+                  </div>
+                  <div v-if="locationDetails" class="photo-dialog__location-row">
+                    <dt>
+                      <i class="i-hugeicons:location-01" aria-hidden="true" />
+                      <span>Location</span>
+                    </dt>
+                    <dd>
+                      <a
+                        v-if="locationDetails.href"
+                        class="photo-dialog__location-link"
+                        :href="locationDetails.href"
+                        :aria-label="`Open ${locationDetails.title} in OpenStreetMap`"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <span class="photo-dialog__location-road">{{ locationDetails.title }}</span>
+                        <span class="photo-dialog__location-context">{{
+                          locationDetails.context
+                        }}</span>
+                      </a>
+                      <span v-else class="photo-dialog__location-copy">
+                        <span class="photo-dialog__location-road">{{ locationDetails.title }}</span>
+                        <span class="photo-dialog__location-context">{{
+                          locationDetails.context
+                        }}</span>
+                      </span>
+                    </dd>
                   </div>
                 </dl>
               </section>
@@ -361,6 +410,34 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 .photo-dialog__detail-group dl,
 .photo-dialog__detail-group dd {
   margin: 0;
+}
+
+.photo-dialog__location-link,
+.photo-dialog__location-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+  color: inherit;
+  text-align: right;
+  text-decoration: none;
+}
+
+.photo-dialog__location-road,
+.photo-dialog__location-context {
+  overflow-wrap: anywhere;
+}
+
+.photo-dialog__location-road {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.photo-dialog__location-context {
+  color: var(--dialog-muted);
+  font-size: 0.59rem;
+  line-height: 1.4;
 }
 
 .photo-dialog__reaction-list dd {
@@ -609,6 +686,12 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
     filter: grayscale(0.2) contrast(1);
     transform: translateY(-0.12rem);
   }
+
+  .photo-dialog__location-link:hover .photo-dialog__location-road {
+    text-decoration: underline;
+    text-decoration-color: var(--dialog-line);
+    text-underline-offset: 0.18em;
+  }
 }
 
 .photo-dialog__close:active,
@@ -618,7 +701,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 .photo-dialog__close:focus-visible,
 .photo-dialog__nav:focus-visible,
-.photo-dialog__filmstrip button:focus-visible {
+.photo-dialog__filmstrip button:focus-visible,
+.photo-dialog__location-link:focus-visible {
   outline: 1px dashed var(--dialog-text);
   outline-offset: 0.35rem;
 }

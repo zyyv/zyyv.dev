@@ -3,6 +3,7 @@ import { requireAdmin } from '../../../utils/admin-auth'
 import { useCloudflareBindings } from '../../../utils/cloudflare'
 import { processAndStorePhoto } from '../../../utils/photo-processing'
 import { getPhotoRow, rowToPhoto } from '../../../utils/photos'
+import { enrichPhotoExif } from '../../../utils/photo-location'
 
 function parseBoolean(value: string | undefined) {
   return value === 'true' || value === '1'
@@ -66,7 +67,7 @@ export default defineEventHandler(async (event) => {
     height: Number(getField('height')),
   })
   const now = new Date().toISOString()
-  const exif = parseExif(getField('exif'))
+  const exif = await enrichPhotoExif(parseExif(getField('exif')))
 
   try {
     await DB.prepare(
