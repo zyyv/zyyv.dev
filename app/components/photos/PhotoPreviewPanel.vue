@@ -14,6 +14,13 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+const previewIcons: Record<PhotoPreviewVariant, string> = {
+  thumbnail: 'i-hugeicons:image-crop',
+  compressed: 'i-hugeicons:image-composition',
+  origin: 'i-hugeicons:image-03',
+  blurhash: 'i-hugeicons:colors',
+}
+
 const variantDetails = computed<
   Record<PhotoPreviewVariant, { label: string; description: string }>
 >(() => ({
@@ -53,10 +60,7 @@ function previewDescription(variant: PhotoPreviewVariant) {
         @click="emit('change', item)"
       >
         <span class="photo-preview-panel__option-main">
-          <i
-            :class="item === 'blurhash' ? 'i-hugeicons:colors' : 'i-hugeicons:image-03'"
-            aria-hidden="true"
-          />
+          <i :class="previewIcons[item]" aria-hidden="true" />
           <span>{{ previewLabel(item) }}</span>
         </span>
         <span class="photo-preview-panel__option-meta">{{ previewDescription(item) }}</span>

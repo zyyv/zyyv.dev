@@ -28,7 +28,7 @@ const barColors = computed(() => {
 })
 
 function colorLabel(color: ImageColor) {
-  return `${color.hex}, ${color.share}% of sampled pixels`
+  return `${color.name}, ${color.hex}, ${color.share}% of sampled pixels`
 }
 
 function setActiveColor(hex: string) {
@@ -91,7 +91,10 @@ function clearActiveColor() {
             :aria-label="colorLabel(color)"
           />
           <span class="photo-color-palette__swatch-info">
-            <code>{{ color.hex }}</code>
+            <span class="photo-color-palette__swatch-label">
+              <strong class="photo-color-palette__swatch-name">{{ color.name }}</strong>
+              <code class="photo-color-palette__swatch-value">{{ color.hex }}</code>
+            </span>
             <small>{{ color.share }}%</small>
           </span>
         </div>
@@ -180,23 +183,46 @@ function clearActiveColor() {
   gap: 0.35rem;
 }
 
-.photo-color-palette__swatch-info code,
-.photo-color-palette__swatch-info small {
+.photo-color-palette__swatch-label {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.photo-color-palette__swatch-name,
+.photo-color-palette__swatch-value {
+  grid-area: 1 / 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: opacity 160ms ease;
 }
 
-.photo-color-palette__swatch-info code {
+.photo-color-palette__swatch-name {
   color: var(--dialog-text);
+  font-size: 0.59rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.photo-color-palette__swatch-value {
+  opacity: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.59rem;
 }
 
-.photo-color-palette__swatch-info small {
+.photo-color-palette__swatch-info > small {
   color: var(--dialog-muted);
   font-size: 0.52rem;
   font-variant-numeric: tabular-nums;
+}
+
+.photo-color-palette__swatch.is-active .photo-color-palette__swatch-name {
+  opacity: 0;
+}
+
+.photo-color-palette__swatch.is-active .photo-color-palette__swatch-value {
+  opacity: 1;
 }
 
 .photo-color-palette__loading,
@@ -277,7 +303,9 @@ function clearActiveColor() {
 @media (prefers-reduced-motion: reduce) {
   .photo-color-palette__bar-segment,
   .photo-color-palette__swatch,
-  .photo-color-palette__loading-swatch {
+  .photo-color-palette__loading-swatch,
+  .photo-color-palette__swatch-name,
+  .photo-color-palette__swatch-value {
     animation: none;
     transition-duration: 1ms;
   }

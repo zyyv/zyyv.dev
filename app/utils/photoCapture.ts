@@ -1,4 +1,5 @@
 import type { Photo, PhotoExif } from '~/types'
+import { getFileFormat } from './fileFormat'
 
 export type PhotoDeviceType = 'camera' | 'phone'
 
@@ -90,19 +91,13 @@ function getDeviceName(exif: PhotoExif) {
   return model || make
 }
 
-function getFileFormat(filename: string) {
-  const extension = filename.split('.').pop()?.toLocaleUpperCase()
-  if (!extension) return undefined
-  if (extension === 'JPG' || extension === 'JPEG') return 'JPEG'
-  return extension
-}
-
 export function getPhotoCaptureSummary(photo: Photo): PhotoCaptureSummary {
   const exif = photo.exif
   const deviceType = getPhotoDeviceType(exif)
   const deviceName = exif ? getDeviceName(exif) : undefined
+  const [, extension] = getFileFormat(photo.filename)
   const fileFacts = [
-    getFileFormat(photo.filename),
+    extension,
     photo.width && photo.height ? `${photo.width}×${photo.height}` : undefined,
     photo.originSizeFormatted || undefined,
   ].filter((fact): fact is string => Boolean(fact))

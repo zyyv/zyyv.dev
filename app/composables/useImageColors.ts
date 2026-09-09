@@ -1,8 +1,10 @@
+import { mc } from 'magic-color'
 import type { MaybeRefOrGetter } from 'vue'
 import type { Photo } from '~/types'
 
 export interface ImageColor {
   hex: string
+  name: string
   share: number
 }
 
@@ -29,7 +31,7 @@ const ANALYSIS_SIZE = 96
 const QUANTIZATION_STEP = 24
 const MAX_COLORS = 5
 const MIN_COLOR_DISTANCE = 42
-const COLOR_ANALYSIS_VERSION = 1
+const COLOR_ANALYSIS_VERSION = 2
 const COLOR_CACHE_STORAGE_KEY = 'zyyv:image-colors-cache'
 const MAX_PERSISTED_CACHE_ENTRIES = 128
 
@@ -242,6 +244,8 @@ function isImageColor(value: unknown): value is ImageColor {
   return (
     typeof candidate.hex === 'string' &&
     /^#[\da-f]{6}$/i.test(candidate.hex) &&
+    typeof candidate.name === 'string' &&
+    candidate.name.length > 0 &&
     typeof candidate.share === 'number' &&
     Number.isFinite(candidate.share) &&
     candidate.share > 0
@@ -362,6 +366,7 @@ function extractColors(image: HTMLImageElement): ImageColor[] {
 
   return selected.map((color) => ({
     hex: color.hex,
+    name: mc.nameOf(color.hex),
     share: Math.max(1, Math.round((color.count / Math.max(1, sampledPixels)) * 100)),
   }))
 }

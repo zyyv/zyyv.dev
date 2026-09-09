@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Photo } from '~/types'
+import { getFileFormat } from '~/utils/fileFormat'
 import type { PhotoDetailRow } from './photo-detail-metadata.types'
 import PhotoDetailGroup from './PhotoDetailGroup.vue'
 import PhotoDetailRows from './PhotoDetailRows.vue'
@@ -10,6 +11,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const fileFormat = computed(() => getFileFormat(props.photo.filename))
+
 const fileDetails = computed<PhotoDetailRow[]>(() => [
   // {
   //   icon: props.photo.mediaType === 'video' ? 'i-hugeicons:video-01' : 'i-hugeicons:image-03',
@@ -19,9 +22,9 @@ const fileDetails = computed<PhotoDetailRow[]>(() => [
   {
     icon: props.photo.mediaType === 'video' ? 'i-hugeicons:video-01' : 'i-hugeicons:image-03',
     label: 'Filename',
-    value: props.photo.filename,
+    value: fileFormat.value[0],
   },
-  { icon: 'i-hugeicons:file-01', label: 'Type', value: getFileFormat(props.photo.filename) },
+  { icon: 'i-hugeicons:file-01', label: 'Type', value: fileFormat.value[1] || '—' },
   {
     icon: 'i-hugeicons:maximize-01',
     label: 'Dimensions',
@@ -51,12 +54,6 @@ const fileDetails = computed<PhotoDetailRow[]>(() => [
 
 function formatDate(date: Date | string): string {
   return useDateFormat(date, 'YYYY-MM-DD HH:mm', { locales: 'en-US' }).value
-}
-
-function getFileFormat(filename: string): string {
-  const extension = filename.split('.').pop()?.toLocaleUpperCase()
-  if (!extension) return '—'
-  return extension === 'JPG' || extension === 'JPEG' ? 'JPEG' : extension
 }
 
 function getAspectRatio(width: number, height: number): string {
