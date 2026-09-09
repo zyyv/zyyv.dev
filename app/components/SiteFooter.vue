@@ -75,6 +75,7 @@ function backToTop() {
         <button
           type="button"
           aria-label="Back to top"
+          data-cuelume-hover="tick"
           data-cuelume-toggle="droplet"
           @click="backToTop"
         >
@@ -194,9 +195,11 @@ function backToTop() {
     transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.site-footer__links a:hover {
-  opacity: 0.5;
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .site-footer__links a:hover {
+    opacity: 0.5;
+    transform: translateY(-1px);
+  }
 }
 
 .site-footer__links a:active {
@@ -253,13 +256,19 @@ function backToTop() {
   opacity: 0.48;
 }
 
-.site-footer__actions a:hover,
-.site-footer__actions button:hover {
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .site-footer__actions a:hover,
+  .site-footer__actions button:hover {
+    transform: translateY(-1px);
+  }
+
+  .site-footer__actions a:hover::after,
+  .site-footer__actions button:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
 }
 
-.site-footer__actions a:hover::after,
-.site-footer__actions button:hover::after,
 .site-footer__actions a:focus-visible::after,
 .site-footer__actions button:focus-visible::after {
   transform: scaleX(1);

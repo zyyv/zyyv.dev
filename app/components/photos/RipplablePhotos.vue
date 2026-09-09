@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
 import type { RipplableConfig, RipplableListItem } from 'ripplable'
 import type { Photo } from '~/types'
 import { Ripplable } from 'ripplable'
@@ -53,6 +54,7 @@ function openPreview(item: RipplableListItem | null, event: Event) {
   const photo = getPhoto(item)
   if (!photo) return
 
+  if (event instanceof KeyboardEvent) play('page')
   emit('open', photo, event.currentTarget as HTMLElement)
 }
 </script>

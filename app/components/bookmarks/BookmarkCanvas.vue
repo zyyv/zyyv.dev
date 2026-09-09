@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
 import type { BookmarkNode } from '~/utils/bookmarks'
 import { createBookmarkCanvasLayout, ROOT_ID } from '~/utils/bookmarkCanvas'
 import BookmarkInspector from './BookmarkInspector.vue'
@@ -100,13 +101,22 @@ useEventListener(document, 'keydown', (event) => {
   const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
   if (event.key === '/' && !isTyping) {
     event.preventDefault()
+    play('scan')
     searchInput.value?.focus()
   }
   if (event.key === 'Escape') {
+    const hasDismissibleState =
+      selectedId.value !== null ||
+      selectionHistory.value.length > 0 ||
+      document.activeElement === searchInput.value
+    if (hasDismissibleState) play('droplet')
     clearSelection()
     searchInput.value?.blur()
   }
-  if (event.key === '0' && !isTyping) fit()
+  if (event.key === '0' && !isTyping) {
+    play('pulse')
+    fit()
+  }
 })
 
 watch(layout, () => {
@@ -126,22 +136,41 @@ watch(layout, () => {
       </label>
 
       <div class="canvas-controls" aria-label="画布缩放控制">
-        <button type="button" aria-label="缩小" data-cuelume-toggle="pulse" @click="zoomOut">
+        <button
+          type="button"
+          aria-label="缩小"
+          data-cuelume-hover="tick"
+          data-cuelume-toggle="pulse"
+          @click="zoomOut"
+        >
           <i class="i-hugeicons:minus-sign" />
         </button>
         <button
           type="button"
           class="canvas-controls__scale"
           aria-label="适配全部节点"
+          data-cuelume-hover="tick"
           data-cuelume-toggle="pulse"
           @click="fit"
         >
           {{ scaleLabel }}
         </button>
-        <button type="button" aria-label="放大" data-cuelume-toggle="pulse" @click="zoomIn">
+        <button
+          type="button"
+          aria-label="放大"
+          data-cuelume-hover="tick"
+          data-cuelume-toggle="pulse"
+          @click="zoomIn"
+        >
           <i class="i-hugeicons:add-01" />
         </button>
-        <button type="button" aria-label="适配全部节点" data-cuelume-toggle="pulse" @click="fit">
+        <button
+          type="button"
+          aria-label="适配全部节点"
+          data-cuelume-hover="tick"
+          data-cuelume-toggle="pulse"
+          @click="fit"
+        >
           <i class="i-hugeicons:center-focus" />
         </button>
       </div>
@@ -315,10 +344,15 @@ watch(layout, () => {
 .canvas-controls > button:not(:first-child) {
   border-left: 1px dashed var(--canvas-line-strong);
 }
-.canvas-controls button:hover,
 .canvas-controls button:focus-visible {
   outline: 0;
   background: var(--canvas-icon);
+}
+@media (hover: hover) and (pointer: fine) {
+  .canvas-controls button:hover {
+    outline: 0;
+    background: var(--canvas-icon);
+  }
 }
 .canvas-controls button:active {
   transform: translateY(1px);

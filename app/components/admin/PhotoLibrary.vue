@@ -204,8 +204,10 @@ function photoDate(photo: Photo) {
   object-fit: cover;
   transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.photo-preview:hover img {
-  transform: scale(1.025);
+@media (hover: hover) and (pointer: fine) {
+  .photo-preview:hover img {
+    transform: scale(1.025);
+  }
 }
 .private-badge {
   position: absolute;
@@ -279,10 +281,12 @@ function photoDate(photo: Photo) {
   cursor: pointer;
   opacity: 0.38;
 }
-.delete-button:hover {
-  background: color-mix(in srgb, #a13d32 12%, transparent);
-  color: #a13d32;
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .delete-button:hover {
+    background: color-mix(in srgb, #a13d32 12%, transparent);
+    color: #a13d32;
+    opacity: 1;
+  }
 }
 .photo-skeleton {
   aspect-ratio: 4 / 3;

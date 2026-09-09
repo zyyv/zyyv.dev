@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
 import TerminalJsonViewer from '~/components/command/TerminalJsonViewer.vue'
 import type { TerminalCommand, TerminalTranscriptEntry } from '~/utils/command'
 import { nextTick, useTemplateRef, watch } from 'vue'
@@ -7,6 +8,7 @@ const props = defineProps<{
   input: string
   transcript: readonly TerminalTranscriptEntry[]
   suggestions: TerminalCommand[]
+  hasHistory: boolean
   theme: string
   executing: boolean
   routePath: string
@@ -54,18 +56,28 @@ function setInput(value: string) {
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Enter') {
     event.preventDefault()
+    if (!props.input.trim() || props.executing) return
+    play('pulse')
     emit('execute')
   } else if (event.key === 'Tab') {
     event.preventDefault()
+    if (!props.suggestions.length) return
+    play('scan')
     emit('complete')
   } else if (event.key === 'ArrowUp') {
     event.preventDefault()
+    if (!props.hasHistory) return
+    play('tick')
     emit('previous')
   } else if (event.key === 'ArrowDown') {
     event.preventDefault()
+    if (!props.hasHistory) return
+    play('tick')
     emit('next')
   } else if (event.key.toLowerCase() === 'l' && event.ctrlKey) {
     event.preventDefault()
+    if (!props.transcript.length) return
+    play('droplet')
     emit('clear')
   }
 }
@@ -92,6 +104,7 @@ defineExpose({ focus })
         <button
           class="terminal__dot terminal__dot--close"
           tabindex="-1"
+          data-cuelume-hover="tick"
           data-cuelume-toggle="droplet"
           @click.stop="emit('close')"
         />
@@ -298,8 +311,10 @@ defineExpose({ focus })
   background: #c7c7c7;
 }
 
-.terminal__dot--close:hover {
-  filter: brightness(0.88);
+@media (hover: hover) and (pointer: fine) {
+  .terminal__dot--close:hover {
+    filter: brightness(0.88);
+  }
 }
 
 .terminal__title {
@@ -541,8 +556,10 @@ defineExpose({ focus })
   font: inherit;
 }
 
-.terminal__suggestions button:hover {
-  border-color: var(--terminal-accent);
+@media (hover: hover) and (pointer: fine) {
+  .terminal__suggestions button:hover {
+    border-color: var(--terminal-accent);
+  }
 }
 
 .terminal__footer {

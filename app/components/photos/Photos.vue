@@ -43,7 +43,7 @@ function openPreview(photo: Photo, event: MouseEvent) {
         {{ error }}
       </div>
       <button
-        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        class="px-4 py-2 bg-blue-500 text-white rounded @hover:bg-blue-600 transition-colors"
         data-cuelume-toggle="pulse"
         @click="refreshPhotos"
       >
@@ -147,9 +147,15 @@ function openPreview(photo: Photo, event: MouseEvent) {
   box-shadow: 0 0 0 2px currentColor;
 }
 
-.photo-card:hover :deep(.photo-hover-info),
 .photo-card:focus-visible :deep(.photo-hover-info) {
   opacity: 1;
   transform: translateY(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .photo-card:hover :deep(.photo-hover-info) {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

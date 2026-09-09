@@ -23,6 +23,22 @@ Keep new UI consistent with the project's existing Cuelume sound system. Every n
 4. Check that the interaction is not double-triggered by multiple Cuelume attributes. Prefer `data-cuelume-toggle` for native buttons because it also responds to keyboard activation.
 5. Re-scan the finished diff for newly added interactive elements without a sound mapping.
 
+### Keyboard and non-click parity
+
+- Scan every `keydown`, `keyup`, `@keydown`, `@submit`, `@dblclick`, `@mousedown`, swipe, pointer, and gesture handler. These paths do not automatically receive a sound from a `data-cuelume-toggle` on a different element.
+- When a shortcut invokes the same action as a button, play the exact same sound at the shortcut's action boundary. Examples: photo arrows use `page`, modal Escape uses `droplet`, fit/reset controls use `pulse` or `droplet`, and command palette open/close uses `toggle`.
+- For custom `role="button"` elements with Enter/Space handlers, play imperatively only for the keyboard path if the same element already has `data-cuelume-toggle`; otherwise keyboard activation and click activation will double-play.
+- Focus-only shortcuts may use a quiet secondary cue such as `scan` when focus visibly moves to a control. Do not play for a no-op shortcut when no action or state change occurred.
+- Keep a direct sound on gesture or backdrop actions that bypass the declarative click delegation, such as swipes, drag-release actions, and self-targeted overlay dismissal.
+
+### Hover parity and device gating
+
+- Scan CSS `:hover` selectors, UnoCSS `hover:`/`group-hover:` variants, and content-rendered links. Meaningful links and singleton controls with visible hover behavior should carry `data-cuelume-hover="tick"` on the actual interactive element.
+- Keep every CSS `:hover` rule inside `@media (hover: hover) and (pointer: fine)`. Preserve `:focus-visible` behavior outside that media query so keyboard users and touch devices retain an accessible focus state.
+- Use UnoCSS media-hover variants instead of regular hover variants: `@hover:...`, `@hover-...`, `group-@hover:...`, or `group-@hover-...` as appropriate. Do not leave `hover:` or `group-hover` in application classes or shortcuts.
+- Do not add hover cues to dense photo grids, repeated list rows, rapidly moving canvas nodes, sliders, or decorative hover-only surfaces. Keep those surfaces click-only or silent to avoid noisy pointer sweeps.
+- For Nuxt Content links, use the project `components/content/ProseA.vue` override so generated article links receive the same hover cue without putting the attribute on a prose wrapper.
+
 ## Sound mapping
 
 Use these project conventions unless the interaction clearly needs another sound from Cuelume:
@@ -72,6 +88,8 @@ Before handing off a UI change:
 
 - [ ] Every new interactive element has an intentional cue or is explicitly documented as silent.
 - [ ] Dense/repeated surfaces are not noisy from hover feedback.
+- [ ] CSS hover behavior is gated by the fine-pointer media query and UnoCSS uses `@hover` variants.
+- [ ] Content-rendered links are covered without adding sound attributes to a wrapper element.
 - [ ] Async success/error cues occur only after the operation outcome is known.
 - [ ] No interaction has accidentally stacked multiple cues for the same click.
 - [ ] `node_modules/.bin/oxlint .` passes.

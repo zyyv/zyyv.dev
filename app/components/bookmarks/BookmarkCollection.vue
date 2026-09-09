@@ -181,8 +181,10 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
   display: flex;
   gap: 0.35rem;
 }
-.collection__actions button:hover {
-  background: color-mix(in srgb, currentColor 8%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .collection__actions button:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
 }
 .collection__grid {
   display: grid;

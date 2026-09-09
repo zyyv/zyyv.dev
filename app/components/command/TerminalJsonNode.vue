@@ -169,8 +169,10 @@ watch(
   text-align: left;
 }
 
-.json-node__row--container:hover:not(:disabled) {
-  background: var(--terminal-accent-soft);
+@media (hover: hover) and (pointer: fine) {
+  .json-node__row--container:hover:not(:disabled) {
+    background: var(--terminal-accent-soft);
+  }
 }
 
 .json-node__row--container:focus-visible {

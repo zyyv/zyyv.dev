@@ -76,10 +76,15 @@ const folders = computed(() =>
   text-decoration: none;
   transition: background-color 140ms ease;
 }
-.bookmark-sidebar nav a:hover,
 .bookmark-sidebar nav a:focus-visible {
   outline: 0;
   background: color-mix(in srgb, currentColor 7%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .bookmark-sidebar nav a:hover {
+    outline: 0;
+    background: color-mix(in srgb, currentColor 7%, transparent);
+  }
 }
 .bookmark-sidebar nav a span,
 .bookmark-sidebar nav a small {

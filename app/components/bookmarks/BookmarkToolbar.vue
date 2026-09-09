@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
+
 defineProps<{
   tags: string[]
   isAdmin: boolean
@@ -14,6 +16,7 @@ useEventListener(document, 'keydown', (event) => {
   const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
   if (event.key !== '/' || isTyping) return
   event.preventDefault()
+  play('scan')
   searchInput.value?.focus()
 })
 </script>

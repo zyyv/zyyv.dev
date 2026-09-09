@@ -148,12 +148,14 @@ onMounted(loadUser)
     transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.home-hero__avatar:hover .home-hero__avatar-image {
-  filter: saturate(1.08) contrast(1.03);
-}
+@media (hover: hover) and (pointer: fine) {
+  .home-hero__avatar:hover .home-hero__avatar-image {
+    filter: saturate(1.08) contrast(1.03);
+  }
 
-.home-hero__avatar:hover .home-hero__avatar-orbit {
-  animation-duration: 5s;
+  .home-hero__avatar:hover .home-hero__avatar-orbit {
+    animation-duration: 5s;
+  }
 }
 
 @keyframes avatar-orbit {
@@ -244,9 +246,11 @@ onMounted(loadUser)
   height: 1.1rem;
 }
 
-.home-hero__socials a:hover {
-  color: currentColor;
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .home-hero__socials a:hover {
+    color: currentColor;
+    transform: translateY(-2px);
+  }
 }
 
 .home-hero__socials a:active {

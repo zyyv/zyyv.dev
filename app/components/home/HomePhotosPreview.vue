@@ -141,9 +141,11 @@ function itemStyle(photo: Photo): CSSProperties {
   transition: opacity 240ms ease;
 }
 
-.photo-stream__intro a:hover,
-.photo-stream__archive a:hover {
-  opacity: 0.55;
+@media (hover: hover) and (pointer: fine) {
+  .photo-stream__intro a:hover,
+  .photo-stream__archive a:hover {
+    opacity: 0.55;
+  }
 }
 
 .photo-stream__header h2 {
@@ -273,9 +275,11 @@ function itemStyle(photo: Photo): CSSProperties {
     transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.photo-stream__item:hover .photo-stream__media img {
-  filter: grayscale(0) contrast(1);
-  transform: scale(1.025);
+@media (hover: hover) and (pointer: fine) {
+  .photo-stream__item:hover .photo-stream__media img {
+    filter: grayscale(0) contrast(1);
+    transform: scale(1.025);
+  }
 }
 
 .photo-stream__number {

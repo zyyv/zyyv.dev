@@ -163,12 +163,14 @@ html.dark .photo-empty__visual {
   transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.photo-empty__link:hover {
-  border-color: currentColor;
-}
+@media (hover: hover) and (pointer: fine) {
+  .photo-empty__link:hover {
+    border-color: currentColor;
+  }
 
-.photo-empty__link:hover i {
-  transform: translate(0.16rem, -0.16rem);
+  .photo-empty__link:hover i {
+    transform: translate(0.16rem, -0.16rem);
+  }
 }
 
 .photo-empty__link:focus-visible {

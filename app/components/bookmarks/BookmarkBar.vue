@@ -65,6 +65,7 @@ function folderBookmarks(item: BookmarkNode) {
             type="button"
             class="bookmark-bar__item"
             :aria-expanded="openFolderId === item.id"
+            data-cuelume-hover="tick"
             data-cuelume-toggle="toggle"
             @click="toggleFolder(item.id)"
           >
@@ -196,7 +197,12 @@ function folderBookmarks(item: BookmarkNode) {
   text-decoration: none;
   white-space: nowrap;
 }
-.bookmark-bar__item:hover,
+@media (hover: hover) and (pointer: fine) {
+  .bookmark-bar__item:hover {
+    background: color-mix(in srgb, currentColor 9%, transparent);
+  }
+}
+
 .bookmark-bar__item[aria-expanded='true'] {
   background: color-mix(in srgb, currentColor 9%, transparent);
 }
@@ -280,8 +286,10 @@ function folderBookmarks(item: BookmarkNode) {
   color: inherit;
   cursor: pointer;
 }
-.bookmark-bar__menu header button:hover {
-  background: color-mix(in srgb, currentColor 8%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .bookmark-bar__menu header button:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
 }
 .bookmark-bar__nested-folder {
   display: flex;

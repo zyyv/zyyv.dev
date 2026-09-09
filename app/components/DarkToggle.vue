@@ -49,8 +49,9 @@ const toggleLabel = computed(() =>
   <ClientOnly>
     <button
       type="button"
+      data-cuelume-hover="tick"
       data-cuelume-toggle="toggle"
-      class="grid size-full cursor-pointer place-items-center border-0 rounded-[0.65rem] bg-transparent p-0 color-inherit text-[1.12rem] op-52 transition-[background-color,opacity,transform] duration-180 ease [font:inherit] hover:(-translate-y-px op-92 [background-color:color-mix(in_srgb,currentColor_9%,transparent)]) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-2) motion-reduce:transition-none"
+      class="grid size-full cursor-pointer place-items-center border-0 rounded-[0.65rem] bg-transparent p-0 color-inherit text-[1.12rem] op-52 transition-[background-color,opacity,transform] duration-180 ease [font:inherit] @hover:(-translate-y-px op-92 [background-color:color-mix(in_srgb,currentColor_9%,transparent)]) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-2) motion-reduce:transition-none"
       :aria-label="toggleLabel"
       :title="toggleLabel"
       @click="toggleDark"

@@ -24,6 +24,7 @@ const host = computed(() => bookmarkHost(props.node.url))
         type="button"
         aria-label="返回上一层"
         :disabled="!canGoBack"
+        data-cuelume-hover="tick"
         data-cuelume-toggle="droplet"
         @click.stop="emit('back')"
       >
@@ -37,6 +38,7 @@ const host = computed(() => bookmarkHost(props.node.url))
         class="canvas-inspector__close"
         type="button"
         aria-label="关闭节点详情"
+        data-cuelume-hover="tick"
         data-cuelume-toggle="droplet"
         @click.stop="emit('close')"
       >
@@ -88,6 +90,7 @@ const host = computed(() => bookmarkHost(props.node.url))
       <button
         class="canvas-inspector__open"
         type="button"
+        data-cuelume-hover="tick"
         data-cuelume-toggle="scan"
         @click="emit('open', node)"
       >
@@ -159,10 +162,15 @@ const host = computed(() => bookmarkHost(props.node.url))
 .canvas-inspector__close {
   border-left: 1px dashed var(--canvas-line-strong) !important;
 }
-.canvas-inspector__header button:hover,
 .canvas-inspector__header button:focus-visible {
   outline: 0;
   background: var(--canvas-icon);
+}
+@media (hover: hover) and (pointer: fine) {
+  .canvas-inspector__header button:hover {
+    outline: 0;
+    background: var(--canvas-icon);
+  }
 }
 .canvas-inspector__folder ul {
   margin: 0;
@@ -199,10 +207,15 @@ const host = computed(() => bookmarkHost(props.node.url))
   font-size: 0.82rem;
   opacity: 0.68;
 }
-.canvas-inspector__folder button:hover,
 .canvas-inspector__folder button:focus-visible {
   outline: 0;
   background: color-mix(in srgb, currentColor 5%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .canvas-inspector__folder button:hover {
+    outline: 0;
+    background: color-mix(in srgb, currentColor 5%, transparent);
+  }
 }
 .canvas-inspector__empty {
   margin: 0;
@@ -266,10 +279,15 @@ const host = computed(() => bookmarkHost(props.node.url))
     monospace;
   cursor: pointer;
 }
-.canvas-inspector__open:hover,
 .canvas-inspector__open:focus-visible {
   outline: 0;
   background: var(--canvas-icon);
+}
+@media (hover: hover) and (pointer: fine) {
+  .canvas-inspector__open:hover {
+    outline: 0;
+    background: var(--canvas-icon);
+  }
 }
 @keyframes inspector-in {
   from {

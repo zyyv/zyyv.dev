@@ -79,6 +79,7 @@ function handleClick(event: MouseEvent) {
     :aria-haspopup="props.hasPopup"
     :aria-live="props.live"
     :title="accessibleTitle"
+    data-cuelume-hover="tick"
     data-cuelume-toggle="pulse"
     @click.stop="handleClick"
   >

@@ -226,11 +226,16 @@ onMounted(async () => {
   --media-range-thumb-opacity: 0;
 }
 
-.photo-video-player__volume:hover,
 .photo-video-player__volume:focus-within,
-.photo-video-player__seek:hover,
 .photo-video-player__seek:focus-within {
   --media-range-thumb-opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .photo-video-player__volume:hover,
+  .photo-video-player__seek:hover {
+    --media-range-thumb-opacity: 1;
+  }
 }
 
 .photo-video-player__time {

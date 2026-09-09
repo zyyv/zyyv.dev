@@ -84,8 +84,10 @@ const host = computed(() => bookmarkHost(props.item.url))
     background-color 140ms ease,
     color 140ms ease;
 }
-.bookmark-item:hover {
-  background: color-mix(in srgb, currentColor 5%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .bookmark-item:hover {
+    background: color-mix(in srgb, currentColor 5%, transparent);
+  }
 }
 .bookmark-item__index {
   display: grid;
@@ -156,10 +158,15 @@ const host = computed(() => bookmarkHost(props.item.url))
     opacity 180ms ease,
     transform 180ms ease;
 }
-.bookmark-item:hover .bookmark-item__arrow,
 .bookmark-item:focus-within .bookmark-item__arrow {
   opacity: 0.55;
   transform: translate(0, 0);
+}
+@media (hover: hover) and (pointer: fine) {
+  .bookmark-item:hover .bookmark-item__arrow {
+    opacity: 0.55;
+    transform: translate(0, 0);
+  }
 }
 .bookmark-item__tags {
   display: flex;
@@ -201,9 +208,13 @@ const host = computed(() => bookmarkHost(props.item.url))
   opacity: 0;
   transition: opacity 160ms ease;
 }
-.bookmark-item:hover .bookmark-item__actions,
 .bookmark-item:focus-within .bookmark-item__actions {
   opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .bookmark-item:hover .bookmark-item__actions {
+    opacity: 1;
+  }
 }
 .bookmark-item__actions button {
   display: grid;
@@ -225,8 +236,10 @@ const host = computed(() => bookmarkHost(props.item.url))
   border: 0;
   background: transparent;
 }
-.bookmark-item--compact:hover {
-  background: color-mix(in srgb, currentColor 7%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .bookmark-item--compact:hover {
+    background: color-mix(in srgb, currentColor 7%, transparent);
+  }
 }
 .bookmark-item--compact .bookmark-item__link {
   min-height: 2.75rem;

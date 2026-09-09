@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
 import type CommandTerminal from '~/components/command/CommandTerminal.vue'
 
 const AsyncCommandTerminal = defineAsyncComponent(() => import('./CommandTerminal.vue'))
@@ -24,6 +25,7 @@ const {
   input,
   transcript,
   suggestions,
+  hasHistory,
   currentTheme,
   isExecuting,
   execute,
@@ -36,6 +38,7 @@ const {
 function handleGlobalKeydown(event: KeyboardEvent) {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
     event.preventDefault()
+    play('toggle')
     if (isOpen.value) closePanel()
     else openPanel()
     return
@@ -43,6 +46,7 @@ function handleGlobalKeydown(event: KeyboardEvent) {
 
   if (isOpen.value && event.key === 'Escape') {
     event.preventDefault()
+    play('droplet')
     closePanel()
   }
 }
@@ -56,7 +60,13 @@ defineExpose({ openPanel, closePanel })
 <template>
   <Teleport to="body">
     <Transition name="terminal-backdrop">
-      <div v-if="isOpen" class="command-palette__backdrop" aria-hidden="true" @click="closePanel" />
+      <div
+        v-if="isOpen"
+        class="command-palette__backdrop"
+        aria-hidden="true"
+        data-cuelume-toggle="droplet"
+        @click="closePanel"
+      />
     </Transition>
 
     <Transition name="terminal-window">
@@ -66,6 +76,7 @@ defineExpose({ openPanel, closePanel })
           :input="input"
           :transcript="transcript"
           :suggestions="suggestions"
+          :has-history="hasHistory"
           :theme="currentTheme"
           :executing="isExecuting"
           :route-path="route.path"

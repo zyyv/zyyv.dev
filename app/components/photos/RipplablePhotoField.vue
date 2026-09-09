@@ -91,6 +91,7 @@ watch(
     type="button"
     class="photo-field"
     data-ripplable-interactive
+    data-cuelume-hover="tick"
     data-cuelume-toggle="page"
     :aria-label="fieldLabel"
     @click="pulseFocus"
@@ -416,25 +417,27 @@ watch(
   animation: photo-field-pulse 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.photo-field:hover {
-  --field-muted: color-mix(in srgb, currentColor 42%, transparent);
-}
+@media (hover: hover) and (pointer: fine) {
+  .photo-field:hover {
+    --field-muted: color-mix(in srgb, currentColor 42%, transparent);
+  }
 
-.photo-field:hover .photo-field__bracket {
-  width: 1.15rem;
-  height: 1.15rem;
-}
+  .photo-field:hover .photo-field__bracket {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
 
-.photo-field:hover .photo-field__preview {
-  filter: grayscale(0.15) contrast(1.02);
-  opacity: 0.78;
-  transform: scale(1.08);
-}
+  .photo-field:hover .photo-field__preview {
+    filter: grayscale(0.15) contrast(1.02);
+    opacity: 0.78;
+    transform: scale(1.08);
+  }
 
-.photo-field:hover .photo-field__node img {
-  filter: grayscale(0.35) contrast(1.02);
-  opacity: 0.82;
-  transform: scale(1.12);
+  .photo-field:hover .photo-field__node img {
+    filter: grayscale(0.35) contrast(1.02);
+    opacity: 0.82;
+    transform: scale(1.12);
+  }
 }
 
 .photo-field:active {

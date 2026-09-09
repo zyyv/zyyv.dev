@@ -119,10 +119,16 @@ const tagOptions = computed(() => props.tags.map((tag) => ({ name: tag, tone: ge
     transform 180ms ease;
 }
 
-.tag-filter__tag:hover,
 .tag-filter__tag--active {
   border-color: color-mix(in srgb, currentColor 48%, transparent);
   opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tag-filter__tag:hover {
+    border-color: color-mix(in srgb, currentColor 48%, transparent);
+    opacity: 1;
+  }
 }
 
 .tag-filter__tag--active {

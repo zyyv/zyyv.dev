@@ -151,9 +151,11 @@ async function handleLogout() {
     transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
     background-color 240ms ease;
 }
-.portal-card:hover {
-  background: color-mix(in srgb, currentColor 6%, transparent);
-  transform: translateY(-0.2rem);
+@media (hover: hover) and (pointer: fine) {
+  .portal-card:hover {
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    transform: translateY(-0.2rem);
+  }
 }
 .portal-card:active {
   transform: translateY(0);

@@ -103,7 +103,14 @@ function clearActiveColor() {
 
     <div v-else class="photo-color-palette__error" role="status">
       <span>{{ error || 'Color analysis is unavailable.' }}</span>
-      <button type="button" data-cuelume-toggle="pulse" @click="emit('retry')">Retry</button>
+      <button
+        type="button"
+        data-cuelume-hover="tick"
+        data-cuelume-toggle="pulse"
+        @click="emit('retry')"
+      >
+        Retry
+      </button>
     </div>
   </section>
 </template>

@@ -48,9 +48,11 @@
     opacity 220ms ease;
 }
 
-:is([prose=''], .prose) :not(h1, h2, h3, h4, h5) > a:hover {
-  border-bottom-color: currentColor;
-  opacity: 0.62;
+@media (hover: hover) and (pointer: fine) {
+  :is([prose=''], .prose) :not(h1, h2, h3, h4, h5) > a:hover {
+    border-bottom-color: currentColor;
+    opacity: 0.62;
+  }
 }
 
 :is([prose=''], .prose) code {

@@ -36,6 +36,7 @@ function setExpansion(mode: ExpansionMode) {
           type="button"
           aria-label="Expand all JSON nodes"
           title="Expand all"
+          data-cuelume-hover="tick"
           data-cuelume-toggle="scan"
           @click="setExpansion('all')"
         >
@@ -46,6 +47,7 @@ function setExpansion(mode: ExpansionMode) {
           type="button"
           aria-label="Collapse all JSON nodes"
           title="Collapse all"
+          data-cuelume-hover="tick"
           data-cuelume-toggle="scan"
           @click="setExpansion('none')"
         >
@@ -134,9 +136,11 @@ function setExpansion(mode: ExpansionMode) {
   height: 0.78rem;
 }
 
-.json-viewer__actions button:hover {
-  color: var(--terminal-text);
-  background: var(--terminal-accent-soft);
+@media (hover: hover) and (pointer: fine) {
+  .json-viewer__actions button:hover {
+    color: var(--terminal-text);
+    background: var(--terminal-accent-soft);
+  }
 }
 
 .json-viewer__actions button:focus-visible {

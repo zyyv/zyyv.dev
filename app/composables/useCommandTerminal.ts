@@ -34,6 +34,7 @@ export function useCommandTerminal({ close }: UseCommandTerminalOptions) {
   let nextEntryId = 0
 
   const suggestions = computed(() => suggestTerminalCommands(input.value))
+  const hasHistory = computed(() => commandHistory.value.length > 0)
   const currentTheme = computed(() =>
     colorMode.value === 'dark' ? 'dark' : colorMode.value === 'light' ? 'light' : 'system',
   )
@@ -256,6 +257,7 @@ export function useCommandTerminal({ close }: UseCommandTerminalOptions) {
     input,
     transcript: readonly(transcript),
     suggestions,
+    hasHistory,
     currentTheme,
     isExecuting: readonly(isExecuting),
     execute,

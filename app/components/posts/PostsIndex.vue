@@ -95,7 +95,7 @@ const sortedPosts = computed(() => {
               {{ post.title }}
             </h2>
             <i
-              class="i-hugeicons:arrow-up-right-02 mt-[0.22rem] flex-none translate-x-[-0.35rem] translate-y-[0.35rem] text-base op-0 transition-[opacity,transform] duration-280 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-hover:(translate-x-0 translate-y-0 op-72) motion-reduce:transition-none"
+              class="i-hugeicons:arrow-up-right-02 mt-[0.22rem] flex-none translate-x-[-0.35rem] translate-y-[0.35rem] text-base op-0 transition-[opacity,transform] duration-280 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-@hover:(translate-x-0 translate-y-0 op-72) motion-reduce:transition-none"
               aria-hidden="true"
             />
           </NuxtLink>

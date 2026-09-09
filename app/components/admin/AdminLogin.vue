@@ -41,6 +41,7 @@ function submit() {
           type="button"
           :aria-label="showPassword ? '隐藏密码' : '显示密码'"
           :aria-pressed="showPassword"
+          data-cuelume-hover="tick"
           data-cuelume-toggle="toggle"
           @click="showPassword = !showPassword"
         >
@@ -172,8 +173,10 @@ function submit() {
   opacity: 0.48;
   place-items: center;
 }
-.login-control__reveal:hover {
-  opacity: 0.9;
+@media (hover: hover) and (pointer: fine) {
+  .login-control__reveal:hover {
+    opacity: 0.9;
+  }
 }
 .login-error {
   display: flex;

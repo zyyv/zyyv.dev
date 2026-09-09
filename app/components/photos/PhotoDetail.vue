@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo, PhotoPreviewVariant } from '~/types'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
@@ -69,9 +70,20 @@ watch(
 function handleKeydown(event: KeyboardEvent) {
   if (!props.visible) return
 
-  if (event.key === 'Escape') emit('close')
-  if (event.key === 'ArrowLeft' && hasPrev.value) emit('prev')
-  if (event.key === 'ArrowRight' && hasNext.value) emit('next')
+  if (event.key === 'Escape') {
+    play('droplet')
+    emit('close')
+    return
+  }
+  if (event.key === 'ArrowLeft' && hasPrev.value) {
+    play('page')
+    emit('prev')
+    return
+  }
+  if (event.key === 'ArrowRight' && hasNext.value) {
+    play('page')
+    emit('next')
+  }
 }
 
 function thumbnailStyle(item: Photo): CSSProperties {
@@ -92,8 +104,19 @@ function handlePreviewChange(variant: PhotoPreviewVariant) {
 }
 
 function handleSwipe(direction: 'prev' | 'next') {
-  if (direction === 'prev' && hasPrev.value) emit('prev')
-  if (direction === 'next' && hasNext.value) emit('next')
+  if (direction === 'prev' && hasPrev.value) {
+    play('page')
+    emit('prev')
+  }
+  if (direction === 'next' && hasNext.value) {
+    play('page')
+    emit('next')
+  }
+}
+
+function handleBackdropMouseDown() {
+  play('droplet')
+  emit('close')
 }
 
 onMounted(() => document.addEventListener('keydown', handleKeydown))
@@ -103,7 +126,11 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 <template>
   <Teleport to="body">
     <Transition name="photo-dialog" :css="!transitioning">
-      <div v-if="visible && photo" class="photo-dialog__backdrop" @mousedown.self="emit('close')">
+      <div
+        v-if="visible && photo"
+        class="photo-dialog__backdrop"
+        @mousedown.self="handleBackdropMouseDown"
+      >
         <section
           ref="dialog"
           class="photo-dialog"
@@ -129,6 +156,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 class="photo-dialog__close"
                 aria-label="Close photo details"
                 title="Close"
+                data-cuelume-hover="tick"
                 data-cuelume-toggle="droplet"
                 @click="emit('close')"
               >
@@ -144,6 +172,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 type="button"
                 class="photo-dialog__nav photo-dialog__nav--prev"
                 aria-label="Previous photo"
+                data-cuelume-hover="tick"
                 data-cuelume-toggle="page"
                 @click="emit('prev')"
               >
@@ -166,6 +195,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 type="button"
                 class="photo-dialog__nav photo-dialog__nav--next"
                 aria-label="Next photo"
+                data-cuelume-hover="tick"
                 data-cuelume-toggle="page"
                 @click="emit('next')"
               >

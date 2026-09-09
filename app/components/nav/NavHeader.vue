@@ -87,9 +87,10 @@ function isActive(path: string) {
           <button
             v-if="item.to === '/photos' && isActive(item.to)"
             type="button"
-            class="side-menu__item relative grid size-[2.35rem] place-items-center rounded-[0.65rem] border-0 color-inherit text-[1.12rem] op-100 [background-color:color-mix(in_srgb,currentColor_14%,transparent)] transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
+            class="side-menu__item relative grid size-[2.35rem] place-items-center rounded-[0.65rem] border-0 color-inherit text-[1.12rem] op-100 [background-color:color-mix(in_srgb,currentColor_14%,transparent)] transition-[opacity,transform] duration-180 ease @hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
             :aria-label="photosToggleLabel"
             :aria-pressed="photosViewMode === 'ripplable'"
+            data-cuelume-hover="tick"
             data-cuelume-toggle="toggle"
             @click="togglePhotosView"
           >
@@ -100,9 +101,9 @@ function isActive(path: string) {
           <NuxtLink
             v-else
             :to="item.to"
-            class="side-menu__item relative color-inherit no-underline transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
+            class="side-menu__item relative color-inherit no-underline transition-[opacity,transform] duration-180 ease @hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
             :class="[
-              'grid size-[2.35rem] place-items-center rounded-[0.65rem] text-[1.12rem] op-52 hover:[background-color:color-mix(in_srgb,currentColor_9%,transparent)]',
+              'grid size-[2.35rem] place-items-center rounded-[0.65rem] text-[1.12rem] op-52 @hover:[background-color:color-mix(in_srgb,currentColor_9%,transparent)]',
               isActive(item.to)
                 ? '[background-color:color-mix(in_srgb,currentColor_14%,transparent)]! op-100!'
                 : '',
@@ -163,11 +164,17 @@ function isActive(path: string) {
   height: 1.25rem;
 }
 
-.home-menu__trigger:hover,
 .home-menu__trigger:focus-visible {
   background-color: color-mix(in srgb, currentColor 9%, transparent);
   opacity: 0.92;
   transform: translateY(-1px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .home-menu__trigger:hover {
+    background-color: color-mix(in srgb, currentColor 9%, transparent);
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
 }
 
 .home-menu__trigger:active {
@@ -219,11 +226,17 @@ function isActive(path: string) {
     transform 180ms ease;
 }
 
-.home-menu__link:hover,
 .home-menu__link:focus-visible {
   background-color: color-mix(in srgb, currentColor 9%, transparent);
   opacity: 1;
   transform: translateY(-1px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .home-menu__link:hover {
+    background-color: color-mix(in srgb, currentColor 9%, transparent);
+    opacity: 1;
+    transform: translateY(-1px);
+  }
 }
 
 .home-menu__link:active {
@@ -275,25 +288,43 @@ function isActive(path: string) {
     transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.side-menu__item:hover .side-menu__label,
 .side-menu__item:focus-visible .side-menu__label {
   opacity: 0.82;
   transform: translate3d(0, -50%, 0);
 }
+@media (hover: hover) and (pointer: fine) {
+  .side-menu__item:hover .side-menu__label {
+    opacity: 0.82;
+    transform: translate3d(0, -50%, 0);
+  }
+}
 
-.home-menu__link:hover .home-menu__label,
 .home-menu__link:focus-visible .home-menu__label {
   opacity: 1;
   transform: translate3d(-50%, 0, 0);
 }
+@media (hover: hover) and (pointer: fine) {
+  .home-menu__link:hover .home-menu__label {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0);
+  }
+}
 
-.home-menu:hover .home-menu__panel,
 .home-menu:focus-within .home-menu__panel {
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
   transform: translate3d(0, -50%, 0) scale(1);
   transition-delay: 0s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .home-menu:hover .home-menu__panel {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate3d(0, -50%, 0) scale(1);
+    transition-delay: 0s;
+  }
 }
 
 @media (max-width: 639.9px) {
@@ -306,7 +337,6 @@ function isActive(path: string) {
     transform-origin: left top;
   }
 
-  .home-menu:hover .home-menu__panel,
   .home-menu:focus-within .home-menu__panel {
     transform: translate3d(0, 0, 0) scale(1);
   }
@@ -317,6 +347,12 @@ function isActive(path: string) {
 
   .home-menu__link {
     width: clamp(2.2rem, 11vw, 2.65rem);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (max-width: 639.9px) {
+  .home-menu:hover .home-menu__panel {
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 

@@ -74,7 +74,6 @@ function activate(event: MouseEvent | FocusEvent) {
   transform-origin: center;
   user-select: none;
 }
-.canvas-node:hover,
 .canvas-node:focus-within,
 .canvas-node.is-active,
 .canvas-node.is-selected {
@@ -101,7 +100,6 @@ function activate(event: MouseEvent | FocusEvent) {
     color 180ms ease,
     transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.canvas-node:not(.canvas-node--root) .canvas-node__main:hover,
 .canvas-node:not(.canvas-node--root) .canvas-node__main:focus-visible,
 .canvas-node.is-active .canvas-node__main,
 .canvas-node.is-selected .canvas-node__main {
@@ -110,6 +108,19 @@ function activate(event: MouseEvent | FocusEvent) {
   border-color: var(--branch-color);
   color: color-mix(in srgb, var(--branch-color) 68%, var(--canvas-ink));
   transform: translateY(-1px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .canvas-node:hover {
+    z-index: 30;
+  }
+
+  .canvas-node:not(.canvas-node--root) .canvas-node__main:hover {
+    outline: 0;
+    border-style: solid;
+    border-color: var(--branch-color);
+    color: color-mix(in srgb, var(--branch-color) 68%, var(--canvas-ink));
+    transform: translateY(-1px);
+  }
 }
 .canvas-node__main:active {
   transform: translateY(1px);
