@@ -15,10 +15,27 @@ interface ColorBucket {
   count: number
 }
 
+interface PersistedColorCacheEntry {
+  colors: ImageColor[]
+  cachedAt: number
+}
+
+interface PersistedColorCache {
+  version: number
+  entries: Record<string, PersistedColorCacheEntry>
+}
+
 const ANALYSIS_SIZE = 96
 const QUANTIZATION_STEP = 24
 const MAX_COLORS = 5
 const MIN_COLOR_DISTANCE = 42
+const COLOR_ANALYSIS_VERSION = 1
+const COLOR_CACHE_STORAGE_KEY = 'zyyv:image-colors-cache'
+const MAX_PERSISTED_CACHE_ENTRIES = 128
+
+const memoryCache = new Map<string, ImageColor[]>()
+const persistedCache = new Map<string, PersistedColorCacheEntry>()
+let hasLoadedPersistedCache = false
 
 export function useImageColors(photo: MaybeRefOrGetter<Photo | null>) {
   const colors = shallowRef<ImageColor[]>([])
@@ -28,14 +45,23 @@ export function useImageColors(photo: MaybeRefOrGetter<Photo | null>) {
   let activeController: AbortController | null = null
 
   watch(
-    () => toValue(photo)?.id,
-    async (photoId, _previousId, onCleanup) => {
+    () => {
+      const currentPhoto = toValue(photo)
+      return currentPhoto ? getPhotoCacheKey(currentPhoto) : null
+    },
+    (photoKey, _previousKey, onCleanup) => {
       const currentRequest = ++requestId
       activeController?.abort()
       colors.value = []
       error.value = null
 
-      if (!import.meta.client || !photoId) {
+      if (!import.meta.client || !photoKey) {
+        status.value = 'idle'
+        return
+      }
+
+      const currentPhoto = toValue(photo)
+      if (!currentPhoto) {
         status.value = 'idle'
         return
       }
@@ -46,28 +72,8 @@ export function useImageColors(photo: MaybeRefOrGetter<Photo | null>) {
         controller.abort()
         if (activeController === controller) activeController = null
       })
-      status.value = 'analyzing'
 
-      try {
-        const currentPhoto = toValue(photo)
-        if (!currentPhoto) {
-          status.value = 'idle'
-          return
-        }
-
-        const image = await loadAnalysisImage(currentPhoto, controller.signal)
-        if (controller.signal.aborted || currentRequest !== requestId) return
-
-        colors.value = extractColors(image)
-        status.value = colors.value.length ? 'ready' : 'error'
-        if (!colors.value.length) error.value = 'No colors could be sampled from this image.'
-      } catch (cause) {
-        if (controller.signal.aborted || currentRequest !== requestId) return
-        status.value = 'error'
-        error.value = cause instanceof Error ? cause.message : 'Color analysis failed.'
-      } finally {
-        if (activeController === controller) activeController = null
-      }
+      void analyzePhoto(currentPhoto, currentRequest, controller)
     },
     { immediate: true },
   )
@@ -97,13 +103,30 @@ export function useImageColors(photo: MaybeRefOrGetter<Photo | null>) {
     error.value = null
 
     try {
+      const cacheKey = getPhotoCacheKey(currentPhoto)
+      const cachedColors = getCachedColors(cacheKey)
+      if (cachedColors) {
+        if (currentRequest !== requestId || controller.signal.aborted) return
+        colors.value = cachedColors
+        status.value = 'ready'
+        return
+      }
+
       const image = await loadAnalysisImage(currentPhoto, controller.signal)
-      if (currentRequest !== requestId) return
-      colors.value = extractColors(image)
-      status.value = colors.value.length ? 'ready' : 'error'
-      if (!colors.value.length) error.value = 'No colors could be sampled from this image.'
+      if (currentRequest !== requestId || controller.signal.aborted) return
+
+      const analyzedColors = extractColors(image)
+      if (!analyzedColors.length) {
+        status.value = 'error'
+        error.value = 'No colors could be sampled from this image.'
+        return
+      }
+
+      setCachedColors(cacheKey, analyzedColors)
+      colors.value = analyzedColors
+      status.value = 'ready'
     } catch (cause) {
-      if (currentRequest !== requestId) return
+      if (currentRequest !== requestId || controller.signal.aborted) return
       status.value = 'error'
       error.value = cause instanceof Error ? cause.message : 'Color analysis failed.'
     } finally {
@@ -117,6 +140,116 @@ export function useImageColors(photo: MaybeRefOrGetter<Photo | null>) {
     error: readonly(error),
     analyze,
   }
+}
+
+function getPhotoCacheKey(photo: Photo) {
+  const modifiedAt =
+    photo.modifiedAt instanceof Date ? String(photo.modifiedAt.getTime()) : String(photo.modifiedAt)
+
+  return [
+    COLOR_ANALYSIS_VERSION,
+    photo.id,
+    photo.mediaType,
+    modifiedAt,
+    ANALYSIS_SIZE,
+    QUANTIZATION_STEP,
+    MAX_COLORS,
+    MIN_COLOR_DISTANCE,
+  ].join(':')
+}
+
+function getCachedColors(cacheKey: string): ImageColor[] | null {
+  const memoryColors = memoryCache.get(cacheKey)
+  if (memoryColors) return cloneColors(memoryColors)
+
+  loadPersistedCache()
+  const persistedEntry = persistedCache.get(cacheKey)
+  if (!persistedEntry) return null
+
+  memoryCache.set(cacheKey, persistedEntry.colors)
+  return cloneColors(persistedEntry.colors)
+}
+
+function setCachedColors(cacheKey: string, colors: ImageColor[]) {
+  const cachedColors = cloneColors(colors)
+  memoryCache.set(cacheKey, cachedColors)
+
+  if (!import.meta.client) return
+  loadPersistedCache()
+  persistedCache.set(cacheKey, { colors: cachedColors, cachedAt: Date.now() })
+
+  while (persistedCache.size > MAX_PERSISTED_CACHE_ENTRIES) {
+    const oldestKey = [...persistedCache.entries()].sort(
+      ([, first], [, second]) => first.cachedAt - second.cachedAt,
+    )[0]?.[0]
+    if (!oldestKey) break
+    persistedCache.delete(oldestKey)
+  }
+
+  try {
+    const cache: PersistedColorCache = {
+      version: COLOR_ANALYSIS_VERSION,
+      entries: Object.fromEntries(persistedCache),
+    }
+    localStorage.setItem(COLOR_CACHE_STORAGE_KEY, JSON.stringify(cache))
+  } catch {
+    // The in-memory cache still improves this session if storage is unavailable or full.
+  }
+}
+
+function loadPersistedCache() {
+  if (hasLoadedPersistedCache || !import.meta.client) return
+  hasLoadedPersistedCache = true
+
+  try {
+    const rawCache = localStorage.getItem(COLOR_CACHE_STORAGE_KEY)
+    if (!rawCache) return
+
+    const parsedCache: unknown = JSON.parse(rawCache)
+    if (!isPersistedColorCache(parsedCache)) return
+
+    for (const [cacheKey, entry] of Object.entries(parsedCache.entries)) {
+      persistedCache.set(cacheKey, {
+        colors: cloneColors(entry.colors),
+        cachedAt: entry.cachedAt,
+      })
+    }
+  } catch {
+    // Ignore malformed or unavailable local storage and analyze the image normally.
+  }
+}
+
+function isPersistedColorCache(value: unknown): value is PersistedColorCache {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Partial<PersistedColorCache>
+  if (candidate.version !== COLOR_ANALYSIS_VERSION || !candidate.entries) return false
+  if (typeof candidate.entries !== 'object') return false
+
+  return Object.values(candidate.entries).every((entry) => {
+    if (!entry || typeof entry !== 'object') return false
+    const candidateEntry = entry as Partial<PersistedColorCacheEntry>
+    return (
+      Number.isFinite(candidateEntry.cachedAt) &&
+      Array.isArray(candidateEntry.colors) &&
+      candidateEntry.colors.every(isImageColor)
+    )
+  })
+}
+
+function isImageColor(value: unknown): value is ImageColor {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Partial<ImageColor>
+  return (
+    typeof candidate.hex === 'string' &&
+    /^#[\da-f]{6}$/i.test(candidate.hex) &&
+    typeof candidate.share === 'number' &&
+    Number.isFinite(candidate.share) &&
+    candidate.share > 0
+  )
+}
+
+function cloneColors(colors: readonly ImageColor[]) {
+  return colors.map((color) => ({ ...color }))
 }
 
 async function loadAnalysisImage(photo: Photo, signal: AbortSignal): Promise<HTMLImageElement> {
