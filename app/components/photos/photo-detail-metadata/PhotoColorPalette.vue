@@ -84,7 +84,10 @@ function clearActiveColor() {
         >
           <span
             class="photo-color-palette__swatch-chip"
-            :style="{ backgroundColor: color.hex }"
+            :style="{
+              backgroundColor: color.hex,
+              borderRadius: activeColor === color.hex ? '0.2rem' : '50%',
+            }"
             :aria-label="colorLabel(color)"
           />
           <span class="photo-color-palette__swatch-info">
@@ -163,9 +166,10 @@ function clearActiveColor() {
 .photo-color-palette__swatch-chip {
   position: relative;
   flex: 0 0 auto;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 0.26rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  transition: border-radius 180ms ease;
 }
 
 .photo-color-palette__swatch-info {
