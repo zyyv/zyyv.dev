@@ -385,11 +385,6 @@ onBeforeUnmount(() => {
         :reaction-error="reactionError"
         :reaction-saving="reactionSaving"
         @react="emit('react', $event)"
-        @pointerdown.stop
-        @pointermove.stop
-        @pointerup.stop
-        @pointercancel.stop
-        @wheel.stop
       />
       <img
         v-else

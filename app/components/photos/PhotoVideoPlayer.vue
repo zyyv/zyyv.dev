@@ -18,8 +18,20 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const emit = defineEmits<Emits>()
 
+const video = useTemplateRef<HTMLVideoElement>('video')
 const ready = shallowRef(false)
 const loadFailed = shallowRef(false)
+
+function attemptAutoplay() {
+  const player = video.value
+
+  if (!player || !player.paused) return
+
+  void player.play().catch(() => {
+    player.muted = true
+    void player.play().catch(() => {})
+  })
+}
 
 onMounted(async () => {
   try {
@@ -40,18 +52,28 @@ onMounted(async () => {
     loadFailed.value = true
   }
 })
+
+watch(ready, async (isReady) => {
+  if (!isReady) return
+
+  await nextTick()
+  attemptAutoplay()
+})
 </script>
 
 <template>
   <media-controller v-if="ready" class="photo-video-player" autohide="2">
     <video
       slot="media"
+      ref="video"
       class="photo-video-player__video"
       :src="props.photo.origin"
       :poster="props.photo.compressed"
       :aria-label="props.photo.filename"
       preload="metadata"
+      autoplay
       playsinline
+      @canplay="attemptAutoplay"
     />
     <media-loading-indicator slot="centered-chrome" />
     <media-control-bar class="photo-video-player__control-bar">
@@ -98,6 +120,7 @@ onMounted(async () => {
         <i slot="exit" class="photo-video-player__icon i-hugeicons:shrink" aria-hidden="true" />
       </media-fullscreen-button>
       <PhotoDetailControls
+        variant="media"
         :photo="props.photo"
         :reaction-error="props.reactionError"
         :reaction-saving="props.reactionSaving"
@@ -107,13 +130,16 @@ onMounted(async () => {
   </media-controller>
   <video
     v-else-if="loadFailed"
+    ref="video"
     class="photo-video-player photo-video-player__video"
     :src="props.photo.origin"
     :poster="props.photo.compressed"
     :aria-label="props.photo.filename"
     preload="metadata"
+    autoplay
     playsinline
     controls
+    @canplay="attemptAutoplay"
   />
   <div v-else class="photo-video-player photo-video-player--loading">
     <img :src="props.photo.compressed" alt="" />

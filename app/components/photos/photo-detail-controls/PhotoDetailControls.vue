@@ -8,6 +8,7 @@ import PhotoDetailZoomControls from './PhotoDetailZoomControls.vue'
 
 interface Props {
   photo: Photo
+  variant?: 'dialog' | 'media'
   reactionError?: string | null
   reactionSaving?: boolean
   reactionDisabled?: boolean
@@ -24,6 +25,7 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  variant: 'dialog',
   reactionError: null,
   reactionSaving: false,
   reactionDisabled: false,
@@ -34,10 +36,14 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 const checkerboard = defineModel<boolean>('checkerboard', { default: false })
 const isVideo = computed(() => props.photo.mediaType === 'video')
+const controlsClasses = computed(() => [
+  'photo-detail-controls',
+  `photo-detail-controls--${props.variant}`,
+])
 </script>
 
 <template>
-  <div class="photo-detail-controls" role="group" aria-label="Media actions" @pointerdown.stop>
+  <div :class="controlsClasses" role="group" aria-label="Media actions" @pointerdown.stop>
     <div class="photo-detail-controls__item">
       <PhotoDetailReactionControl
         :photo="props.photo"
@@ -93,6 +99,18 @@ const isVideo = computed(() => props.photo.mediaType === 'video')
   backdrop-filter: blur(0.75rem);
 }
 
+.photo-detail-controls--media {
+  --photo-detail-control-color: var(--media-text-color, var(--media-primary-color, #f4f4f0));
+  --photo-detail-control-hover-background: var(--media-control-hover-background, transparent);
+  --photo-detail-control-radius: 0.65rem;
+
+  gap: 0.2rem;
+  min-height: 0;
+  border: 0;
+  background: var(--media-control-background, transparent);
+  backdrop-filter: none;
+}
+
 .photo-detail-controls__item {
   display: flex;
   min-width: 0;
@@ -101,6 +119,10 @@ const isVideo = computed(() => props.photo.mediaType === 'video')
 
 .photo-detail-controls__item + .photo-detail-controls__item {
   border-left: 1px dashed var(--dialog-line, rgb(244 244 240 / 22%));
+}
+
+.photo-detail-controls--media .photo-detail-controls__item + .photo-detail-controls__item {
+  border-left: 0;
 }
 
 @media (max-width: 767.9px) {
