@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Photo, PhotoReactionCounts } from '~/types'
 import { PHOTO_REACTIONS } from '#shared/constants/photo-reactions'
+import PhotoColorPalette from './PhotoColorPalette.vue'
 
 interface Props {
   photo: Photo
@@ -20,6 +21,12 @@ interface LocationDisplay {
 }
 
 const props = defineProps<Props>()
+const {
+  colors: imageColors,
+  status: imageColorsStatus,
+  error: imageColorsError,
+  analyze: analyzeImageColors,
+} = useImageColors(() => props.photo)
 
 const fileDetails = computed<DetailRow[]>(() => [
   {
@@ -231,6 +238,13 @@ function greatestCommonDivisor(a: number, b: number): number {
         </dl>
       </div>
     </section>
+
+    <PhotoColorPalette
+      :colors="imageColors"
+      :status="imageColorsStatus"
+      :error="imageColorsError"
+      @retry="analyzeImageColors"
+    />
 
     <section class="photo-dialog__detail-group" aria-live="polite">
       <h3>Reactions</h3>
