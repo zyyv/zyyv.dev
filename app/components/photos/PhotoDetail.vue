@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo } from '~/types'
-import { PHOTO_REACTIONS } from '#shared/constants/photo-reactions'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
+import PhotoDetailMetadata from './PhotoDetailMetadata.vue'
 
 interface Props {
   photo: Photo | null
@@ -16,18 +16,6 @@ interface Emits {
   prev: []
   next: []
   select: [photo: Photo]
-}
-
-interface DetailRow {
-  icon: string
-  label: string
-  value: string
-}
-
-interface LocationDisplay {
-  title: string
-  context: string
-  href?: string
 }
 
 const props = defineProps<Props>()
@@ -49,83 +37,6 @@ const {
 } = usePhotoReactions(detailPhoto)
 const hasPrev = computed(() => currentIndex.value > 0)
 const hasNext = computed(() => currentIndex.value < props.photos.length - 1)
-const activeReactions = computed(() =>
-  PHOTO_REACTIONS.filter((reaction) => reactionCounts.value[reaction.type] > 0),
-)
-const basicDetails = computed<DetailRow[]>(() => {
-  if (!detailPhoto.value) return []
-  const isVideo = detailPhoto.value.mediaType === 'video'
-
-  return [
-    {
-      icon: isVideo ? 'i-hugeicons:video-01' : 'i-hugeicons:image-03',
-      label: 'Type',
-      value: isVideo ? 'Video' : 'Photo',
-    },
-    { icon: 'i-hugeicons:file-01', label: 'Filename', value: detailPhoto.value.filename },
-    {
-      icon: 'i-hugeicons:maximize-01',
-      label: 'Dimensions',
-      value: `${detailPhoto.value.width} x ${detailPhoto.value.height}`,
-    },
-    {
-      icon: 'i-hugeicons:database-01',
-      label: 'Original',
-      value: detailPhoto.value.originSizeFormatted,
-    },
-    {
-      icon: 'i-hugeicons:image-03',
-      label: isVideo ? 'Poster' : 'Compressed',
-      value: detailPhoto.value.compressedSizeFormatted,
-    },
-    {
-      icon: 'i-hugeicons:calendar-03',
-      label: 'Modified',
-      value: formatDate(detailPhoto.value.modifiedAt),
-    },
-  ]
-})
-const captureDetails = computed<DetailRow[]>(() => {
-  const exif = detailPhoto.value?.exif
-  if (!exif) return []
-
-  return [
-    exif.make && exif.model
-      ? { icon: 'i-hugeicons:camera-01', label: 'Camera', value: `${exif.make} ${exif.model}` }
-      : null,
-    exif.lens ? { icon: 'i-hugeicons:camera-lens', label: 'Lens', value: exif.lens } : null,
-    exif.focalLength
-      ? { icon: 'i-hugeicons:zoom-in-area', label: 'Focal length', value: `${exif.focalLength}mm` }
-      : null,
-    exif.fNumber
-      ? { icon: 'i-hugeicons:iris-scan', label: 'Aperture', value: `f/${exif.fNumber}` }
-      : null,
-    exif.exposureTime
-      ? {
-          icon: 'i-hugeicons:timer-01',
-          label: 'Shutter',
-          value: formatExposureTime(exif.exposureTime),
-        }
-      : null,
-    exif.iso ? { icon: 'i-hugeicons:settings-05', label: 'ISO', value: String(exif.iso) } : null,
-    exif.dateTime
-      ? { icon: 'i-hugeicons:clock-01', label: 'Captured', value: formatDate(exif.dateTime) }
-      : null,
-  ].filter((detail): detail is DetailRow => detail !== null)
-})
-const locationDetails = computed<LocationDisplay | null>(() => {
-  const location = detailPhoto.value?.exif?.location
-  if (!location) return null
-
-  const title = location.road || location.displayName.split(/[,，]/)[0]?.trim() || 'Mapped location'
-  const context = [location.city, location.state].filter(Boolean).join(' · ')
-
-  return {
-    title,
-    context: context || location.displayName,
-    href: location.osmUrl,
-  }
-})
 
 watch(
   [currentIndex, () => props.visible],
@@ -153,15 +64,6 @@ function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') emit('close')
   if (event.key === 'ArrowLeft' && hasPrev.value) emit('prev')
   if (event.key === 'ArrowRight' && hasNext.value) emit('next')
-}
-
-function formatDate(date: Date | string): string {
-  return useDateFormat(date, 'YYYY-MM-DD HH:mm', { locales: 'en-US' }).value
-}
-
-function formatExposureTime(time: number): string {
-  if (time >= 1) return `${time}s`
-  return `1/${Math.round(1 / time)}s`
 }
 
 function thumbnailStyle(item: Photo): CSSProperties {
@@ -248,77 +150,11 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               </button>
             </div>
 
-            <aside class="photo-dialog__details" aria-label="Photo details">
-              <section class="photo-dialog__detail-group">
-                <h3>File</h3>
-                <dl>
-                  <div v-for="detail in basicDetails" :key="detail.label">
-                    <dt>
-                      <i :class="detail.icon" aria-hidden="true" />
-                      <span>{{ detail.label }}</span>
-                    </dt>
-                    <dd>{{ detail.value }}</dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section
-                v-if="captureDetails.length || locationDetails"
-                class="photo-dialog__detail-group"
-              >
-                <h3>Capture</h3>
-                <dl>
-                  <div v-for="detail in captureDetails" :key="detail.label">
-                    <dt>
-                      <i :class="detail.icon" aria-hidden="true" />
-                      <span>{{ detail.label }}</span>
-                    </dt>
-                    <dd>{{ detail.value }}</dd>
-                  </div>
-                  <div v-if="locationDetails" class="photo-dialog__location-row">
-                    <dt>
-                      <i class="i-hugeicons:location-01" aria-hidden="true" />
-                      <span>Location</span>
-                    </dt>
-                    <dd>
-                      <a
-                        v-if="locationDetails.href"
-                        class="photo-dialog__location-link"
-                        :href="locationDetails.href"
-                        :aria-label="`Open ${locationDetails.title} in OpenStreetMap`"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <span class="photo-dialog__location-road">{{ locationDetails.title }}</span>
-                        <span class="photo-dialog__location-context">{{
-                          locationDetails.context
-                        }}</span>
-                      </a>
-                      <span v-else class="photo-dialog__location-copy">
-                        <span class="photo-dialog__location-road">{{ locationDetails.title }}</span>
-                        <span class="photo-dialog__location-context">{{
-                          locationDetails.context
-                        }}</span>
-                      </span>
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section class="photo-dialog__detail-group" aria-live="polite">
-                <h3>Reactions</h3>
-                <dl v-if="activeReactions.length" class="photo-dialog__reaction-list">
-                  <div v-for="reaction in activeReactions" :key="reaction.type">
-                    <dt>
-                      <i :class="reaction.icon" aria-hidden="true" />
-                      <span>{{ reaction.label }}</span>
-                    </dt>
-                    <dd>{{ reactionCounts[reaction.type] }}</dd>
-                  </div>
-                </dl>
-                <p v-else class="photo-dialog__empty-reactions">No reactions yet.</p>
-              </section>
-            </aside>
+            <PhotoDetailMetadata
+              v-if="detailPhoto"
+              :photo="detailPhoto"
+              :reaction-counts="reactionCounts"
+            />
           </div>
 
           <footer class="photo-dialog__filmstrip" aria-label="Photo navigation">
@@ -405,54 +241,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 }
 
 .photo-dialog__identity p,
-.photo-dialog__identity h2,
-.photo-dialog__detail-group h3,
-.photo-dialog__detail-group dl,
-.photo-dialog__detail-group dd {
+.photo-dialog__identity h2 {
   margin: 0;
-}
-
-.photo-dialog__location-link,
-.photo-dialog__location-copy {
-  display: grid;
-  min-width: 0;
-  gap: 0.15rem;
-  color: inherit;
-  text-align: right;
-  text-decoration: none;
-}
-
-.photo-dialog__location-road,
-.photo-dialog__location-context {
-  overflow-wrap: anywhere;
-}
-
-.photo-dialog__location-road {
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.3;
-}
-
-.photo-dialog__location-context {
-  color: var(--dialog-muted);
-  font-size: 0.59rem;
-  line-height: 1.4;
-}
-
-.photo-dialog__reaction-list dd {
-  font-variant-numeric: tabular-nums;
-}
-
-.photo-dialog__reaction-list dt i {
-  font-size: 1rem;
-}
-
-.photo-dialog__empty-reactions {
-  margin: 0;
-  color: var(--dialog-muted);
-  font-size: 0.66rem;
-  line-height: 1.45;
 }
 
 .photo-dialog__identity p {
@@ -543,51 +333,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   overflow-y: auto;
   padding: clamp(1.5rem, 2.5vw, 2.75rem) clamp(1rem, 2vw, 2rem);
   scrollbar-width: thin;
-}
-
-.photo-dialog__detail-group + .photo-dialog__detail-group {
-  margin-top: clamp(2rem, 4vh, 3.5rem);
-}
-
-.photo-dialog__detail-group h3 {
-  margin-bottom: 1rem;
-  color: var(--dialog-muted);
-  font-size: 0.58rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.photo-dialog__detail-group dl > div {
-  display: grid;
-  grid-template-columns: minmax(4.8rem, 1fr) minmax(0, 1fr);
-  align-items: start;
-  gap: 0.75rem;
-  padding: 0.45rem 0;
-}
-
-.photo-dialog__detail-group dt,
-.photo-dialog__detail-group dd {
-  font-size: 0.66rem;
-  line-height: 1.45;
-}
-
-.photo-dialog__detail-group dt {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  color: var(--dialog-muted);
-}
-
-.photo-dialog__detail-group dt i {
-  flex: 0 0 auto;
-  font-size: 0.78rem;
-}
-
-.photo-dialog__detail-group dd {
-  overflow-wrap: anywhere;
-  color: var(--dialog-text);
-  text-align: right;
 }
 
 .photo-dialog__filmstrip {
@@ -686,12 +431,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
     filter: grayscale(0.2) contrast(1);
     transform: translateY(-0.12rem);
   }
-
-  .photo-dialog__location-link:hover .photo-dialog__location-road {
-    text-decoration: underline;
-    text-decoration-color: var(--dialog-line);
-    text-underline-offset: 0.18em;
-  }
 }
 
 .photo-dialog__close:active,
@@ -701,8 +440,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 .photo-dialog__close:focus-visible,
 .photo-dialog__nav:focus-visible,
-.photo-dialog__filmstrip button:focus-visible,
-.photo-dialog__location-link:focus-visible {
+.photo-dialog__filmstrip button:focus-visible {
   outline: 1px dashed var(--dialog-text);
   outline-offset: 0.35rem;
 }
