@@ -2,7 +2,7 @@
 import type { CSSProperties } from 'vue'
 import type { Photo, PhotoReactionType } from '~/types'
 import { isImagePreloaded, preloadImage } from '~/utils/preloadImage'
-import PhotoReactions from './PhotoReactions.vue'
+import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
 const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
@@ -24,7 +24,6 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const preferredMotion = usePreferredReducedMotion()
-const { copy, copied } = useClipboard({ legacy: true })
 const displayedPhoto = shallowRef<Photo | null>(null)
 const displayedImageSrc = shallowRef('')
 const compressedImageSrc = shallowRef('')
@@ -38,8 +37,6 @@ const showLoading = shallowRef(false)
 const loadProgress = shallowRef(0)
 const loadFailed = shallowRef(false)
 const useCheckerboard = shallowRef(false)
-const showReactions = shallowRef(false)
-const reactionControl = useTemplateRef<HTMLElement>('reactionControl')
 const {
   canvasRef,
   imageStyle,
@@ -68,25 +65,14 @@ const canvasClasses = computed(() => ({
   [`is-${direction.value}`]: true,
 }))
 const isDisplayedVideo = computed(() => displayedPhoto.value?.mediaType === 'video')
-const progressStyle = computed<CSSProperties>(() => ({
-  strokeDashoffset: `${50.27 * (1 - loadProgress.value / 100)}`,
-}))
 const currentImageStyle = computed<CSSProperties>(() => {
   const photo = displayedPhoto.value
   return photo ? getCompressedImageStyle(photo, imageStyle.value) : imageStyle.value
-})
-onClickOutside(reactionControl, () => {
-  showReactions.value = false
-})
-
-onKeyStroke('Escape', () => {
-  showReactions.value = false
 })
 
 watch(
   () => props.photo,
   (photo) => {
-    showReactions.value = false
     void displayPhoto(photo)
   },
   { immediate: true },
@@ -142,12 +128,6 @@ function getCompressedImageStyle(photo: Photo, transformStyle: CSSProperties): C
     height: `${Math.max(1, Math.round(compressedHeight * containScale))}px`,
     ...transformStyle,
   }
-}
-
-function shareDisplayedPhoto() {
-  if (!displayedPhoto.value) return
-  const path = `/photos?photo=${encodeURIComponent(displayedPhoto.value.id)}`
-  void copy(new URL(path, window.location.origin).href)
 }
 
 function stopLoadingIndicator() {
@@ -325,6 +305,9 @@ onBeforeUnmount(() => {
         v-if="isDisplayedVideo"
         :key="displayedPhoto.id"
         :photo="displayedPhoto"
+        :reaction-error="reactionError"
+        :reaction-saving="reactionSaving"
+        @react="emit('react', $event)"
         @pointerdown.stop
         @pointermove.stop
         @pointerup.stop
@@ -333,7 +316,6 @@ onBeforeUnmount(() => {
       />
       <img
         v-else
-        :key="displayedPhoto.id"
         ref="canvasImage"
         class="photo-detail-canvas__image photo-detail-canvas__image--current photo-detail-canvas__image--thumbnail"
         :class="{
@@ -363,136 +345,25 @@ onBeforeUnmount(() => {
     </div>
 
     <figcaption>
-      <span>{{
-        isDisplayedVideo ? 'Use the player controls to play video' : 'Scroll to zoom · Drag to move'
-      }}</span>
       <span v-if="loadFailed" class="photo-detail-canvas__load-error" role="status">
         Compressed image unavailable · showing thumbnail
       </span>
     </figcaption>
 
-    <div ref="reactionControl" class="photo-detail-canvas__control-stack" @pointerdown.stop>
-      <Transition name="reaction-popover">
-        <PhotoReactions
-          v-show="showReactions"
-          class="photo-detail-canvas__reactions"
-          :busy="reactionSaving"
-          :disabled="!displayedPhoto"
-          :error="reactionError"
-          @react="emit('react', $event)"
-        />
-      </Transition>
-
-      <div class="photo-detail-canvas__controls" aria-label="Media controls">
-        <button
-          type="button"
-          :aria-label="`React to this ${isDisplayedVideo ? 'video' : 'photo'}`"
-          aria-haspopup="dialog"
-          :aria-expanded="showReactions"
-          title="React to this photo"
-          @click.stop="showReactions = !showReactions"
-        >
-          <i class="i-hugeicons:smile" aria-hidden="true" />
-        </button>
-        <button
-          v-if="!isDisplayedVideo"
-          type="button"
-          :aria-label="
-            useCheckerboard
-              ? 'Use blurred image background'
-              : 'Use transparency checkerboard background'
-          "
-          :aria-pressed="useCheckerboard"
-          :title="
-            useCheckerboard
-              ? 'Use blurred image background'
-              : 'Use transparency checkerboard background'
-          "
-          @click.stop="useCheckerboard = !useCheckerboard"
-        >
-          <i
-            :class="useCheckerboard ? 'i-hugeicons:blur' : 'i-hugeicons:grid-table'"
-            aria-hidden="true"
-          />
-        </button>
-        <button
-          v-if="!isDisplayedVideo"
-          type="button"
-          aria-label="Zoom out"
-          title="Zoom out"
-          @click.stop="zoomOut"
-        >
-          <i class="i-hugeicons:zoom-out-area" aria-hidden="true" />
-        </button>
-        <button
-          v-if="!isDisplayedVideo"
-          type="button"
-          class="photo-detail-canvas__zoom-value"
-          aria-label="Reset image view"
-          title="Reset image view"
-          @click.stop="resetCanvas"
-        >
-          {{ zoomLabel }}
-        </button>
-        <button
-          v-if="!isDisplayedVideo"
-          type="button"
-          aria-label="Zoom in"
-          title="Zoom in"
-          @click.stop="zoomIn"
-        >
-          <i class="i-hugeicons:zoom-in-area" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          aria-label="Copy link to this photo"
-          :aria-live="copied ? 'polite' : undefined"
-          :title="copied ? 'Link copied' : 'Copy link to this photo'"
-          @click.stop="shareDisplayedPhoto"
-        >
-          <i
-            :class="copied ? 'i-hugeicons:checkmark-circle-02 text-green' : 'i-hugeicons:share-08'"
-            aria-hidden="true"
-          />
-        </button>
-        <button
-          v-if="displayedPhoto && showLoading && !isDisplayedVideo"
-          type="button"
-          class="photo-detail-canvas__download-progress"
-          :aria-label="`Loading compressed image, ${loadProgress}%`"
-          title="Loading compressed image"
-          disabled
-        >
-          <svg
-            viewBox="0 0 20 20"
-            role="progressbar"
-            aria-label="Loading compressed image"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            :aria-valuenow="loadProgress"
-          >
-            <circle class="photo-detail-canvas__progress-track" cx="10" cy="10" r="8" />
-            <circle
-              class="photo-detail-canvas__progress-value"
-              cx="10"
-              cy="10"
-              r="8"
-              :style="progressStyle"
-            />
-          </svg>
-        </button>
-        <a
-          v-else-if="displayedPhoto"
-          :href="`/api/photos/${displayedPhoto.id}/download`"
-          :download="displayedPhoto.filename"
-          :aria-label="`Download original ${isDisplayedVideo ? 'video' : 'image'}`"
-          :title="`Download original ${isDisplayedVideo ? 'video' : 'image'}`"
-          @pointerdown.stop
-          @click.stop
-        >
-          <i class="i-hugeicons:download-04" aria-hidden="true" />
-        </a>
-      </div>
+    <div v-if="displayedPhoto && !isDisplayedVideo" class="photo-detail-canvas__control-stack">
+      <PhotoDetailControls
+        v-model:checkerboard="useCheckerboard"
+        :photo="displayedPhoto"
+        :reaction-error="reactionError"
+        :reaction-saving="reactionSaving"
+        :download-loading="showLoading"
+        :download-progress="loadProgress"
+        :zoom-label="zoomLabel"
+        @react="emit('react', $event)"
+        @zoom-in="zoomIn"
+        @zoom-out="zoomOut"
+        @reset-zoom="resetCanvas"
+      />
     </div>
   </figure>
 </template>
@@ -698,110 +569,6 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
 }
 
-.photo-detail-canvas__reactions {
-  position: absolute;
-  bottom: calc(100% + 0.55rem);
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.photo-detail-canvas__controls {
-  display: flex;
-  min-height: 2rem;
-  overflow: hidden;
-  border: 1px dashed var(--dialog-line);
-  background: var(--dialog-control);
-  backdrop-filter: blur(0.75rem);
-}
-
-.photo-detail-canvas__controls button,
-.photo-detail-canvas__controls a {
-  display: grid;
-  flex: 0 0 auto;
-  width: 2rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--dialog-text);
-  font: inherit;
-  cursor: pointer;
-  place-items: center;
-  text-decoration: none;
-}
-
-.photo-detail-canvas__controls > button:not(:first-child),
-.photo-detail-canvas__controls > a:not(:first-child) {
-  border-left: 1px dashed var(--dialog-line);
-}
-
-.photo-detail-canvas__controls i {
-  font-size: 0.82rem;
-}
-
-.photo-detail-canvas__download-progress:disabled {
-  cursor: wait;
-  opacity: 1;
-}
-
-.photo-detail-canvas__download-progress svg {
-  width: 1.05rem;
-  height: 1.05rem;
-  overflow: visible;
-  transform: rotate(-90deg);
-}
-
-.photo-detail-canvas__download-progress circle {
-  fill: none;
-  stroke-width: 1.5;
-}
-
-.photo-detail-canvas__progress-track {
-  stroke: color-mix(in srgb, var(--dialog-text) 18%, transparent);
-}
-
-.photo-detail-canvas__progress-value {
-  stroke: var(--dialog-text);
-  stroke-dasharray: 50.27;
-  stroke-dashoffset: 50.27;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 140ms linear;
-}
-
-.photo-detail-canvas__controls .photo-detail-canvas__zoom-value {
-  width: 3.6rem;
-  color: var(--dialog-muted);
-  font-size: 0.56rem;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-  user-select: none;
-}
-
-.reaction-popover-enter-active,
-.reaction-popover-leave-active {
-  transition:
-    opacity 160ms ease,
-    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.reaction-popover-enter-from,
-.reaction-popover-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(0.45rem) scale(0.98);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .photo-detail-canvas__controls button:hover,
-  .photo-detail-canvas__controls a:hover {
-    background: var(--dialog-checker);
-  }
-}
-
-.photo-detail-canvas__controls button:focus-visible,
-.photo-detail-canvas__controls a:focus-visible {
-  outline: 1px dashed var(--dialog-text);
-  outline-offset: 0.35rem;
-}
-
 @media (max-width: 767.9px) {
   .photo-detail-canvas {
     min-height: 0;
@@ -811,10 +578,6 @@ onBeforeUnmount(() => {
     top: 0.75rem;
     left: 0.8rem;
     font-size: 0.5rem;
-  }
-
-  .photo-detail-canvas__controls {
-    bottom: auto;
   }
 
   .photo-detail-canvas__control-stack {
@@ -827,17 +590,7 @@ onBeforeUnmount(() => {
   .photo-detail-canvas__background img,
   .photo-detail-canvas__media,
   .photo-detail-canvas__image--thumbnail,
-  .photo-detail-canvas__image--compressed,
-  .photo-detail-canvas__controls button {
-    transition-duration: 1ms;
-  }
-
-  .reaction-popover-enter-active,
-  .reaction-popover-leave-active {
-    transition-duration: 1ms;
-  }
-
-  .photo-detail-canvas__progress-value {
+  .photo-detail-canvas__image--compressed {
     transition-duration: 1ms;
   }
 }

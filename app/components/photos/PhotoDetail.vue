@@ -586,7 +586,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   height: 1rem;
   padding: 0.32rem;
   border-radius: 50%;
-  background: rgb(0 0 0 / 58%);
   color: white;
   transform: translate(-50%, -50%);
 }

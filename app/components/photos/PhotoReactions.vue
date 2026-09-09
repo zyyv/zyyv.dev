@@ -40,7 +40,7 @@ const emit = defineEmits<{
   width: min(20.5rem, calc(100vw - 2rem));
   padding: 0.42rem;
   box-sizing: border-box;
-  background: color-mix(in srgb, var(--dialog-control) 20%, transparent);
+  background: color-mix(in srgb, var(--dialog-control, rgb(17 17 15 / 88%)) 20%, transparent);
   -webkit-backdrop-filter: blur(1.15rem) saturate(1.18);
   backdrop-filter: blur(1.15rem) saturate(1.18);
 }
@@ -87,7 +87,7 @@ const emit = defineEmits<{
 
 .photo-reactions__error {
   margin-top: 0.6rem;
-  color: var(--dialog-muted);
+  color: var(--dialog-muted, rgb(17 17 15 / 46%));
   font-size: 0.56rem;
   line-height: 1.4;
 }

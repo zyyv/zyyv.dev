@@ -1,7 +1,22 @@
 <script setup lang="ts">
-import type { Photo } from '~/types'
+import type { Photo, PhotoReactionType } from '~/types'
+import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
 
-defineProps<{ photo: Photo }>()
+interface Props {
+  photo: Photo
+  reactionError?: string | null
+  reactionSaving?: boolean
+}
+
+interface Emits {
+  react: [reaction: PhotoReactionType]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  reactionError: null,
+  reactionSaving: false,
+})
+const emit = defineEmits<Emits>()
 
 const ready = shallowRef(false)
 const loadFailed = shallowRef(false)
@@ -32,13 +47,13 @@ onMounted(async () => {
     <video
       slot="media"
       class="photo-video-player__video"
-      :src="photo.origin"
-      :poster="photo.compressed"
-      :aria-label="photo.filename"
+      :src="props.photo.origin"
+      :poster="props.photo.compressed"
+      :aria-label="props.photo.filename"
       preload="metadata"
       playsinline
     />
-    <media-loading-indicator slot="centered-chrome" noautohide />
+    <media-loading-indicator slot="centered-chrome" />
     <media-control-bar class="photo-video-player__control-bar">
       <media-play-button
         class="photo-video-player__button photo-video-player__button--play"
@@ -82,20 +97,26 @@ onMounted(async () => {
         />
         <i slot="exit" class="photo-video-player__icon i-hugeicons:shrink" aria-hidden="true" />
       </media-fullscreen-button>
+      <PhotoDetailControls
+        :photo="props.photo"
+        :reaction-error="props.reactionError"
+        :reaction-saving="props.reactionSaving"
+        @react="emit('react', $event)"
+      />
     </media-control-bar>
   </media-controller>
   <video
     v-else-if="loadFailed"
     class="photo-video-player photo-video-player__video"
-    :src="photo.origin"
-    :poster="photo.compressed"
-    :aria-label="photo.filename"
+    :src="props.photo.origin"
+    :poster="props.photo.compressed"
+    :aria-label="props.photo.filename"
     preload="metadata"
     playsinline
     controls
   />
   <div v-else class="photo-video-player photo-video-player--loading">
-    <img :src="photo.compressed" alt="" />
+    <img :src="props.photo.compressed" alt="" />
     <i class="i-hugeicons:loading-03" aria-hidden="true" />
   </div>
 </template>
@@ -229,7 +250,7 @@ onMounted(async () => {
 }
 
 .photo-video-player__speed {
-  min-width: 2.7rem;
+  /* min-width: 2.7rem; */
   color: rgb(244 244 240 / 84%);
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
