@@ -12,6 +12,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const hoveredVariant = shallowRef<PhotoPreviewVariant | null>(null)
 
 const photoPreviewVariants: readonly PhotoPreviewVariant[] = [
   'thumbnail',
@@ -31,9 +32,9 @@ const variantDetails = computed<
   Record<PhotoPreviewVariant, { label: string; description: string }>
 >(() => ({
   thumbnail: { label: 'Thumbnail', description: props.photo.thumbnailSizeFormatted },
-  compressed: { label: 'Compressed', description: props.photo.compressedSizeFormatted },
+  compressed: { label: 'Compress', description: props.photo.compressedSizeFormatted },
   origin: { label: 'Original', description: props.photo.originSizeFormatted },
-  blurhash: { label: 'BlurHash', description: 'Encoded placeholder' },
+  blurhash: { label: 'BlurHash', description: 'Encoded' },
 }))
 
 function previewLabel(variant: PhotoPreviewVariant) {
@@ -42,6 +43,14 @@ function previewLabel(variant: PhotoPreviewVariant) {
 
 function previewDescription(variant: PhotoPreviewVariant) {
   return variantDetails.value[variant].description
+}
+
+function setHoveredVariant(variant: PhotoPreviewVariant) {
+  hoveredVariant.value = variant
+}
+
+function clearHoveredVariant() {
+  hoveredVariant.value = null
 }
 </script>
 
@@ -61,15 +70,24 @@ function previewDescription(variant: PhotoPreviewVariant) {
         :key="item"
         type="button"
         class="photo-preview-panel__option"
-        :class="{ 'is-active': item === variant }"
+        :class="{
+          'is-active': item === variant,
+          'is-hovered': item === hoveredVariant,
+        }"
         :aria-pressed="item === variant"
         @click="emit('change', item)"
+        @mouseenter="setHoveredVariant(item)"
+        @mouseleave="clearHoveredVariant"
       >
         <span class="photo-preview-panel__option-main">
           <i :class="previewIcons[item]" aria-hidden="true" />
-          <span>{{ previewLabel(item) }}</span>
+          <span class="photo-preview-panel__option-copy">
+            <span class="photo-preview-panel__option-label">{{ previewLabel(item) }}</span>
+            <span class="photo-preview-panel__option-description">
+              {{ previewDescription(item) }}
+            </span>
+          </span>
         </span>
-        <span class="photo-preview-panel__option-meta">{{ previewDescription(item) }}</span>
       </button>
     </div>
   </section>
@@ -100,7 +118,8 @@ function previewDescription(variant: PhotoPreviewVariant) {
 
 .photo-preview-panel__options {
   display: grid;
-  gap: 0.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 0.55rem;
 }
 
 .photo-preview-panel__option {
@@ -111,7 +130,7 @@ function previewDescription(variant: PhotoPreviewVariant) {
   min-width: 0;
   gap: 0.75rem;
   padding: 0.55rem 0.65rem;
-  border: 1px solid transparent;
+  border: 1px dashed transparent;
   background: transparent;
   color: var(--dialog-muted);
   font: inherit;
@@ -123,14 +142,11 @@ function previewDescription(variant: PhotoPreviewVariant) {
     color 180ms ease;
 }
 
-.photo-preview-panel__option-main,
-.photo-preview-panel__option-meta {
+.photo-preview-panel__option-main {
   display: flex;
   align-items: center;
-}
-
-.photo-preview-panel__option-main {
   min-width: 0;
+  flex: 1 1 auto;
   gap: 0.55rem;
   font-size: 0.66rem;
 }
@@ -140,11 +156,68 @@ function previewDescription(variant: PhotoPreviewVariant) {
   font-size: 0.78rem;
 }
 
-.photo-preview-panel__option-meta {
-  flex: 0 0 auto;
+.photo-preview-panel__option-copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 0.75rem;
+}
+
+.photo-preview-panel__option-label,
+.photo-preview-panel__option-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: opacity 180ms ease;
+}
+
+.photo-preview-panel__option-label {
+  min-width: 0;
+  flex: 1 1 auto;
+  line-height: 1.2;
+}
+
+.photo-preview-panel__option-description {
+  min-width: 0;
+  max-width: 50%;
+  flex: 0 1 auto;
   color: var(--dialog-muted);
   font-size: 0.56rem;
-  white-space: nowrap;
+  line-height: 1.25;
+  opacity: 1;
+  text-align: right;
+}
+
+@media (min-width: 48rem) {
+  .photo-preview-panel__option-copy {
+    display: grid;
+    gap: 0;
+  }
+
+  .photo-preview-panel__option-label,
+  .photo-preview-panel__option-description {
+    grid-area: 1 / 1;
+  }
+
+  .photo-preview-panel__option-label {
+    opacity: 1;
+  }
+
+  .photo-preview-panel__option-description {
+    max-width: none;
+    opacity: 0;
+    text-align: left;
+  }
+
+  .photo-preview-panel__option.is-hovered .photo-preview-panel__option-label {
+    opacity: 0;
+  }
+
+  .photo-preview-panel__option.is-hovered .photo-preview-panel__option-description {
+    opacity: 1;
+  }
 }
 
 .photo-preview-panel__option.is-active {
@@ -169,7 +242,9 @@ function previewDescription(variant: PhotoPreviewVariant) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .photo-preview-panel__option {
+  .photo-preview-panel__option,
+  .photo-preview-panel__option-label,
+  .photo-preview-panel__option-description {
     transition-duration: 1ms;
   }
 }

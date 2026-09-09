@@ -395,7 +395,6 @@ onBeforeUnmount(() => {
         draggable="false"
         :style="previewImageStyle"
       />
-      <span class="photo-detail-canvas__preview-label">{{ previewLabel }}</span>
     </div>
 
     <figcaption>
@@ -618,17 +617,6 @@ onBeforeUnmount(() => {
   user-select: none;
 }
 
-.photo-detail-canvas__preview-label {
-  position: absolute;
-  top: 1rem;
-  left: 1.1rem;
-  color: var(--dialog-muted);
-  font-size: 0.56rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  user-select: none;
-}
-
 .photo-detail-canvas figcaption {
   position: absolute;
   z-index: 3;
@@ -680,8 +668,7 @@ onBeforeUnmount(() => {
   .photo-detail-canvas__media,
   .photo-detail-canvas__image--thumbnail,
   .photo-detail-canvas__image--compressed,
-  .photo-detail-canvas__preview,
-  .photo-detail-canvas__preview-label {
+  .photo-detail-canvas__preview {
     transition-duration: 1ms;
   }
 }
