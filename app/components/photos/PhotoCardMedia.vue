@@ -64,10 +64,10 @@ function handleVideoLoadedMetadata(event: Event) {
       :aspect-ratio="photo.width / photo.height"
       class="photo-card-media__visual"
     />
-  </span>
-  <span v-if="isVideo" class="photo-card-media__badge" aria-hidden="true">
-    <i class="i-hugeicons:video-ai" />
-    {{ duration }}
+    <span v-if="isVideo" class="photo-card-media__badge" aria-hidden="true">
+      <i class="i-hugeicons:video-ai" />
+      {{ duration }}
+    </span>
   </span>
 </template>
 

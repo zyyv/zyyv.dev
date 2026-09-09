@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { PHOTO_REACTIONS } from '#shared/constants/photo-reactions'
-import type { PhotoReactionCounts, PhotoReactionType } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import type { PhotoReactionType } from '~/types'
 import PhotoDetailGroup from './PhotoDetailGroup.vue'
-
-interface Props {
-  reactionCounts: PhotoReactionCounts
-}
 
 interface ActiveReaction {
   type: PhotoReactionType
@@ -14,14 +11,14 @@ interface ActiveReaction {
   count: number
 }
 
-const props = defineProps<Props>()
+const { reactionCounts } = usePhotoDetailContext()
 
 const activeReactions = computed<ActiveReaction[]>(() =>
-  PHOTO_REACTIONS.filter((reaction) => props.reactionCounts[reaction.type] > 0).map((reaction) => ({
+  PHOTO_REACTIONS.filter((reaction) => reactionCounts.value[reaction.type] > 0).map((reaction) => ({
     type: reaction.type,
     icon: reaction.icon,
     label: reaction.label,
-    count: props.reactionCounts[reaction.type],
+    count: reactionCounts.value[reaction.type],
   })),
 )
 </script>

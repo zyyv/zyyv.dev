@@ -1,18 +1,12 @@
 <script setup lang="ts">
-import type { Photo, PhotoPreviewVariant } from '~/types'
+import type { PhotoPreviewVariant } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 
-interface Props {
-  photo: Photo
-  variant: PhotoPreviewVariant
-}
-
-interface Emits {
-  change: [variant: PhotoPreviewVariant]
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const { detailPhoto, previewVariant, previewLoading, actions } = usePhotoDetailContext()
 const hoveredVariant = shallowRef<PhotoPreviewVariant | null>(null)
+const isOriginDisabled = computed(
+  () => previewLoading.value.thumbnail || previewLoading.value.compressed,
+)
 
 const photoPreviewVariants: readonly PhotoPreviewVariant[] = [
   'thumbnail',
@@ -31,9 +25,9 @@ const previewIcons: Record<PhotoPreviewVariant, string> = {
 const variantDetails = computed<
   Record<PhotoPreviewVariant, { label: string; description: string }>
 >(() => ({
-  thumbnail: { label: 'Thumbnail', description: props.photo.thumbnailSizeFormatted },
-  compressed: { label: 'Compress', description: props.photo.compressedSizeFormatted },
-  origin: { label: 'Original', description: props.photo.originSizeFormatted },
+  thumbnail: { label: 'Thumbnail', description: detailPhoto.value?.thumbnailSizeFormatted ?? '—' },
+  compressed: { label: 'Compress', description: detailPhoto.value?.compressedSizeFormatted ?? '—' },
+  origin: { label: 'Original', description: detailPhoto.value?.originSizeFormatted ?? '—' },
   blurhash: { label: 'BlurHash', description: 'Encoded' },
 }))
 
@@ -56,7 +50,7 @@ function clearHoveredVariant() {
 
 <template>
   <section
-    v-if="photo.mediaType === 'image'"
+    v-if="detailPhoto?.mediaType === 'image'"
     class="photo-preview-panel"
     aria-labelledby="preview-title"
   >
@@ -71,13 +65,14 @@ function clearHoveredVariant() {
         type="button"
         class="photo-preview-panel__option"
         :class="{
-          'is-active': item === variant,
+          'is-active': item === previewVariant,
           'is-hovered': item === hoveredVariant,
         }"
-        :aria-pressed="item === variant"
+        :disabled="item === 'origin' && isOriginDisabled"
+        :aria-pressed="item === previewVariant"
         data-cuelume-hover="tick"
         data-cuelume-toggle="toggle"
-        @click="emit('change', item)"
+        @click="actions.setPreviewVariant(item)"
         @mouseenter="setHoveredVariant(item)"
         @mouseleave="clearHoveredVariant"
       >
@@ -86,7 +81,12 @@ function clearHoveredVariant() {
           <span class="photo-preview-panel__option-copy">
             <span class="photo-preview-panel__option-label">{{ previewLabel(item) }}</span>
             <span class="photo-preview-panel__option-description">
-              {{ previewDescription(item) }}
+              <i
+                v-if="previewLoading[item]"
+                class="i-hugeicons:loading-03 animate-pulse animate-spin"
+                aria-hidden="true"
+              />
+              <template v-else>{{ previewDescription(item) }}</template>
             </span>
           </span>
         </span>
@@ -96,11 +96,6 @@ function clearHoveredVariant() {
 </template>
 
 <style scoped>
-.photo-preview-panel {
-  padding-bottom: clamp(1.5rem, 3vh, 2.25rem);
-  border-bottom: 1px dashed var(--dialog-line);
-}
-
 .photo-preview-panel__heading {
   display: flex;
   align-items: baseline;
@@ -142,6 +137,11 @@ function clearHoveredVariant() {
     border-color 180ms ease,
     background-color 180ms ease,
     color 180ms ease;
+}
+
+.photo-preview-panel__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .photo-preview-panel__option-main {
@@ -260,12 +260,12 @@ function clearHoveredVariant() {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .photo-preview-panel__option:hover {
+  .photo-preview-panel__option:not(:disabled):hover {
     border-color: var(--dialog-line);
     color: var(--dialog-text);
   }
 
-  .photo-preview-panel__option.is-active:hover {
+  .photo-preview-panel__option.is-active:not(:disabled):hover {
     border-color: transparent;
   }
 }

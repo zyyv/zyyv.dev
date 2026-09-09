@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { decode } from 'blurhash'
+import { usePhotoImage } from '~/composables/usePhotoImageLoadState'
 
 interface Props {
   blurhash?: string
@@ -18,17 +19,11 @@ const props = withDefaults(defineProps<Props>(), {
 const image = useTemplateRef<HTMLImageElement>('image')
 const visible = useElementVisibility(image)
 const placeholder = shallowRef<string>()
-const loaded = shallowRef(false)
+const imageLoad = usePhotoImage(() => props.src)
 
-watch(
-  () => props.src,
-  () => {
-    loaded.value = false
-  },
-)
-watch([visible, () => props.blurhash], ([isVisible, hash]) => {
+watch([visible, () => props.blurhash, imageLoad.status], ([isVisible, hash]) => {
   placeholder.value = undefined
-  if (!isVisible || !hash || loaded.value || image.value?.complete) return
+  if (!isVisible || !hash || imageLoad.isLoaded.value || image.value?.complete) return
   try {
     const width = 32
     const height = Math.max(1, Math.min(64, Math.round(width / props.aspectRatio)))
@@ -58,9 +53,10 @@ watch([visible, () => props.blurhash], ([isVisible, hash]) => {
     class="object-cover"
     :style="{
       aspectRatio,
-      backgroundImage: !loaded && placeholder ? `url(${placeholder})` : undefined,
+      backgroundImage: !imageLoad.isLoaded && placeholder ? `url(${placeholder})` : undefined,
       backgroundSize: 'cover',
     }"
-    @load="loaded = true"
+    @load="imageLoad.markLoaded"
+    @error="imageLoad.markError"
   />
 </template>

@@ -1,22 +1,9 @@
 <script setup lang="ts">
-import type { Photo, PhotoReactionType } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
 
-interface Props {
-  photo: Photo
-  reactionError?: string | null
-  reactionSaving?: boolean
-}
-
-interface Emits {
-  react: [reaction: PhotoReactionType]
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  reactionError: null,
-  reactionSaving: false,
-})
-const emit = defineEmits<Emits>()
+const { detailPhoto } = usePhotoDetailContext()
+const photo = computed(() => detailPhoto.value!)
 
 const video = useTemplateRef<HTMLVideoElement>('video')
 const ready = shallowRef(false)
@@ -67,9 +54,9 @@ watch(ready, async (isReady) => {
       slot="media"
       ref="video"
       class="photo-video-player__video"
-      :src="props.photo.origin"
-      :poster="props.photo.compressed"
-      :aria-label="props.photo.filename"
+      :src="photo.origin"
+      :poster="photo.compressed"
+      :aria-label="photo.filename"
       preload="metadata"
       autoplay
       playsinline
@@ -119,22 +106,16 @@ watch(ready, async (isReady) => {
         />
         <i slot="exit" class="photo-video-player__icon i-hugeicons:shrink" aria-hidden="true" />
       </media-fullscreen-button>
-      <PhotoDetailControls
-        variant="media"
-        :photo="props.photo"
-        :reaction-error="props.reactionError"
-        :reaction-saving="props.reactionSaving"
-        @react="emit('react', $event)"
-      />
+      <PhotoDetailControls variant="media" />
     </media-control-bar>
   </media-controller>
   <video
     v-else-if="loadFailed"
     ref="video"
     class="photo-video-player photo-video-player__video"
-    :src="props.photo.origin"
-    :poster="props.photo.compressed"
-    :aria-label="props.photo.filename"
+    :src="photo.origin"
+    :poster="photo.compressed"
+    :aria-label="photo.filename"
     preload="metadata"
     autoplay
     playsinline
@@ -142,7 +123,7 @@ watch(ready, async (isReady) => {
     @canplay="attemptAutoplay"
   />
   <div v-else class="photo-video-player photo-video-player--loading">
-    <img :src="props.photo.compressed" alt="" />
+    <img :src="photo.compressed" alt="" />
     <i class="i-hugeicons:loading-03" aria-hidden="true" />
   </div>
 </template>

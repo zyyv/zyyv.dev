@@ -6,7 +6,7 @@ export interface ImageLoadProgress {
   percentage: number
 }
 
-interface PreloadImageOptions {
+export interface PreloadImageOptions {
   expectedBytes?: number
   onProgress?: (progress: ImageLoadProgress) => void
 }

@@ -3,6 +3,7 @@ import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
 import PhotoEmptyState from '~/components/photos/PhotoEmptyState.vue'
 import PhotoCardMedia from '~/components/photos/PhotoCardMedia.vue'
+import PhotoHoverInfo from '~/components/photos/PhotoHoverInfo.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -28,7 +29,7 @@ const {
   handleScroll,
   calcItemHeight,
   refreshPhotos,
-} = usePhotos(props.photos)
+} = usePhotos(() => props.photos)
 
 function openPreview(photo: Photo, event: MouseEvent) {
   emit('open', photo, event.currentTarget as HTMLElement)
@@ -85,11 +86,11 @@ function openPreview(photo: Photo, event: MouseEvent) {
           >
             <PhotoCardMedia
               :photo="item"
-              :loading="item.id === photos[0]?.id ? 'eager' : 'lazy'"
+              :loading="item.id === allPhotos[0]?.id ? 'eager' : 'lazy'"
               class="photo-card__image"
               :style="{ '--media-aspect-ratio': `${item.width} / ${item.height}` }"
             />
-            <PhotosPhotoHoverInfo :photo="item" />
+            <PhotoHoverInfo :photo="item" />
           </button>
         </template>
       </VirtualWaterfall>
