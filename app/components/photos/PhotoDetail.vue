@@ -3,6 +3,7 @@ import { play } from 'cuelume'
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo, PhotoPreviewVariant } from '~/types'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
+import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
 import PhotoDetailMetadata from './photo-detail-metadata/PhotoDetailMetadata.vue'
 
 interface Props {
@@ -25,6 +26,11 @@ const dialogRef = useTemplateRef<HTMLElement>('dialog')
 const thumbnailRefs: HTMLElement[] = []
 const displayedPhoto = shallowRef<Photo | null>(null)
 const previewVariant = shallowRef<PhotoPreviewVariant>('compressed')
+const checkerboard = shallowRef(false)
+const zoomLabel = shallowRef('100%')
+const downloadLoading = shallowRef(false)
+const downloadProgress = shallowRef(0)
+const canvas = useTemplateRef<InstanceType<typeof PhotoDetailCanvas>>('canvas')
 
 const currentIndex = computed(() => {
   if (!props.photo || !props.photos.length) return -1
@@ -96,6 +102,27 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
 
 function handleDisplayedChange(photo: Photo) {
   displayedPhoto.value = photo
+}
+
+function handleCanvasLoadingChange(loading: boolean, progress: number) {
+  downloadLoading.value = loading
+  downloadProgress.value = progress
+}
+
+function handleCanvasZoomChange(label: string) {
+  zoomLabel.value = label
+}
+
+function zoomIn() {
+  canvas.value?.zoomIn()
+}
+
+function zoomOut() {
+  canvas.value?.zoomOut()
+}
+
+function resetZoom() {
+  canvas.value?.resetCanvas()
 }
 
 function handlePreviewChange(variant: PhotoPreviewVariant) {
@@ -180,14 +207,18 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               </button>
 
               <PhotoDetailCanvas
+                ref="canvas"
+                v-model:checkerboard="checkerboard"
                 :photo="photo"
                 :photos="photos"
                 :reaction-error="reactionError"
                 :reaction-saving="reactionSaving"
                 :preview-variant="previewVariant"
                 @displayed-change="handleDisplayedChange"
+                @loading-change="handleCanvasLoadingChange"
                 @react="react"
                 @swipe="handleSwipe"
+                @zoom-change="handleCanvasZoomChange"
               />
 
               <button
@@ -201,6 +232,25 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               >
                 <i class="i-hugeicons:arrow-right-01" aria-hidden="true" />
               </button>
+            </div>
+
+            <div
+              v-if="detailPhoto && detailPhoto.mediaType !== 'video'"
+              class="photo-dialog__controls"
+            >
+              <PhotoDetailControls
+                v-model:checkerboard="checkerboard"
+                :photo="detailPhoto"
+                :reaction-error="reactionError"
+                :reaction-saving="reactionSaving"
+                :download-loading="downloadLoading"
+                :download-progress="downloadProgress"
+                :zoom-label="zoomLabel"
+                @react="react"
+                @zoom-in="zoomIn"
+                @zoom-out="zoomOut"
+                @reset-zoom="resetZoom"
+              />
             </div>
 
             <PhotoDetailMetadata
@@ -353,11 +403,23 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 .photo-dialog__stage {
   position: relative;
   display: grid;
+  grid-column: 1;
+  grid-row: 1;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
   background: var(--dialog-canvas);
   place-items: center;
+}
+
+.photo-dialog__controls {
+  z-index: 4;
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  align-self: end;
+  justify-self: center;
+  margin-bottom: 1rem;
 }
 
 .photo-dialog__nav {
@@ -385,6 +447,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 }
 
 .photo-dialog__details {
+  grid-column: 2;
+  grid-row: 1;
   min-height: 0;
   overflow-y: auto;
   padding: clamp(1.5rem, 2.5vw, 2.75rem) clamp(1rem, 2vw, 2rem);
@@ -552,13 +616,39 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
   .photo-dialog__body {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(46dvh, 1fr) minmax(0, 31dvh);
+    grid-template-rows: minmax(46dvh, 1fr) auto minmax(0, 31dvh);
+  }
+
+  .photo-dialog__stage {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .photo-dialog__controls {
+    display: flex;
+    grid-column: 1;
+    grid-row: 2;
+    align-self: stretch;
+    justify-self: stretch;
+    margin-bottom: 0;
+    padding: 0 0.75rem 0;
+    margin-top: -1px;
+    /* margin-bottom: -1px; */
+    /* border-top: 1px dashed var(--dialog-line); */
+    background: var(--dialog-bg);
+    box-sizing: border-box;
+    justify-content: center;
   }
 
   .photo-dialog__details {
+    grid-column: 1;
+    grid-row: 3;
     padding: 1.25rem 1rem;
     border-top: 1px dashed var(--dialog-line);
     border-left: 0;
+    position: relative;
+    top: -1px;
+    z-index: 10;
   }
 
   .photo-dialog__filmstrip {

@@ -3,7 +3,6 @@ import type { CSSProperties } from 'vue'
 import type { Photo, PhotoPreviewVariant, PhotoReactionType } from '~/types'
 import { isImagePreloaded, preloadImage } from '~/utils/preloadImage'
 import PhotoBlurhashPreview from './PhotoBlurhashPreview.vue'
-import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
 const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
@@ -29,8 +28,10 @@ interface Props {
 
 interface Emits {
   displayedChange: [photo: Photo]
+  loadingChange: [loading: boolean, progress: number]
   react: [reaction: PhotoReactionType]
   swipe: [direction: SwipeDirection]
+  zoomChange: [label: string]
 }
 
 const props = defineProps<Props>()
@@ -48,7 +49,7 @@ const isAnimating = shallowRef(false)
 const showLoading = shallowRef(false)
 const loadProgress = shallowRef(0)
 const loadFailed = shallowRef(false)
-const useCheckerboard = shallowRef(false)
+const useCheckerboard = defineModel<boolean>('checkerboard', { default: false })
 const {
   canvasRef,
   imageStyle,
@@ -106,6 +107,19 @@ const previewImageStyle = computed<CSSProperties>(() => {
 })
 const swipeStart = shallowRef<SwipeStart | null>(null)
 const activeTouchPointers = new Set<number>()
+
+watch(
+  [showLoading, loadProgress],
+  ([loading, progress]) => emit('loadingChange', loading, progress),
+  { immediate: true },
+)
+watch(zoomLabel, (label) => emit('zoomChange', label), { immediate: true })
+
+defineExpose({
+  resetCanvas,
+  zoomIn,
+  zoomOut,
+})
 
 watch(
   () => props.photo,
@@ -446,22 +460,6 @@ onBeforeUnmount(() => {
         Compressed image unavailable · showing thumbnail
       </span>
     </figcaption>
-
-    <div v-if="displayedPhoto && !isDisplayedVideo" class="photo-detail-canvas__control-stack">
-      <PhotoDetailControls
-        v-model:checkerboard="useCheckerboard"
-        :photo="displayedPhoto"
-        :reaction-error="reactionError"
-        :reaction-saving="reactionSaving"
-        :download-loading="showLoading"
-        :download-progress="loadProgress"
-        :zoom-label="zoomLabel"
-        @react="emit('react', $event)"
-        @zoom-in="zoomIn"
-        @zoom-out="zoomOut"
-        @reset-zoom="resetCanvas"
-      />
-    </div>
   </figure>
 </template>
 
@@ -682,14 +680,6 @@ onBeforeUnmount(() => {
   color: color-mix(in srgb, #d64545 78%, var(--dialog-text));
 }
 
-.photo-detail-canvas__control-stack {
-  position: absolute;
-  z-index: 3;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
 @media (max-width: 767.9px) {
   .photo-detail-canvas {
     min-height: 0;
@@ -699,10 +689,6 @@ onBeforeUnmount(() => {
     top: 0.75rem;
     left: 0.8rem;
     font-size: 0.5rem;
-  }
-
-  .photo-detail-canvas__control-stack {
-    bottom: 0.75rem;
   }
 }
 
