@@ -126,16 +126,22 @@ watch(layout, () => {
       </label>
 
       <div class="canvas-controls" aria-label="画布缩放控制">
-        <button type="button" aria-label="缩小" @click="zoomOut">
+        <button type="button" aria-label="缩小" data-cuelume-toggle="pulse" @click="zoomOut">
           <i class="i-hugeicons:minus-sign" />
         </button>
-        <button type="button" class="canvas-controls__scale" aria-label="适配全部节点" @click="fit">
+        <button
+          type="button"
+          class="canvas-controls__scale"
+          aria-label="适配全部节点"
+          data-cuelume-toggle="pulse"
+          @click="fit"
+        >
           {{ scaleLabel }}
         </button>
-        <button type="button" aria-label="放大" @click="zoomIn">
+        <button type="button" aria-label="放大" data-cuelume-toggle="pulse" @click="zoomIn">
           <i class="i-hugeicons:add-01" />
         </button>
-        <button type="button" aria-label="适配全部节点" @click="fit">
+        <button type="button" aria-label="适配全部节点" data-cuelume-toggle="pulse" @click="fit">
           <i class="i-hugeicons:center-focus" />
         </button>
       </div>
@@ -190,7 +196,9 @@ watch(layout, () => {
         <i class="i-hugeicons:route-02" aria-hidden="true" />
         <h2>No bookmarks found</h2>
         <p>Try another search.</p>
-        <button v-if="query" type="button" @click="query = ''">Reset view</button>
+        <button v-if="query" type="button" data-cuelume-toggle="droplet" @click="query = ''">
+          Reset view
+        </button>
       </div>
     </div>
   </section>

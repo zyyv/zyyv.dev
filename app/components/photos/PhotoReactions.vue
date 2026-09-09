@@ -23,6 +23,7 @@ const emit = defineEmits<{
         :disabled="disabled"
         :aria-label="reaction.label"
         :title="reaction.label"
+        data-cuelume-toggle="sparkle"
         @click="emit('react', reaction.type)"
       >
         <i :class="reaction.icon" aria-hidden="true" />

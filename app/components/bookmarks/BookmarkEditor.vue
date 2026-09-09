@@ -76,7 +76,12 @@ function submit() {
           <span>{{ bookmark ? 'UPDATE' : 'CREATE' }}</span>
           <h2 id="bookmark-editor-title">{{ title }}</h2>
         </div>
-        <button type="button" aria-label="关闭" @click="emit('close')">
+        <button
+          type="button"
+          aria-label="关闭"
+          data-cuelume-toggle="droplet"
+          @click="emit('close')"
+        >
           <i class="i-hugeicons:cancel-01" aria-hidden="true" />
         </button>
       </header>
@@ -171,10 +176,11 @@ function submit() {
         </div>
 
         <footer>
-          <button type="button" @click="emit('close')">取消</button>
+          <button type="button" data-cuelume-toggle="droplet" @click="emit('close')">取消</button>
           <button
             type="submit"
             :disabled="busy || !form.title || (form.kind === 'bookmark' && !form.url)"
+            data-cuelume-toggle="pulse"
           >
             {{ busy ? '保存中' : '保存' }}
           </button>

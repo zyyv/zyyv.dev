@@ -60,7 +60,14 @@ onMounted(async () => {
       <div>
         <h2>Repositories unavailable</h2>
         <p>{{ errorMessage }} You can still find the latest work on GitHub.</p>
-        <a href="https://github.com/zyyv" target="_blank" rel="noreferrer">Open GitHub</a>
+        <a
+          href="https://github.com/zyyv"
+          target="_blank"
+          rel="noreferrer"
+          data-cuelume-hover="tick"
+          data-cuelume-toggle="scan"
+          >Open GitHub</a
+        >
       </div>
     </div>
   </section>

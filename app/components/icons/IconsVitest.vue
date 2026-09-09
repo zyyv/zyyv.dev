@@ -8,6 +8,8 @@
       to-vitest-to
       href="https://github.com/vitest-dev/vitest"
       target="_blank"
+      data-cuelume-hover="tick"
+      data-cuelume-toggle="scan"
     >
       <strong>Vitest</strong>
     </a>

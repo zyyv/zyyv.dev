@@ -47,6 +47,8 @@ function folderBookmarks(item: BookmarkNode) {
           :href="item.url || undefined"
           target="_blank"
           rel="noreferrer"
+          data-cuelume-hover="tick"
+          data-cuelume-toggle="scan"
         >
           <img v-if="item.iconUrl" :src="item.iconUrl" alt="" />
           <i v-else class="i-hugeicons:link-02" aria-hidden="true" />
@@ -63,6 +65,7 @@ function folderBookmarks(item: BookmarkNode) {
             type="button"
             class="bookmark-bar__item"
             :aria-expanded="openFolderId === item.id"
+            data-cuelume-toggle="toggle"
             @click="toggleFolder(item.id)"
           >
             <i class="i-hugeicons:folder-02" aria-hidden="true" />
@@ -86,6 +89,7 @@ function folderBookmarks(item: BookmarkNode) {
                   <button
                     type="button"
                     :aria-label="`编辑 ${item.title}`"
+                    data-cuelume-toggle="pulse"
                     @click="emit('edit', item)"
                   >
                     <i class="i-hugeicons:edit-02" aria-hidden="true" />
@@ -93,6 +97,7 @@ function folderBookmarks(item: BookmarkNode) {
                   <button
                     type="button"
                     :aria-label="`删除 ${item.title}`"
+                    data-cuelume-toggle="droplet"
                     @click="emit('delete', item)"
                   >
                     <i class="i-hugeicons:delete-02" aria-hidden="true" />

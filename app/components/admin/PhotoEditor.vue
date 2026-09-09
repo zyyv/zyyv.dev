@@ -32,7 +32,12 @@ function formatExposure(value?: number) {
           <span>编辑{{ photo.mediaType === 'video' ? '视频' : '图片' }}</span>
           <h2 id="editor-title">{{ photo.filename }}</h2>
         </div>
-        <button type="button" aria-label="关闭编辑面板" @click="emit('close')">
+        <button
+          type="button"
+          aria-label="关闭编辑面板"
+          data-cuelume-toggle="droplet"
+          @click="emit('close')"
+        >
           <i class="i-hugeicons:cancel-01" aria-hidden="true" />
         </button>
       </header>
@@ -86,8 +91,8 @@ function formatExposure(value?: number) {
         </p>
 
         <div class="editor-actions">
-          <button type="button" @click="emit('close')">取消</button>
-          <button type="submit" :disabled="busy || !filename.trim()">
+          <button type="button" data-cuelume-toggle="droplet" @click="emit('close')">取消</button>
+          <button type="submit" :disabled="busy || !filename.trim()" data-cuelume-toggle="pulse">
             {{ busy ? '保存中' : '保存修改' }}
           </button>
         </div>

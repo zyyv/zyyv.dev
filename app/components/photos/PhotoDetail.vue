@@ -129,6 +129,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 class="photo-dialog__close"
                 aria-label="Close photo details"
                 title="Close"
+                data-cuelume-toggle="droplet"
                 @click="emit('close')"
               >
                 <i class="i-hugeicons:cancel-01" aria-hidden="true" />
@@ -143,6 +144,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 type="button"
                 class="photo-dialog__nav photo-dialog__nav--prev"
                 aria-label="Previous photo"
+                data-cuelume-toggle="page"
                 @click="emit('prev')"
               >
                 <i class="i-hugeicons:arrow-left-01" aria-hidden="true" />
@@ -164,6 +166,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 type="button"
                 class="photo-dialog__nav photo-dialog__nav--next"
                 aria-label="Next photo"
+                data-cuelume-toggle="page"
                 @click="emit('next')"
               >
                 <i class="i-hugeicons:arrow-right-01" aria-hidden="true" />
@@ -189,6 +192,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               :style="thumbnailStyle(item)"
               :aria-label="`View ${item.filename || item.id}`"
               :aria-current="item.id === photo.id ? 'true' : undefined"
+              data-cuelume-toggle="page"
               @click="emit('select', item)"
             >
               <img :src="item.thumbnail" :alt="item.filename" loading="lazy" decoding="async" />

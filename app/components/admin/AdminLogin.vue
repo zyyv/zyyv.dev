@@ -41,6 +41,7 @@ function submit() {
           type="button"
           :aria-label="showPassword ? '隐藏密码' : '显示密码'"
           :aria-pressed="showPassword"
+          data-cuelume-toggle="toggle"
           @click="showPassword = !showPassword"
         >
           <i
@@ -54,7 +55,12 @@ function submit() {
         <i class="i-hugeicons:alert-02" aria-hidden="true" /> {{ error }}
       </p>
 
-      <button class="login-submit" type="submit" :disabled="loading || !password">
+      <button
+        class="login-submit"
+        type="submit"
+        :disabled="loading || !password"
+        data-cuelume-toggle="pulse"
+      >
         <span>{{ loading ? '正在验证' : '进入私密空间' }}</span>
         <i class="i-hugeicons:arrow-up-right-01" aria-hidden="true" />
       </button>

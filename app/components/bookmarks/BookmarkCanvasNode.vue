@@ -55,6 +55,7 @@ function activate(event: MouseEvent | FocusEvent) {
       :disabled="!node.item"
       :aria-pressed="selected"
       :aria-label="node.item?.title || 'Bookmarks'"
+      data-cuelume-toggle="toggle"
       @click="node.item && emit('select', node.id)"
       @dblclick="node.item?.kind === 'bookmark' && emit('open', node.id)"
     >

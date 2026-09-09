@@ -22,6 +22,8 @@ defineProps<{
         class="text op-50 trans"
         :class="highlights.includes(link.id) ? 'op-100!' : ''"
         hover="underline op-100"
+        data-cuelume-hover="tick"
+        data-cuelume-toggle="page"
         @click="proseHeadingClick($event, link.id)"
         >{{ link.text }}</a
       >

@@ -75,6 +75,7 @@ onMounted(loadUser)
           :title="link.label"
           :target="link.external ? '_blank' : undefined"
           :rel="link.external ? 'noreferrer' : undefined"
+          data-cuelume-hover="tick"
         >
           <i :class="link.icon" aria-hidden="true" />
         </a>

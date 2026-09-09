@@ -32,14 +32,25 @@ async function handleLogout() {
       </div>
       <div class="portal-session">
         <span><i aria-hidden="true" /> 私密会话已启用</span>
-        <button type="button" :disabled="mutating" @click="handleLogout">
+        <button
+          type="button"
+          :disabled="mutating"
+          data-cuelume-toggle="droplet"
+          @click="handleLogout"
+        >
           {{ mutating ? '正在退出' : '结束会话' }}
         </button>
       </div>
     </header>
 
     <div class="portal-grid">
-      <NuxtLink v-for="item in destinations" :key="item.to" :to="item.to" class="portal-card">
+      <NuxtLink
+        v-for="item in destinations"
+        :key="item.to"
+        :to="item.to"
+        class="portal-card"
+        data-cuelume-hover="tick"
+      >
         <div class="portal-card__top">
           <span>{{ item.index }}</span>
           <i :class="item.icon" aria-hidden="true" />
@@ -54,7 +65,7 @@ async function handleLogout() {
 
     <footer class="portal-footer">
       <p>私密会话同时作用于站点内容页；维护工具不会对普通访客显示。</p>
-      <NuxtLink to="/">返回站点</NuxtLink>
+      <NuxtLink to="/" data-cuelume-hover="tick">返回站点</NuxtLink>
     </footer>
   </section>
 </template>

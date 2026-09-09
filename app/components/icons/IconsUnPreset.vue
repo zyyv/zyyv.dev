@@ -8,6 +8,8 @@
       to-unpreset-to
       href="https://github.com/unocss-community"
       target="_blank"
+      data-cuelume-hover="tick"
+      data-cuelume-toggle="scan"
     >
       <strong>UnoCSS Community</strong>
     </a>

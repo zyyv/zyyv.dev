@@ -8,6 +8,8 @@
       to-onuui-to
       href="https://github.com/onu-ui"
       target="_blank"
+      data-cuelume-hover="tick"
+      data-cuelume-toggle="scan"
     >
       <strong>Onu UI</strong>
     </a>

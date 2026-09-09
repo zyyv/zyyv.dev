@@ -19,7 +19,12 @@
       <p class="photo-empty__description">
         New work will appear here after it is added to the collection.
       </p>
-      <NuxtLink class="photo-empty__link" to="/">
+      <NuxtLink
+        class="photo-empty__link"
+        to="/"
+        data-cuelume-hover="tick"
+        data-cuelume-toggle="page"
+      >
         <span>Back Home</span>
         <i class="i-hugeicons:arrow-up-right-02" aria-hidden="true" />
       </NuxtLink>

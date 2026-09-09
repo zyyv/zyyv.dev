@@ -29,10 +29,15 @@ const folders = computed(() =>
   <aside class="bookmark-sidebar">
     <p>Directories</p>
     <nav aria-label="书签目录">
-      <a v-if="looseCount" href="#bookmark-loose">
+      <a v-if="looseCount" href="#bookmark-loose" data-cuelume-hover="tick">
         <span>00</span><strong>root</strong><small>{{ looseCount }}</small>
       </a>
-      <a v-for="folder in folders" :key="folder.id" :href="`#bookmark-folder-${folder.id}`">
+      <a
+        v-for="folder in folders"
+        :key="folder.id"
+        :href="`#bookmark-folder-${folder.id}`"
+        data-cuelume-hover="tick"
+      >
         <span>{{ folder.index }}</span
         ><strong>{{ folder.title }}</strong
         ><small>{{ folder.count }}</small>

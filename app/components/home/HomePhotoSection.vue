@@ -11,7 +11,9 @@ const photos = computed(() => seededShuffle(data.value.photos, photoSeed.value).
   <p v-if="status === 'pending'" class="px-4 py-16 text-center" role="status">Loading photos…</p>
   <div v-else-if="error" class="px-4 py-16 text-center" role="status">
     <p>Photos could not be loaded.</p>
-    <button type="button" class="underline" @click="refresh()">Try again</button>
+    <button type="button" class="underline" data-cuelume-toggle="pulse" @click="refresh()">
+      Try again
+    </button>
   </div>
   <HomePhotosPreview v-else :photos="photos" />
 </template>

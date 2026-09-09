@@ -87,6 +87,7 @@ const sortedPosts = computed(() => {
           <NuxtLink
             :to="post.path"
             class="group flex items-start justify-between gap-4 color-inherit no-underline"
+            data-cuelume-hover="tick"
           >
             <h2
               class="m-0 max-w-23ch text-[clamp(1.35rem,3vw,2rem)] font-500 leading-[1.08] tracking-[-0.04em] [text-wrap:balance]"

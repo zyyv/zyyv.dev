@@ -8,6 +8,8 @@
       to-unocss-to
       href="https://github.com/unocss/unocss"
       target="_blank"
+      data-cuelume-hover="tick"
+      data-cuelume-toggle="scan"
     >
       <strong> UnoCSS</strong>
       <sub

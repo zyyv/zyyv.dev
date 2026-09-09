@@ -61,15 +61,21 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
           </span>
         </div>
         <div v-if="isAdmin" class="collection__actions">
-          <button type="button" @click="emit('create', folder.id)">
+          <button type="button" data-cuelume-toggle="pulse" @click="emit('create', folder.id)">
             <i class="i-hugeicons:link-add" aria-hidden="true" /> 添加
           </button>
-          <button type="button" :aria-label="`编辑 ${folder.title}`" @click="emit('edit', folder)">
+          <button
+            type="button"
+            :aria-label="`编辑 ${folder.title}`"
+            data-cuelume-toggle="pulse"
+            @click="emit('edit', folder)"
+          >
             <i class="i-hugeicons:edit-02" aria-hidden="true" />
           </button>
           <button
             type="button"
             :aria-label="`删除 ${folder.title}`"
+            data-cuelume-toggle="droplet"
             @click="emit('delete', folder)"
           >
             <i class="i-hugeicons:delete-02" aria-hidden="true" />
@@ -88,7 +94,12 @@ const looseBookmarks = computed(() => props.items.filter((item) => item.kind ===
       />
       <div v-else class="collection__empty">
         <span>空文件夹</span>
-        <button v-if="isAdmin" type="button" @click="emit('create', folder.id)">
+        <button
+          v-if="isAdmin"
+          type="button"
+          data-cuelume-toggle="pulse"
+          @click="emit('create', folder.id)"
+        >
           添加第一个书签
         </button>
       </div>

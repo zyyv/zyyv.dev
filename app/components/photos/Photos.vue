@@ -44,6 +44,7 @@ function openPreview(photo: Photo, event: MouseEvent) {
       </div>
       <button
         class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        data-cuelume-toggle="pulse"
         @click="refreshPhotos"
       >
         Reload
@@ -79,6 +80,7 @@ function openPreview(photo: Photo, event: MouseEvent) {
             class="photo-card"
             :data-photo-transition-id="item.id"
             :aria-label="`View ${item.filename}`"
+            data-cuelume-toggle="page"
             @click="openPreview(item, $event)"
           >
             <PhotoCardMedia

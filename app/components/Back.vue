@@ -16,7 +16,7 @@ function goBack() {
 </script>
 
 <template>
-  <button type="button" class="back-link" @click="goBack">
+  <button type="button" class="back-link" data-cuelume-toggle="droplet" @click="goBack">
     <i class="i-hugeicons:arrow-left-02" aria-hidden="true" />
     <span>{{ label }}</span>
   </button>

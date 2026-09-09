@@ -77,6 +77,7 @@ function openPreview(item: RipplableListItem | null, event: Event) {
             tabindex="0"
             :data-photo-transition-id="getPhotoId(item)"
             :aria-label="`查看 ${alt}`"
+            data-cuelume-toggle="page"
             @click="openPreview(item, $event)"
             @keydown.enter="openPreview(item, $event)"
             @keydown.space.prevent="openPreview(item, $event)"

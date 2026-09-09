@@ -45,6 +45,7 @@ const tagOptions = computed(() => props.tags.map((tag) => ({ name: tag, tone: ge
           { 'tag-filter__tag--active': selectedTagSet.has(tag.name) },
         ]"
         :aria-pressed="selectedTagSet.has(tag.name)"
+        data-cuelume-toggle="toggle"
         @click="emit('toggle', tag.name)"
       >
         <span class="tag-filter__dot" aria-hidden="true" />

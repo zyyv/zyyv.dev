@@ -41,6 +41,7 @@
     "@vueuse/nuxt": "^14.4.0",
     "better-sqlite3": "^13.0.3",
     "blurhash": "^2.0.5",
+    "cuelume": "^0.2.2",
     "magic-color": "^2.2.5",
     "media-chrome": "^4.19.2",
     "nuxt": "^4.5.2",

@@ -95,7 +95,7 @@ onBeforeUnmount(revokePreview)
         aria-label="待上传视频预览"
       />
       <img v-else-if="preview" :src="preview" alt="待上传图片预览" />
-      <button v-else type="button" @click="input?.click()">
+      <button v-else type="button" data-cuelume-toggle="pulse" @click="input?.click()">
         <i class="i-hugeicons:image-upload" aria-hidden="true" />
         <strong>拖入图片或视频</strong>
         <small>图片与视频最大 50 MB</small>
@@ -112,7 +112,12 @@ onBeforeUnmount(revokePreview)
           <strong>{{ file.name }}</strong>
           <span>{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
         </div>
-        <button type="button" aria-label="重新选择媒体" @click="input?.click()">
+        <button
+          type="button"
+          aria-label="重新选择媒体"
+          data-cuelume-toggle="pulse"
+          @click="input?.click()"
+        >
           <i class="i-hugeicons:edit-02" aria-hidden="true" />
         </button>
       </div>
@@ -128,6 +133,7 @@ onBeforeUnmount(revokePreview)
         class="upload-button"
         type="button"
         :disabled="!file || busy || processing"
+        data-cuelume-toggle="pulse"
         @click="submit"
       >
         <span>{{ busy ? '正在写入 R2' : processing ? '正在生成预览资源' : '上传并处理' }}</span>

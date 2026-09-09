@@ -54,7 +54,12 @@ function isActive(path: string) {
       aria-label="Site navigation"
     >
       <div v-if="isHome" class="home-menu">
-        <button type="button" class="home-menu__trigger" aria-label="Show navigation menu">
+        <button
+          type="button"
+          class="home-menu__trigger"
+          aria-label="Show navigation menu"
+          data-cuelume-hover="tick"
+        >
           <i class="home-menu__icon i-hugeicons:ai-magic color-inherit" aria-hidden="true" />
         </button>
 
@@ -68,6 +73,7 @@ function isActive(path: string) {
               :class="isActive(item.to) ? 'op-100' : 'op-62'"
               :aria-current="isActive(item.to) ? 'page' : undefined"
               :aria-label="item.label"
+              data-cuelume-hover="tick"
             >
               <i class="home-menu__link-icon" :class="item.icon" aria-hidden="true" />
               <span class="home-menu__label">{{ item.label }}</span>
@@ -84,6 +90,7 @@ function isActive(path: string) {
             class="side-menu__item relative grid size-[2.35rem] place-items-center rounded-[0.65rem] border-0 color-inherit text-[1.12rem] op-100 [background-color:color-mix(in_srgb,currentColor_14%,transparent)] transition-[opacity,transform] duration-180 ease hover:(-translate-y-px op-62) active:scale-96 focus-visible:(outline-2 outline-current outline-offset-3) motion-reduce:transition-none"
             :aria-label="photosToggleLabel"
             :aria-pressed="photosViewMode === 'ripplable'"
+            data-cuelume-toggle="toggle"
             @click="togglePhotosView"
           >
             <i class="i-hugeicons:image-03 color-inherit" aria-hidden="true" />
@@ -102,6 +109,7 @@ function isActive(path: string) {
             ]"
             :aria-current="isActive(item.to) ? 'page' : undefined"
             :aria-label="item.label"
+            data-cuelume-hover="tick"
           >
             <MeAvatar v-if="item.to === '/'" navigation shared />
             <i v-else class="color-inherit" :class="item.icon" aria-hidden="true" />

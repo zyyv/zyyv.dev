@@ -75,6 +75,7 @@ function clearHoveredVariant() {
           'is-hovered': item === hoveredVariant,
         }"
         :aria-pressed="item === variant"
+        data-cuelume-toggle="toggle"
         @click="emit('change', item)"
         @mouseenter="setHoveredVariant(item)"
         @mouseleave="clearHoveredVariant"

@@ -54,7 +54,12 @@ function photoDate(photo: Photo) {
     </div>
     <div v-else class="photo-grid">
       <article v-for="photo in photos" :key="photo.id" class="photo-card">
-        <button class="photo-preview" type="button" @click="emit('edit', photo)">
+        <button
+          class="photo-preview"
+          type="button"
+          data-cuelume-toggle="page"
+          @click="emit('edit', photo)"
+        >
           <img :src="photo.thumbnail" :alt="photo.filename" loading="lazy" />
           <span v-if="photo.mediaType === 'video'" class="video-badge">
             <i class="i-hugeicons:play" aria-hidden="true" /> 视频
@@ -64,7 +69,7 @@ function photoDate(photo: Photo) {
           </span>
         </button>
         <div class="photo-meta">
-          <button type="button" @click="emit('edit', photo)">
+          <button type="button" data-cuelume-toggle="pulse" @click="emit('edit', photo)">
             <strong>{{ photo.filename }}</strong>
             <span>{{ photo.width }} × {{ photo.height }} · {{ photoDate(photo) }}</span>
           </button>
@@ -72,6 +77,7 @@ function photoDate(photo: Photo) {
             class="delete-button"
             type="button"
             :aria-label="`删除 ${photo.filename}`"
+            data-cuelume-toggle="droplet"
             @click="emit('delete', photo)"
           >
             <i class="i-hugeicons:delete-02" aria-hidden="true" />
@@ -81,11 +87,21 @@ function photoDate(photo: Photo) {
     </div>
 
     <nav v-if="totalPages > 1" class="pagination" aria-label="图片分页">
-      <button type="button" :disabled="page <= 1" @click="emit('page', page - 1)">
+      <button
+        type="button"
+        :disabled="page <= 1"
+        data-cuelume-toggle="page"
+        @click="emit('page', page - 1)"
+      >
         <i class="i-hugeicons:arrow-left-01" aria-hidden="true" /> 上一页
       </button>
       <span>{{ page }} / {{ totalPages }}</span>
-      <button type="button" :disabled="page >= totalPages" @click="emit('page', page + 1)">
+      <button
+        type="button"
+        :disabled="page >= totalPages"
+        data-cuelume-toggle="page"
+        @click="emit('page', page + 1)"
+      >
         下一页 <i class="i-hugeicons:arrow-right-01" aria-hidden="true" />
       </button>
     </nav>

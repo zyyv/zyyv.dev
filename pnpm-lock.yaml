@@ -131,6 +131,9 @@ importers:
       blurhash:
         specifier: ^2.0.5
         version: 2.0.5
+      cuelume:
+        specifier: ^0.2.2
+        version: 0.2.2
       magic-color:
         specifier: ^2.2.5
         version: 2.2.5
@@ -3202,6 +3205,9 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  cuelume@0.2.2:
+    resolution: {integrity: sha512-TiNzJRjhddjC4jy4M7sv63V/86VaFhdIs6iHUCrc4CKhqypaxRBv1aedCBGebrz/cO7nroPkEfqHe/P7fOE2GQ==}
 
   db0@0.3.4:
     resolution: {integrity: sha512-RiXXi4WaNzPTHEOu8UPQKMooIbqOEyqA1t7Z6MsdxSCeb8iUC9ko3LcmsLmeUt2SM5bctfArZKkRQggKZz7JNw==}
@@ -9265,6 +9271,8 @@ snapshots:
       css-tree: 2.2.1
 
   csstype@3.2.3: {}
+
+  cuelume@0.2.2: {}
 
   db0@0.3.4(better-sqlite3@13.0.3):
     optionalDependencies:

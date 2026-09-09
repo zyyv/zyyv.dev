@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
 import type { Photo } from '~/types'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
 
@@ -10,9 +11,14 @@ const icon = computed(() =>
   copied.value ? 'i-hugeicons:checkmark-circle-02' : 'i-hugeicons:share-08',
 )
 
-function sharePhoto() {
+async function sharePhoto() {
   const path = `/photos?photo=${encodeURIComponent(props.photo.id)}`
-  void copy(new URL(path, window.location.origin).href)
+  try {
+    await copy(new URL(path, window.location.origin).href)
+    play('success', { volume: 0.85 })
+  } catch {
+    play('error', { volume: 0.85 })
+  }
 }
 </script>
 

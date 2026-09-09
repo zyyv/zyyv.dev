@@ -53,6 +53,7 @@ function backToTop() {
             :href="link.href"
             :target="link.external ? '_blank' : undefined"
             :rel="link.external ? 'noreferrer' : undefined"
+            data-cuelume-hover="tick"
           >
             {{ link.label }}
           </a>
@@ -60,12 +61,23 @@ function backToTop() {
       </div>
 
       <div class="site-footer__actions">
-        <a :href="commitUrl" target="_blank" rel="noreferrer" :title="`Open commit ${commitHash}`">
+        <a
+          :href="commitUrl"
+          target="_blank"
+          rel="noreferrer"
+          :title="`Open commit ${commitHash}`"
+          data-cuelume-hover="tick"
+        >
           <span>Last dispatch</span>
           <code>{{ shortCommit }}</code>
         </a>
 
-        <button type="button" aria-label="Back to top" @click="backToTop">
+        <button
+          type="button"
+          aria-label="Back to top"
+          data-cuelume-toggle="droplet"
+          @click="backToTop"
+        >
           <span>Back to top</span>
           <i class="i-hugeicons:arrow-up-01" aria-hidden="true" />
         </button>

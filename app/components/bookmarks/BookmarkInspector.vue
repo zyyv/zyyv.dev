@@ -24,6 +24,7 @@ const host = computed(() => bookmarkHost(props.node.url))
         type="button"
         aria-label="返回上一层"
         :disabled="!canGoBack"
+        data-cuelume-toggle="droplet"
         @click.stop="emit('back')"
       >
         <i class="i-hugeicons:arrow-left-01" />
@@ -36,6 +37,7 @@ const host = computed(() => bookmarkHost(props.node.url))
         class="canvas-inspector__close"
         type="button"
         aria-label="关闭节点详情"
+        data-cuelume-toggle="droplet"
         @click.stop="emit('close')"
       >
         <i class="i-hugeicons:cancel-01" />
@@ -48,6 +50,7 @@ const host = computed(() => bookmarkHost(props.node.url))
           <button
             type="button"
             :aria-label="`${child.title}，单击查看，双击打开`"
+            data-cuelume-toggle="toggle"
             @click="emit('select', child.id)"
             @dblclick="child.kind === 'bookmark' && emit('open', child)"
           >
@@ -82,7 +85,12 @@ const host = computed(() => bookmarkHost(props.node.url))
           sandbox="allow-forms allow-scripts allow-same-origin"
         />
       </div>
-      <button class="canvas-inspector__open" type="button" @click="emit('open', node)">
+      <button
+        class="canvas-inspector__open"
+        type="button"
+        data-cuelume-toggle="scan"
+        @click="emit('open', node)"
+      >
         Open <i class="i-hugeicons:arrow-up-right-01" />
       </button>
     </template>

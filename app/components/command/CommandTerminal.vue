@@ -92,6 +92,7 @@ defineExpose({ focus })
         <button
           class="terminal__dot terminal__dot--close"
           tabindex="-1"
+          data-cuelume-toggle="droplet"
           @click.stop="emit('close')"
         />
       </div>
@@ -135,7 +136,9 @@ defineExpose({ focus })
 
       <p class="terminal__welcome">
         Type
-        <button type="button" @click.stop="setInput('help')">help</button>
+        <button type="button" data-cuelume-toggle="scan" @click.stop="setInput('help')">
+          help
+        </button>
         to explore available commands.
       </p>
 
@@ -194,6 +197,7 @@ defineExpose({ focus })
           v-for="suggestion in suggestions"
           :key="suggestion.name"
           type="button"
+          data-cuelume-toggle="scan"
           @click.stop="setInput(`${suggestion.name} `)"
         >
           {{ suggestion.name }}

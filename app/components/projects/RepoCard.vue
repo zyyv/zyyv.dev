@@ -101,6 +101,8 @@ function resetTilt(event: PointerEvent) {
             target="_blank"
             rel="noreferrer"
             :aria-label="`View ${repo.name} source on GitHub`"
+            data-cuelume-hover="tick"
+            data-cuelume-toggle="scan"
           >
             <i i-custom:github />
             Source
@@ -115,6 +117,8 @@ function resetTilt(event: PointerEvent) {
         target="_blank"
         rel="noreferrer"
         :aria-label="`Open ${repo.name}${previewUrl ? ' website' : ' on GitHub'}`"
+        data-cuelume-hover="tick"
+        data-cuelume-toggle="scan"
       />
     </div>
   </article>

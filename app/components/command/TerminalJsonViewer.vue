@@ -36,6 +36,7 @@ function setExpansion(mode: ExpansionMode) {
           type="button"
           aria-label="Expand all JSON nodes"
           title="Expand all"
+          data-cuelume-toggle="scan"
           @click="setExpansion('all')"
         >
           <i class="i-hugeicons:expand" aria-hidden="true" />
@@ -45,6 +46,7 @@ function setExpansion(mode: ExpansionMode) {
           type="button"
           aria-label="Collapse all JSON nodes"
           title="Collapse all"
+          data-cuelume-toggle="scan"
           @click="setExpansion('none')"
         >
           <i class="i-hugeicons:collapse" aria-hidden="true" />

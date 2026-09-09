@@ -28,6 +28,8 @@ const host = computed(() => bookmarkHost(props.item.url))
       target="_blank"
       rel="noreferrer"
       :aria-label="`${item.title}，在新标签页打开`"
+      data-cuelume-hover="tick"
+      data-cuelume-toggle="scan"
     >
       <span class="bookmark-item__icon">
         <img v-if="item.iconUrl" :src="item.iconUrl" alt="" loading="lazy" />
@@ -50,10 +52,20 @@ const host = computed(() => bookmarkHost(props.item.url))
     </span>
 
     <div v-if="isAdmin" class="bookmark-item__actions">
-      <button type="button" :aria-label="`编辑 ${item.title}`" @click="emit('edit', item)">
+      <button
+        type="button"
+        :aria-label="`编辑 ${item.title}`"
+        data-cuelume-toggle="pulse"
+        @click="emit('edit', item)"
+      >
         <i class="i-hugeicons:edit-02" aria-hidden="true" />
       </button>
-      <button type="button" :aria-label="`删除 ${item.title}`" @click="emit('delete', item)">
+      <button
+        type="button"
+        :aria-label="`删除 ${item.title}`"
+        data-cuelume-toggle="droplet"
+        @click="emit('delete', item)"
+      >
         <i class="i-hugeicons:delete-02" aria-hidden="true" />
       </button>
     </div>

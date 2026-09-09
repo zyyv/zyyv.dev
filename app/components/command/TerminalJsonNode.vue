@@ -73,6 +73,7 @@ watch(
       :class="{ 'json-node__row--static': !isExpandable }"
       :aria-expanded="isExpandable ? isExpanded : undefined"
       :disabled="!isExpandable"
+      data-cuelume-toggle="toggle"
       @click="isExpanded = !isExpanded"
     >
       <i

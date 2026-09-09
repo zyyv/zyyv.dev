@@ -69,7 +69,7 @@ onMounted(() => loadPhotos(1))
       </div>
       <div class="workspace-status">
         <span><i aria-hidden="true" /> D1 + R2 已连接</span>
-        <NuxtLink to="/admin">私密首页</NuxtLink>
+        <NuxtLink to="/admin" data-cuelume-hover="tick">私密首页</NuxtLink>
       </div>
     </header>
 
@@ -116,8 +116,15 @@ onMounted(() => loadPhotos(1))
       <h2 id="delete-title">删除 {{ deleteTarget.filename }}？</h2>
       <p>这会同时删除 D1 记录和 R2 中的原始媒体与两档预览资源。</p>
       <div>
-        <button type="button" @click="deleteTarget = null">取消</button>
-        <button type="button" :disabled="mutating" @click="confirmDelete">
+        <button type="button" data-cuelume-toggle="droplet" @click="deleteTarget = null">
+          取消
+        </button>
+        <button
+          type="button"
+          :disabled="mutating"
+          data-cuelume-toggle="error"
+          @click="confirmDelete"
+        >
           {{ mutating ? '删除中' : '确认删除' }}
         </button>
       </div>

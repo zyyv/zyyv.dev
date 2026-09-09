@@ -91,6 +91,7 @@ watch(
     type="button"
     class="photo-field"
     data-ripplable-interactive
+    data-cuelume-toggle="page"
     :aria-label="fieldLabel"
     @click="pulseFocus"
     @pointermove="updateFieldPosition"

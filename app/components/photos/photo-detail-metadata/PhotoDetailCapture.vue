@@ -119,6 +119,8 @@ function getCameraName(make?: string, model?: string): string {
             :aria-label="`Open ${locationDetails.title} in OpenStreetMap`"
             target="_blank"
             rel="noreferrer"
+            data-cuelume-hover="tick"
+            data-cuelume-toggle="scan"
           >
             <span class="photo-dialog__location-road">{{ locationDetails.title }}</span>
             <span class="photo-dialog__location-context">{{ locationDetails.context }}</span>

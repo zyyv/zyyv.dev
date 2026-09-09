@@ -8,6 +8,8 @@
       to-vite-to
       href="https://github.com/vitejs/vite"
       target="_blank"
+      data-cuelume-hover="tick"
+      data-cuelume-toggle="scan"
     >
       <strong>Vite</strong>
     </a>

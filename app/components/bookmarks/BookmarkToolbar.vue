@@ -37,10 +37,15 @@ useEventListener(document, 'keydown', (event) => {
     </label>
 
     <div v-if="isAdmin" class="toolbar__actions">
-      <button type="button" @click="emit('create', 'folder')">
+      <button type="button" data-cuelume-toggle="pulse" @click="emit('create', 'folder')">
         <i class="i-hugeicons:folder-add" aria-hidden="true" /> 新建文件夹
       </button>
-      <button type="button" class="toolbar__primary" @click="emit('create', 'bookmark')">
+      <button
+        type="button"
+        class="toolbar__primary"
+        data-cuelume-toggle="pulse"
+        @click="emit('create', 'bookmark')"
+      >
         <i class="i-hugeicons:link-add" aria-hidden="true" /> 添加书签
       </button>
     </div>
