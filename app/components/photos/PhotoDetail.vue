@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
-import type { Photo } from '~/types'
+import type { Photo, PhotoPreviewVariant } from '~/types'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
 import PhotoDetailMetadata from './photo-detail-metadata/PhotoDetailMetadata.vue'
-import type { PhotoPreviewVariant } from './photo-preview.types'
 
 interface Props {
   photo: Photo | null

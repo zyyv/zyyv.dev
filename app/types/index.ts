@@ -61,6 +61,20 @@ export interface PhotoExif {
   location?: PhotoLocation
 }
 
+export interface PhotoDetailRow {
+  icon: string
+  label: string
+  value: string | number
+}
+
+export interface PhotoLocationDisplay {
+  title: string
+  context: string
+  href?: string
+}
+
+export type PhotoPreviewVariant = 'thumbnail' | 'compressed' | 'origin' | 'blurhash'
+
 export interface Photo {
   id: string
   filename: string

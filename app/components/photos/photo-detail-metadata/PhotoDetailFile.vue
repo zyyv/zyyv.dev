@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { Photo } from '~/types'
+import type { Photo, PhotoDetailRow } from '~/types'
 import { getFileFormat } from '~/utils/fileFormat'
-import type { PhotoDetailRow } from './photo-detail-metadata.types'
 import PhotoDetailGroup from './PhotoDetailGroup.vue'
 import PhotoDetailRows from './PhotoDetailRows.vue'
 

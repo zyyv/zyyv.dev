@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import type { Photo, PhotoReactionCounts } from '~/types'
-import PhotoPreviewPanel from '../PhotoPreviewPanel.vue'
-import type { PhotoPreviewVariant } from '../photo-preview.types'
+import type { Photo, PhotoPreviewVariant, PhotoReactionCounts } from '~/types'
 import PhotoDetailCapture from './PhotoDetailCapture.vue'
 import PhotoDetailFile from './PhotoDetailFile.vue'
 import PhotoDetailPalette from './PhotoDetailPalette.vue'
 import PhotoDetailReactions from './PhotoDetailReactions.vue'
+import PhotoPreviewPanel from './PhotoPreviewPanel.vue'
 
 interface Props {
   photo: Photo

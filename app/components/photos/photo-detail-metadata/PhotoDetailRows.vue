@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PhotoDetailRow } from './photo-detail-metadata.types'
+import type { PhotoDetailRow } from '~/types'
 
 interface Props {
   details: readonly PhotoDetailRow[]

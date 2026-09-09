@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import type { Photo, PhotoReactionType } from '~/types'
+import type { Photo, PhotoPreviewVariant, PhotoReactionType } from '~/types'
 import { isImagePreloaded, preloadImage } from '~/utils/preloadImage'
 import PhotoBlurhashPreview from './PhotoBlurhashPreview.vue'
 import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
-import type { PhotoPreviewVariant } from './photo-preview.types'
 const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
 
 type SwitchDirection = 'prev' | 'next' | 'direct'

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Photo } from '~/types'
-import { photoPreviewVariants, type PhotoPreviewVariant } from './photo-preview.types'
+import type { Photo, PhotoPreviewVariant } from '~/types'
 
 interface Props {
   photo: Photo
@@ -13,6 +12,13 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const photoPreviewVariants: readonly PhotoPreviewVariant[] = [
+  'thumbnail',
+  'compressed',
+  'origin',
+  'blurhash',
+]
 
 const previewIcons: Record<PhotoPreviewVariant, string> = {
   thumbnail: 'i-hugeicons:image-crop',
