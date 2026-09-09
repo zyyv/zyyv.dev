@@ -591,7 +591,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 @media (max-width: 767.9px) {
   .photo-dialog__header {
-    min-height: 4rem;
+    min-height: 3rem;
     gap: 0.75rem;
     padding: 0 0.75rem 0 1rem;
   }

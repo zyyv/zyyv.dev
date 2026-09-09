@@ -168,8 +168,8 @@ function getImageStyle(
   if (canvasWidth.value <= 0 || canvasHeight.value <= 0) return transformStyle
 
   const isMobile = viewportWidth.value < 768
-  const horizontalPadding = isMobile ? 64 : Math.min(160, Math.max(80, viewportWidth.value * 0.12))
-  const verticalPadding = isMobile ? 72 : Math.min(128, Math.max(88, viewportHeight.value * 0.15))
+  const horizontalPadding = isMobile ? 0 : Math.min(160, Math.max(80, viewportWidth.value * 0.12))
+  const verticalPadding = isMobile ? 0 : Math.min(128, Math.max(88, viewportHeight.value * 0.15))
   const availableWidth = Math.max(1, canvasWidth.value - horizontalPadding)
   const availableHeight = Math.max(1, canvasHeight.value - verticalPadding)
   const containScale = Math.min(1, availableWidth / imageWidth, availableHeight / imageHeight)
