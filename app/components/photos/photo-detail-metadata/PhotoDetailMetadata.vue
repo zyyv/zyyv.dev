@@ -21,7 +21,10 @@ const emit = defineEmits<Emits>()
 </script>
 
 <template>
-  <aside class="photo-dialog__details space-y-[clamp(2rem,4vh,3.5rem)]" aria-label="Photo details">
+  <aside
+    class="photo-dialog__details space-y-[clamp(2rem,4vh,3.5rem)] max-md:space-y-[1.25rem]"
+    aria-label="Photo details"
+  >
     <PhotoPreviewPanel
       v-if="props.photo.mediaType === 'image'"
       :photo="props.photo"

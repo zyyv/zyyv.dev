@@ -232,6 +232,33 @@ function clearHoveredVariant() {
   outline: none;
 }
 
+@media (max-width: 767.9px) {
+  .photo-preview-panel {
+    padding-bottom: 1rem;
+  }
+
+  .photo-preview-panel__heading {
+    margin-bottom: 0.7rem;
+  }
+
+  .photo-preview-panel__options {
+    gap: 0.2rem 0.4rem;
+  }
+
+  .photo-preview-panel__option {
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .photo-preview-panel__option-main {
+    gap: 0.4rem;
+  }
+
+  .photo-preview-panel__option-copy {
+    gap: 0.5rem;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .photo-preview-panel__option:hover {
     border-color: var(--dialog-line);

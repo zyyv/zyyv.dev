@@ -643,7 +643,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   .photo-dialog__details {
     grid-column: 1;
     grid-row: 3;
-    padding: 1.25rem 1rem;
+    padding: 1rem 0.75rem;
     border-top: 1px dashed var(--dialog-line);
     border-left: 0;
     position: relative;
