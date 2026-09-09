@@ -23,6 +23,7 @@ export function useImageCanvas() {
   let lastPinchCenter: PointerPosition | null = null
 
   const zoomLabel = computed(() => `${Math.round(scale.value * 100)}%`)
+  const isZoomed = computed(() => scale.value > 1)
   const imageStyle = computed<CSSProperties>(() => ({
     transform: `translate3d(${offsetX.value}px, ${offsetY.value}px, 0) scale(${scale.value})`,
   }))
@@ -145,6 +146,7 @@ export function useImageCanvas() {
     imageRef,
     imageStyle,
     isDragging,
+    isZoomed,
     zoomLabel,
     zoomIn,
     zoomOut,

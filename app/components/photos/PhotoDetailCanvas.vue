@@ -7,8 +7,17 @@ import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue
 const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
+type SwipeDirection = 'prev' | 'next'
 
 const COMPRESSED_IMAGE_MAX_WIDTH = 2560
+const SWIPE_MIN_DISTANCE = 48
+const SWIPE_AXIS_RATIO = 1.2
+
+interface SwipeStart {
+  pointerId: number
+  x: number
+  y: number
+}
 
 interface Props {
   photo: Photo
@@ -21,6 +30,7 @@ interface Props {
 interface Emits {
   displayedChange: [photo: Photo]
   react: [reaction: PhotoReactionType]
+  swipe: [direction: SwipeDirection]
 }
 
 const props = defineProps<Props>()
@@ -43,6 +53,7 @@ const {
   canvasRef,
   imageStyle,
   isDragging,
+  isZoomed,
   zoomLabel,
   zoomIn,
   zoomOut,
@@ -93,6 +104,8 @@ const previewImageStyle = computed<CSSProperties>(() => {
   const maxWidth = props.previewVariant === 'thumbnail' ? 600 : Infinity
   return getImageStyle(photo, maxWidth, imageStyle.value)
 })
+const swipeStart = shallowRef<SwipeStart | null>(null)
+const activeTouchPointers = new Set<number>()
 
 watch(
   () => props.photo,
@@ -156,6 +169,42 @@ function getImageStyle(
 
 function getCompressedImageStyle(photo: Photo, transformStyle: CSSProperties): CSSProperties {
   return getImageStyle(photo, COMPRESSED_IMAGE_MAX_WIDTH, transformStyle)
+}
+
+function handleCanvasPointerDown(event: PointerEvent) {
+  if (isDisplayedVideo.value) return
+
+  if (event.pointerType === 'touch') {
+    activeTouchPointers.add(event.pointerId)
+    swipeStart.value =
+      activeTouchPointers.size === 1 && !isZoomed.value
+        ? { pointerId: event.pointerId, x: event.clientX, y: event.clientY }
+        : null
+  }
+
+  handlePointerDown(event)
+}
+
+function handleCanvasPointerEnd(event: PointerEvent) {
+  const start = swipeStart.value
+  swipeStart.value = null
+  if (event.pointerType === 'touch') activeTouchPointers.delete(event.pointerId)
+  handlePointerEnd(event)
+
+  if (!start || start.pointerId !== event.pointerId || isZoomed.value) return
+
+  const deltaX = event.clientX - start.x
+  const deltaY = event.clientY - start.y
+  const isHorizontalSwipe =
+    Math.abs(deltaX) >= SWIPE_MIN_DISTANCE && Math.abs(deltaX) > Math.abs(deltaY) * SWIPE_AXIS_RATIO
+
+  if (isHorizontalSwipe) emit('swipe', deltaX > 0 ? 'prev' : 'next')
+}
+
+function handleCanvasPointerCancel(event: PointerEvent) {
+  swipeStart.value = null
+  if (event.pointerType === 'touch') activeTouchPointers.delete(event.pointerId)
+  handlePointerEnd(event)
 }
 
 function stopLoadingIndicator() {
@@ -277,10 +326,10 @@ onBeforeUnmount(() => {
     class="photo-detail-canvas"
     :class="canvasClasses"
     @wheel="isDisplayedVideo ? undefined : handleWheel($event)"
-    @pointerdown="isDisplayedVideo ? undefined : handlePointerDown($event)"
+    @pointerdown="handleCanvasPointerDown"
     @pointermove="isDisplayedVideo ? undefined : handlePointerMove($event)"
-    @pointerup="isDisplayedVideo ? undefined : handlePointerEnd($event)"
-    @pointercancel="isDisplayedVideo ? undefined : handlePointerEnd($event)"
+    @pointerup="isDisplayedVideo ? undefined : handleCanvasPointerEnd($event)"
+    @pointercancel="isDisplayedVideo ? undefined : handleCanvasPointerCancel($event)"
   >
     <template v-if="!useCheckerboard">
       <div

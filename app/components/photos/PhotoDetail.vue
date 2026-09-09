@@ -91,6 +91,11 @@ function handlePreviewChange(variant: PhotoPreviewVariant) {
   previewVariant.value = variant
 }
 
+function handleSwipe(direction: 'prev' | 'next') {
+  if (direction === 'prev' && hasPrev.value) emit('prev')
+  if (direction === 'next' && hasNext.value) emit('next')
+}
+
 onMounted(() => document.addEventListener('keydown', handleKeydown))
 onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 </script>
@@ -151,6 +156,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 :preview-variant="previewVariant"
                 @displayed-change="handleDisplayedChange"
                 @react="react"
+                @swipe="handleSwipe"
               />
 
               <button
@@ -528,6 +534,10 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
   .photo-dialog__filmstrip button {
     height: 2.8rem;
+  }
+
+  .photo-dialog__nav {
+    display: none;
   }
 }
 
