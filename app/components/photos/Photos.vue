@@ -66,11 +66,11 @@ function openPreview(photo: Photo, event: MouseEvent) {
       <VirtualWaterfall
         :items="allPhotos"
         :calc-item-height="calcItemHeight"
-        :gap="12"
-        :padding="16"
+        :gap="4"
+        :padding="4"
         :item-min-width="300"
-        :min-column-count="1"
-        :max-column-count="5"
+        :min-column-count="2"
+        :max-column-count="6"
         :virtual="!pageScroll"
         row-key="id"
       >
