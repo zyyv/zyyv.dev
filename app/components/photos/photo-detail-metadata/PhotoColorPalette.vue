@@ -103,15 +103,6 @@ function clearActiveColor() {
 </template>
 
 <style scoped>
-.photo-color-palette,
-.photo-color-palette h3 {
-  margin: 0;
-}
-
-.photo-color-palette {
-  margin-top: clamp(2rem, 4vh, 3.5rem);
-}
-
 .photo-color-palette__heading {
   display: flex;
   align-items: baseline;

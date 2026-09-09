@@ -2,7 +2,7 @@
 import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo } from '~/types'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
-import PhotoDetailMetadata from './PhotoDetailMetadata.vue'
+import PhotoDetailMetadata from './photo-detail-metadata/PhotoDetailMetadata.vue'
 
 interface Props {
   photo: Photo | null
