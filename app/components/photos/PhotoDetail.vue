@@ -3,6 +3,7 @@ import type { ComponentPublicInstance, CSSProperties } from 'vue'
 import type { Photo } from '~/types'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
 import PhotoDetailMetadata from './photo-detail-metadata/PhotoDetailMetadata.vue'
+import type { PhotoPreviewVariant } from './photo-preview.types'
 
 interface Props {
   photo: Photo | null
@@ -23,6 +24,7 @@ const emit = defineEmits<Emits>()
 const dialogRef = useTemplateRef<HTMLElement>('dialog')
 const thumbnailRefs: HTMLElement[] = []
 const displayedPhoto = shallowRef<Photo | null>(null)
+const previewVariant = shallowRef<PhotoPreviewVariant>('compressed')
 
 const currentIndex = computed(() => {
   if (!props.photo || !props.photos.length) return -1
@@ -58,6 +60,13 @@ watch(
   { flush: 'post' },
 )
 
+watch(
+  () => props.photo?.id,
+  () => {
+    previewVariant.value = 'compressed'
+  },
+)
+
 function handleKeydown(event: KeyboardEvent) {
   if (!props.visible) return
 
@@ -76,6 +85,11 @@ function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: nu
 
 function handleDisplayedChange(photo: Photo) {
   displayedPhoto.value = photo
+}
+
+function handlePreviewChange(variant: PhotoPreviewVariant) {
+  if (detailPhoto.value?.mediaType !== 'image') return
+  previewVariant.value = variant
 }
 
 onMounted(() => document.addEventListener('keydown', handleKeydown))
@@ -135,6 +149,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 :photos="photos"
                 :reaction-error="reactionError"
                 :reaction-saving="reactionSaving"
+                :preview-variant="previewVariant"
                 @displayed-change="handleDisplayedChange"
                 @react="react"
               />
@@ -154,6 +169,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               v-if="detailPhoto"
               :photo="detailPhoto"
               :reaction-counts="reactionCounts"
+              :preview-variant="previewVariant"
+              @preview-change="handlePreviewChange"
             />
           </div>
 

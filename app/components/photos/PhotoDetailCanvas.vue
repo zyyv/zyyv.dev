@@ -2,7 +2,9 @@
 import type { CSSProperties } from 'vue'
 import type { Photo, PhotoReactionType } from '~/types'
 import { isImagePreloaded, preloadImage } from '~/utils/preloadImage'
+import PhotoBlurhashPreview from './PhotoBlurhashPreview.vue'
 import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
+import type { PhotoPreviewVariant } from './photo-preview.types'
 const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
@@ -14,6 +16,7 @@ interface Props {
   photos: Photo[]
   reactionError: string | null
   reactionSaving: boolean
+  previewVariant: PhotoPreviewVariant
 }
 
 interface Emits {
@@ -65,9 +68,31 @@ const canvasClasses = computed(() => ({
   [`is-${direction.value}`]: true,
 }))
 const isDisplayedVideo = computed(() => displayedPhoto.value?.mediaType === 'video')
+const isVariantPreviewVisible = computed(
+  () => !isDisplayedVideo.value && props.previewVariant !== 'compressed',
+)
+const previewSrc = computed(() => {
+  const photo = displayedPhoto.value
+  if (!photo || props.previewVariant === 'blurhash') return ''
+  if (props.previewVariant === 'thumbnail') return photo.thumbnail
+  if (props.previewVariant === 'origin') return photo.origin
+  return photo.compressed
+})
+const previewLabel = computed(() => {
+  if (props.previewVariant === 'thumbnail') return 'Thumbnail preview'
+  if (props.previewVariant === 'origin') return 'Original preview'
+  if (props.previewVariant === 'blurhash') return 'BlurHash preview'
+  return 'Compressed preview'
+})
 const currentImageStyle = computed<CSSProperties>(() => {
   const photo = displayedPhoto.value
   return photo ? getCompressedImageStyle(photo, imageStyle.value) : imageStyle.value
+})
+const previewImageStyle = computed<CSSProperties>(() => {
+  const photo = displayedPhoto.value
+  if (!photo) return imageStyle.value
+  const maxWidth = props.previewVariant === 'thumbnail' ? 600 : Infinity
+  return getImageStyle(photo, maxWidth, imageStyle.value)
 })
 
 watch(
@@ -105,10 +130,14 @@ function preloadNeighbors(photo: Photo) {
   )
 }
 
-function getCompressedImageStyle(photo: Photo, transformStyle: CSSProperties): CSSProperties {
-  const compressedScale = Math.min(1, COMPRESSED_IMAGE_MAX_WIDTH / photo.width)
-  const compressedWidth = Math.max(1, Math.round(photo.width * compressedScale))
-  const compressedHeight = Math.max(1, Math.round(photo.height * compressedScale))
+function getImageStyle(
+  photo: Photo,
+  maxWidth: number,
+  transformStyle: CSSProperties,
+): CSSProperties {
+  const scale = Math.min(1, maxWidth / photo.width)
+  const imageWidth = Math.max(1, Math.round(photo.width * scale))
+  const imageHeight = Math.max(1, Math.round(photo.height * scale))
 
   if (canvasWidth.value <= 0 || canvasHeight.value <= 0) return transformStyle
 
@@ -117,17 +146,17 @@ function getCompressedImageStyle(photo: Photo, transformStyle: CSSProperties): C
   const verticalPadding = isMobile ? 72 : Math.min(128, Math.max(88, viewportHeight.value * 0.15))
   const availableWidth = Math.max(1, canvasWidth.value - horizontalPadding)
   const availableHeight = Math.max(1, canvasHeight.value - verticalPadding)
-  const containScale = Math.min(
-    1,
-    availableWidth / compressedWidth,
-    availableHeight / compressedHeight,
-  )
+  const containScale = Math.min(1, availableWidth / imageWidth, availableHeight / imageHeight)
 
   return {
-    width: `${Math.max(1, Math.round(compressedWidth * containScale))}px`,
-    height: `${Math.max(1, Math.round(compressedHeight * containScale))}px`,
+    width: `${Math.max(1, Math.round(imageWidth * containScale))}px`,
+    height: `${Math.max(1, Math.round(imageHeight * containScale))}px`,
     ...transformStyle,
   }
+}
+
+function getCompressedImageStyle(photo: Photo, transformStyle: CSSProperties): CSSProperties {
+  return getImageStyle(photo, COMPRESSED_IMAGE_MAX_WIDTH, transformStyle)
 }
 
 function stopLoadingIndicator() {
@@ -344,6 +373,32 @@ onBeforeUnmount(() => {
       />
     </div>
 
+    <div
+      v-if="isVariantPreviewVisible && displayedPhoto"
+      :key="`${displayedPhoto.id}-${props.previewVariant}`"
+      class="photo-detail-canvas__preview"
+      :aria-label="previewLabel"
+      role="img"
+    >
+      <PhotoBlurhashPreview
+        v-if="props.previewVariant === 'blurhash'"
+        :hash="displayedPhoto.blurhash"
+        :width="displayedPhoto.width"
+        :height="displayedPhoto.height"
+        :style="previewImageStyle"
+      />
+      <img
+        v-else
+        class="photo-detail-canvas__image photo-detail-canvas__image--preview"
+        :src="previewSrc"
+        :alt="`${displayedPhoto.filename} ${previewLabel}`"
+        decoding="async"
+        draggable="false"
+        :style="previewImageStyle"
+      />
+      <span class="photo-detail-canvas__preview-label">{{ previewLabel }}</span>
+    </div>
+
     <figcaption>
       <span v-if="loadFailed" class="photo-detail-canvas__load-error" role="status">
         Compressed image unavailable · showing thumbnail
@@ -488,6 +543,16 @@ onBeforeUnmount(() => {
   transform: translate3d(0, 0, 0) scale(1);
 }
 
+.photo-detail-canvas__preview {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  pointer-events: none;
+}
+
 .photo-detail-canvas.has-previous .photo-detail-canvas__media--current {
   opacity: 0;
   transform: translate3d(var(--enter-x), 0, 0) scale(0.985);
@@ -540,6 +605,31 @@ onBeforeUnmount(() => {
   view-transition-name: photo-detail-image;
 }
 
+.photo-detail-canvas__image--preview,
+:deep(.photo-detail-canvas__preview-blurhash) {
+  position: absolute;
+  inset: 0;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
+  object-fit: contain;
+  pointer-events: none;
+  transform-origin: center;
+  user-select: none;
+}
+
+.photo-detail-canvas__preview-label {
+  position: absolute;
+  top: 1rem;
+  left: 1.1rem;
+  color: var(--dialog-muted);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
 .photo-detail-canvas figcaption {
   position: absolute;
   z-index: 3;
@@ -590,7 +680,9 @@ onBeforeUnmount(() => {
   .photo-detail-canvas__background img,
   .photo-detail-canvas__media,
   .photo-detail-canvas__image--thumbnail,
-  .photo-detail-canvas__image--compressed {
+  .photo-detail-canvas__image--compressed,
+  .photo-detail-canvas__preview,
+  .photo-detail-canvas__preview-label {
     transition-duration: 1ms;
   }
 }

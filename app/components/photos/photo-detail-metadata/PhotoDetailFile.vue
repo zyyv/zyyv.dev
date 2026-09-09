@@ -11,13 +11,17 @@ interface Props {
 const props = defineProps<Props>()
 
 const fileDetails = computed<PhotoDetailRow[]>(() => [
+  // {
+  //   icon: props.photo.mediaType === 'video' ? 'i-hugeicons:video-01' : 'i-hugeicons:image-03',
+  //   label: 'Type',
+  //   value: props.photo.mediaType === 'video' ? 'Video' : 'Photo',
+  // },
   {
     icon: props.photo.mediaType === 'video' ? 'i-hugeicons:video-01' : 'i-hugeicons:image-03',
-    label: 'Type',
-    value: props.photo.mediaType === 'video' ? 'Video' : 'Photo',
+    label: 'Filename',
+    value: props.photo.filename,
   },
-  { icon: 'i-hugeicons:file-01', label: 'Filename', value: props.photo.filename },
-  { icon: 'i-hugeicons:file-01', label: 'Format', value: getFileFormat(props.photo.filename) },
+  { icon: 'i-hugeicons:file-01', label: 'Type', value: getFileFormat(props.photo.filename) },
   {
     icon: 'i-hugeicons:maximize-01',
     label: 'Dimensions',
@@ -28,16 +32,16 @@ const fileDetails = computed<PhotoDetailRow[]>(() => [
     label: 'Aspect ratio',
     value: getAspectRatio(props.photo.width, props.photo.height),
   },
-  {
-    icon: 'i-hugeicons:database-01',
-    label: 'Original',
-    value: props.photo.originSizeFormatted,
-  },
-  {
-    icon: 'i-hugeicons:image-03',
-    label: props.photo.mediaType === 'video' ? 'Poster' : 'Compressed',
-    value: props.photo.compressedSizeFormatted,
-  },
+  // {
+  //   icon: 'i-hugeicons:database-01',
+  //   label: 'Original',
+  //   value: props.photo.originSizeFormatted,
+  // },
+  // {
+  //   icon: 'i-hugeicons:image-03',
+  //   label: props.photo.mediaType === 'video' ? 'Poster' : 'Compressed',
+  //   value: props.photo.compressedSizeFormatted,
+  // },
   {
     icon: 'i-hugeicons:calendar-03',
     label: 'Modified',
