@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import type { Photo, PhotoPreviewVariant, PhotoReactionCounts } from '~/types'
+import type {
+  Photo,
+  PhotoPreviewLoadingState,
+  PhotoPreviewVariant,
+  PhotoReactionCounts,
+} from '~/types'
 import PhotoDetailCapture from './PhotoDetailCapture.vue'
 import PhotoDetailFile from './PhotoDetailFile.vue'
 import PhotoDetailPalette from './PhotoDetailPalette.vue'
@@ -10,6 +15,7 @@ interface Props {
   photo: Photo
   reactionCounts: PhotoReactionCounts
   previewVariant: PhotoPreviewVariant
+  previewLoading: PhotoPreviewLoadingState
 }
 
 interface Emits {
@@ -22,13 +28,14 @@ const emit = defineEmits<Emits>()
 
 <template>
   <aside
-    class="photo-dialog__details space-y-[clamp(2rem,4vh,3.5rem)] max-md:space-y-[1.25rem]"
+    class="photo-dialog__details space-y-[clamp(1.5rem,3vh,2.5rem)] max-md:space-y-[1rem]"
     aria-label="Photo details"
   >
     <PhotoPreviewPanel
       v-if="props.photo.mediaType === 'image'"
       :photo="props.photo"
       :variant="props.previewVariant"
+      :loading="props.previewLoading"
       @change="emit('previewChange', $event)"
     />
     <PhotoDetailFile :photo="photo" />

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { play } from 'cuelume'
-import type { ComponentPublicInstance, CSSProperties } from 'vue'
-import type { Photo, PhotoPreviewVariant } from '~/types'
+import type { Photo, PhotoPreviewLoadingState, PhotoPreviewVariant } from '~/types'
+import { providePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
 import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
 import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
+import PhotoDetailFilmstrip from './PhotoDetailFilmstrip.vue'
 import PhotoDetailMetadata from './photo-detail-metadata/PhotoDetailMetadata.vue'
 
 interface Props {
@@ -22,14 +23,21 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+providePhotoImageLoadState()
 const dialogRef = useTemplateRef<HTMLElement>('dialog')
-const thumbnailRefs: HTMLElement[] = []
 const displayedPhoto = shallowRef<Photo | null>(null)
 const previewVariant = shallowRef<PhotoPreviewVariant>('compressed')
+const activePreviewVariant = shallowRef<PhotoPreviewVariant>('thumbnail')
 const checkerboard = shallowRef(false)
 const zoomLabel = shallowRef('100%')
 const downloadLoading = shallowRef(false)
 const downloadProgress = shallowRef(0)
+const previewLoading = shallowRef<PhotoPreviewLoadingState>({
+  thumbnail: false,
+  compressed: false,
+  origin: false,
+  blurhash: false,
+})
 const canvas = useTemplateRef<InstanceType<typeof PhotoDetailCanvas>>('canvas')
 
 const currentIndex = computed(() => {
@@ -37,6 +45,9 @@ const currentIndex = computed(() => {
   return props.photos.findIndex((photo) => photo.id === props.photo?.id)
 })
 const detailPhoto = computed(() => displayedPhoto.value ?? props.photo)
+const downloadVariant = computed<PhotoPreviewVariant>(() =>
+  detailPhoto.value?.mediaType === 'image' ? activePreviewVariant.value : 'origin',
+)
 const {
   counts: reactionCounts,
   saving: reactionSaving,
@@ -57,11 +68,6 @@ watch(
 
     await nextTick()
     dialogRef.value?.focus({ preventScroll: true })
-    thumbnailRefs[index]?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'center',
-    })
   },
   { flush: 'post' },
 )
@@ -70,6 +76,7 @@ watch(
   () => props.photo?.id,
   () => {
     previewVariant.value = 'compressed'
+    activePreviewVariant.value = 'thumbnail'
   },
 )
 
@@ -92,14 +99,6 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
-function thumbnailStyle(item: Photo): CSSProperties {
-  return { aspectRatio: `${item.width} / ${item.height}` }
-}
-
-function setThumbnailRef(el: Element | ComponentPublicInstance | null, index: number) {
-  if (el instanceof HTMLElement) thumbnailRefs[index] = el
-}
-
 function handleDisplayedChange(photo: Photo) {
   displayedPhoto.value = photo
 }
@@ -107,6 +106,10 @@ function handleDisplayedChange(photo: Photo) {
 function handleCanvasLoadingChange(loading: boolean, progress: number) {
   downloadLoading.value = loading
   downloadProgress.value = progress
+}
+
+function handleCanvasPreviewLoadingChange(loading: PhotoPreviewLoadingState) {
+  previewLoading.value = loading
 }
 
 function handleCanvasZoomChange(label: string) {
@@ -128,6 +131,10 @@ function resetZoom() {
 function handlePreviewChange(variant: PhotoPreviewVariant) {
   if (detailPhoto.value?.mediaType !== 'image') return
   previewVariant.value = variant
+}
+
+function handleActiveVariantChange(variant: PhotoPreviewVariant) {
+  activePreviewVariant.value = variant
 }
 
 function handleSwipe(direction: 'prev' | 'next') {
@@ -215,7 +222,9 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 :reaction-saving="reactionSaving"
                 :preview-variant="previewVariant"
                 @displayed-change="handleDisplayedChange"
+                @active-variant-change="handleActiveVariantChange"
                 @loading-change="handleCanvasLoadingChange"
+                @preview-loading-change="handleCanvasPreviewLoadingChange"
                 @react="react"
                 @swipe="handleSwipe"
                 @zoom-change="handleCanvasZoomChange"
@@ -245,6 +254,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 :reaction-saving="reactionSaving"
                 :download-loading="downloadLoading"
                 :download-progress="downloadProgress"
+                :download-variant="downloadVariant"
                 :zoom-label="zoomLabel"
                 @react="react"
                 @zoom-in="zoomIn"
@@ -257,28 +267,17 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               v-if="detailPhoto"
               :photo="detailPhoto"
               :reaction-counts="reactionCounts"
-              :preview-variant="previewVariant"
+              :preview-variant="activePreviewVariant"
+              :preview-loading="previewLoading"
               @preview-change="handlePreviewChange"
             />
           </div>
 
-          <footer class="photo-dialog__filmstrip" aria-label="Photo navigation">
-            <button
-              v-for="(item, index) in photos"
-              :key="item.id"
-              :ref="(el) => setThumbnailRef(el, index)"
-              type="button"
-              :class="{ 'is-active': item.id === photo.id }"
-              :style="thumbnailStyle(item)"
-              :aria-label="`View ${item.filename || item.id}`"
-              :aria-current="item.id === photo.id ? 'true' : undefined"
-              data-cuelume-toggle="page"
-              @click="emit('select', item)"
-            >
-              <img :src="item.thumbnail" :alt="item.filename" loading="lazy" decoding="async" />
-              <i v-if="item.mediaType === 'video'" class="i-hugeicons:play" aria-hidden="true" />
-            </button>
-          </footer>
+          <PhotoDetailFilmstrip
+            :photos="photos"
+            :active-photo-id="photo.id"
+            @select="emit('select', $event)"
+          />
         </section>
       </div>
     </Transition>
@@ -451,85 +450,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   grid-row: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: clamp(1.5rem, 2.5vw, 2.75rem) clamp(1rem, 2vw, 2rem);
+  padding: clamp(1.25rem, 2vw, 2rem) clamp(0.75rem, 1.5vw, 1.5rem);
   scrollbar-width: thin;
-}
-
-.photo-dialog__filmstrip {
-  display: flex;
-  align-items: center;
-  min-height: 5.25rem;
-  gap: clamp(0.45rem, 0.8vw, 0.8rem);
-  padding: 0.7rem clamp(1rem, 3vw, 3rem);
-  overflow-x: auto;
-  border-top: 1px dashed var(--dialog-line);
-  box-sizing: border-box;
-  scrollbar-width: none;
-}
-
-.photo-dialog__filmstrip::-webkit-scrollbar {
-  display: none;
-}
-
-.photo-dialog__filmstrip button {
-  position: relative;
-  flex: 0 0 auto;
-  height: 3.25rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  opacity: 0.34;
-  cursor: pointer;
-  filter: grayscale(1) contrast(1.03);
-  transform: translateY(0);
-  transition:
-    filter 320ms ease,
-    opacity 320ms ease,
-    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.photo-dialog__filmstrip button::after {
-  position: absolute;
-  right: 0;
-  bottom: -0.48rem;
-  left: 0;
-  height: 1px;
-  background: var(--dialog-text);
-  content: '';
-  opacity: 0;
-  transform: scaleX(0);
-  transition:
-    opacity 220ms ease,
-    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.photo-dialog__filmstrip button.is-active {
-  opacity: 1;
-  filter: grayscale(0) contrast(1);
-  transform: translateY(-0.2rem);
-}
-
-.photo-dialog__filmstrip button.is-active::after {
-  opacity: 0.82;
-  transform: scaleX(1);
-}
-
-.photo-dialog__filmstrip img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.photo-dialog__filmstrip button > i {
-  position: absolute;
-  inset: 50% auto auto 50%;
-  width: 1rem;
-  height: 1rem;
-  padding: 0.32rem;
-  border-radius: 50%;
-  color: white;
-  transform: translate(-50%, -50%);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -545,22 +467,14 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   .photo-dialog__nav--next:hover {
     transform: translate(0.18rem, -50%);
   }
-
-  .photo-dialog__filmstrip button:hover {
-    opacity: 0.74;
-    filter: grayscale(0.2) contrast(1);
-    transform: translateY(-0.12rem);
-  }
 }
 
-.photo-dialog__close:active,
-.photo-dialog__filmstrip button:active {
+.photo-dialog__close:active {
   transform: scale(0.97);
 }
 
 .photo-dialog__close:focus-visible,
-.photo-dialog__nav:focus-visible,
-.photo-dialog__filmstrip button:focus-visible {
+.photo-dialog__nav:focus-visible {
   outline: 1px dashed var(--dialog-text);
   outline-offset: 0.35rem;
 }
@@ -643,21 +557,12 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   .photo-dialog__details {
     grid-column: 1;
     grid-row: 3;
-    padding: 1rem 0.75rem;
+    padding: 0.75rem 0.625rem;
     border-top: 1px dashed var(--dialog-line);
     border-left: 0;
     position: relative;
     top: -1px;
     z-index: 10;
-  }
-
-  .photo-dialog__filmstrip {
-    min-height: 4.75rem;
-    padding-inline: 1rem;
-  }
-
-  .photo-dialog__filmstrip button {
-    height: 2.8rem;
   }
 
   .photo-dialog__nav {
@@ -671,9 +576,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   .photo-dialog-enter-active .photo-detail-canvas,
   .photo-dialog-leave-active .photo-detail-canvas,
   .photo-dialog__close,
-  .photo-dialog__nav,
-  .photo-dialog__filmstrip button,
-  .photo-dialog__filmstrip button::after {
+  .photo-dialog__nav {
     transition-duration: 1ms;
   }
 }

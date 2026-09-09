@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import type { Photo, PhotoPreviewVariant, PhotoReactionType } from '~/types'
-import { isImagePreloaded, preloadImage } from '~/utils/preloadImage'
+import type {
+  Photo,
+  PhotoPreviewLoadingState,
+  PhotoPreviewVariant,
+  PhotoReactionType,
+} from '~/types'
+import { usePhotoImage, usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
 import PhotoBlurhashPreview from './PhotoBlurhashPreview.vue'
 const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
 
@@ -29,6 +34,8 @@ interface Props {
 interface Emits {
   displayedChange: [photo: Photo]
   loadingChange: [loading: boolean, progress: number]
+  activeVariantChange: [variant: PhotoPreviewVariant]
+  previewLoadingChange: [loading: PhotoPreviewLoadingState]
   react: [reaction: PhotoReactionType]
   swipe: [direction: SwipeDirection]
   zoomChange: [label: string]
@@ -36,11 +43,15 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const imageLoadState = usePhotoImageLoadState()
 const preferredMotion = usePreferredReducedMotion()
 const displayedPhoto = shallowRef<Photo | null>(null)
 const displayedImageSrc = shallowRef('')
 const compressedImageSrc = shallowRef('')
 const isFullImageLoaded = shallowRef(false)
+const thumbnailImage = usePhotoImage(() => displayedPhoto.value?.thumbnail ?? '')
+const compressedImage = usePhotoImage(() => displayedPhoto.value?.compressed ?? '')
+const originImage = usePhotoImage(() => displayedPhoto.value?.origin ?? '')
 const previousPhoto = shallowRef<Photo | null>(null)
 const previousImageSrc = shallowRef('')
 const previousImageStyle = shallowRef<CSSProperties>()
@@ -79,20 +90,43 @@ const canvasClasses = computed(() => ({
   [`is-${direction.value}`]: true,
 }))
 const isDisplayedVideo = computed(() => displayedPhoto.value?.mediaType === 'video')
+const activePreviewVariant = computed<PhotoPreviewVariant>(() => {
+  if (
+    props.previewVariant === 'compressed' &&
+    !isDisplayedVideo.value &&
+    !thumbnailImage.isLoaded.value &&
+    !isFullImageLoaded.value
+  ) {
+    return 'blurhash'
+  }
+  if (props.previewVariant === 'compressed' && !isFullImageLoaded.value) return 'thumbnail'
+  return props.previewVariant
+})
 const isVariantPreviewVisible = computed(
-  () => !isDisplayedVideo.value && props.previewVariant !== 'compressed',
+  () => !isDisplayedVideo.value && activePreviewVariant.value !== 'compressed',
 )
+const previewLoading = computed<PhotoPreviewLoadingState>(() => ({
+  thumbnail: !isDisplayedVideo.value && thumbnailImage.isLoading.value,
+  compressed: !isDisplayedVideo.value && compressedImage.isLoading.value,
+  origin:
+    !isDisplayedVideo.value &&
+    props.previewVariant === 'origin' &&
+    !originImage.isLoaded.value &&
+    !originImage.hasError.value,
+  blurhash: false,
+}))
 const previewSrc = computed(() => {
   const photo = displayedPhoto.value
-  if (!photo || props.previewVariant === 'blurhash') return ''
-  if (props.previewVariant === 'thumbnail') return photo.thumbnail
-  if (props.previewVariant === 'origin') return photo.origin
+  const variant = activePreviewVariant.value
+  if (!photo || variant === 'blurhash') return ''
+  if (variant === 'thumbnail') return photo.thumbnail
+  if (variant === 'origin') return photo.origin
   return photo.compressed
 })
 const previewLabel = computed(() => {
-  if (props.previewVariant === 'thumbnail') return 'Thumbnail preview'
-  if (props.previewVariant === 'origin') return 'Original preview'
-  if (props.previewVariant === 'blurhash') return 'BlurHash preview'
+  if (activePreviewVariant.value === 'thumbnail') return 'Thumbnail preview'
+  if (activePreviewVariant.value === 'origin') return 'Original preview'
+  if (activePreviewVariant.value === 'blurhash') return 'BlurHash preview'
   return 'Compressed preview'
 })
 const currentImageStyle = computed<CSSProperties>(() => {
@@ -102,7 +136,7 @@ const currentImageStyle = computed<CSSProperties>(() => {
 const previewImageStyle = computed<CSSProperties>(() => {
   const photo = displayedPhoto.value
   if (!photo) return imageStyle.value
-  const maxWidth = props.previewVariant === 'thumbnail' ? 600 : Infinity
+  const maxWidth = activePreviewVariant.value === 'thumbnail' ? 600 : Infinity
   return getImageStyle(photo, maxWidth, imageStyle.value)
 })
 const swipeStart = shallowRef<SwipeStart | null>(null)
@@ -114,6 +148,18 @@ watch(
   { immediate: true },
 )
 watch(zoomLabel, (label) => emit('zoomChange', label), { immediate: true })
+watch(activePreviewVariant, (variant) => emit('activeVariantChange', variant), { immediate: true })
+watch(previewLoading, (loading) => emit('previewLoadingChange', loading), { immediate: true })
+
+watch(
+  [() => props.previewVariant, () => displayedPhoto.value?.id],
+  ([variant]) => {
+    const photo = displayedPhoto.value
+    if (variant !== 'origin' || !photo || photo.mediaType !== 'image') return
+    void originImage.preload({ expectedBytes: photo.originSize })
+  },
+  { immediate: true },
+)
 
 defineExpose({
   resetCanvas,
@@ -149,7 +195,7 @@ function preloadNeighbors(photo: Photo) {
 
   Promise.all(
     neighbors.map((neighbor) =>
-      preloadImage(neighbor.compressed, {
+      imageLoadState.preload(neighbor.compressed, {
         expectedBytes: neighbor.compressedSize,
       }),
     ),
@@ -225,6 +271,16 @@ function stopLoadingIndicator() {
   showLoading.value = false
 }
 
+function handleImageLoad(photoId: string, src: string) {
+  if (displayedPhoto.value?.id !== photoId) return
+  imageLoadState.markLoaded(src)
+}
+
+function handleImageError(photoId: string, src: string) {
+  if (displayedPhoto.value?.id !== photoId) return
+  imageLoadState.markError(src)
+}
+
 function scheduleTransitionCleanup(photoId: string) {
   if (transitionTimer) clearTimeout(transitionTimer)
 
@@ -242,8 +298,9 @@ async function displayPhoto(photo: Photo) {
   const currentRequest = ++requestId
   const outgoingPhoto = displayedPhoto.value
   if (outgoingPhoto?.id === photo.id) return
+  const hasCachedThumbnail = imageLoadState.isLoaded(photo.thumbnail)
   const compressedSrc = photo.compressed
-  const hasCachedCompressedImage = isImagePreloaded(compressedSrc)
+  const hasCachedCompressedImage = imageLoadState.isLoaded(compressedSrc)
 
   if (previousPhoto.value) {
     previousPhoto.value = null
@@ -272,14 +329,26 @@ async function displayPhoto(photo: Photo) {
   resetCanvas()
   emit('displayedChange', photo)
 
+  const thumbnailLoadingPromise =
+    photo.mediaType === 'image' && !hasCachedThumbnail
+      ? thumbnailImage.preload({
+          expectedBytes: photo.thumbnailSize,
+        })
+      : null
   const loadingPromise = hasCachedCompressedImage
     ? null
-    : preloadImage(compressedSrc, {
+    : compressedImage.preload({
         expectedBytes: photo.compressedSize,
         onProgress(progress) {
           if (currentRequest === requestId) loadProgress.value = progress.percentage
         },
       })
+  if (thumbnailLoadingPromise) {
+    void thumbnailLoadingPromise.then((loaded) => {
+      if (currentRequest !== requestId) return
+      if (loaded) imageLoadState.markLoaded(photo.thumbnail)
+    })
+  }
   preloadNeighbors(photo)
 
   await nextTick()
@@ -413,6 +482,8 @@ onBeforeUnmount(() => {
         decoding="async"
         draggable="false"
         :style="currentImageStyle"
+        @load="handleImageLoad(displayedPhoto.id, displayedImageSrc)"
+        @error="handleImageError(displayedPhoto.id, displayedImageSrc)"
       />
       <img
         v-if="compressedImageSrc && !isDisplayedVideo"
@@ -427,18 +498,20 @@ onBeforeUnmount(() => {
         decoding="async"
         draggable="false"
         :style="currentImageStyle"
+        @load="handleImageLoad(displayedPhoto.id, compressedImageSrc)"
+        @error="handleImageError(displayedPhoto.id, compressedImageSrc)"
       />
     </div>
 
     <div
       v-if="isVariantPreviewVisible && displayedPhoto"
-      :key="`${displayedPhoto.id}-${props.previewVariant}`"
+      :key="`${displayedPhoto.id}-${activePreviewVariant}`"
       class="photo-detail-canvas__preview"
       :aria-label="previewLabel"
       role="img"
     >
       <PhotoBlurhashPreview
-        v-if="props.previewVariant === 'blurhash'"
+        v-if="activePreviewVariant === 'blurhash'"
         :hash="displayedPhoto.blurhash"
         :width="displayedPhoto.width"
         :height="displayedPhoto.height"
@@ -452,6 +525,8 @@ onBeforeUnmount(() => {
         decoding="async"
         draggable="false"
         :style="previewImageStyle"
+        @load="handleImageLoad(displayedPhoto.id, previewSrc)"
+        @error="handleImageError(displayedPhoto.id, previewSrc)"
       />
     </div>
 

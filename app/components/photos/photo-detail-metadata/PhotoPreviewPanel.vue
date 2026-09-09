@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { Photo, PhotoPreviewVariant } from '~/types'
+import type { Photo, PhotoPreviewLoadingState, PhotoPreviewVariant } from '~/types'
 
 interface Props {
   photo: Photo
   variant: PhotoPreviewVariant
+  loading: PhotoPreviewLoadingState
 }
 
 interface Emits {
@@ -13,6 +14,7 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const hoveredVariant = shallowRef<PhotoPreviewVariant | null>(null)
+const isOriginDisabled = computed(() => props.loading.thumbnail || props.loading.compressed)
 
 const photoPreviewVariants: readonly PhotoPreviewVariant[] = [
   'thumbnail',
@@ -74,6 +76,7 @@ function clearHoveredVariant() {
           'is-active': item === variant,
           'is-hovered': item === hoveredVariant,
         }"
+        :disabled="item === 'origin' && isOriginDisabled"
         :aria-pressed="item === variant"
         data-cuelume-hover="tick"
         data-cuelume-toggle="toggle"
@@ -86,7 +89,12 @@ function clearHoveredVariant() {
           <span class="photo-preview-panel__option-copy">
             <span class="photo-preview-panel__option-label">{{ previewLabel(item) }}</span>
             <span class="photo-preview-panel__option-description">
-              {{ previewDescription(item) }}
+              <i
+                v-if="loading[item]"
+                class="i-hugeicons:loading-03 animate-pulse animate-spin"
+                aria-hidden="true"
+              />
+              <template v-else>{{ previewDescription(item) }}</template>
             </span>
           </span>
         </span>
@@ -96,11 +104,6 @@ function clearHoveredVariant() {
 </template>
 
 <style scoped>
-.photo-preview-panel {
-  padding-bottom: clamp(1.5rem, 3vh, 2.25rem);
-  border-bottom: 1px dashed var(--dialog-line);
-}
-
 .photo-preview-panel__heading {
   display: flex;
   align-items: baseline;
@@ -142,6 +145,11 @@ function clearHoveredVariant() {
     border-color 180ms ease,
     background-color 180ms ease,
     color 180ms ease;
+}
+
+.photo-preview-panel__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .photo-preview-panel__option-main {
@@ -260,12 +268,12 @@ function clearHoveredVariant() {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .photo-preview-panel__option:hover {
+  .photo-preview-panel__option:not(:disabled):hover {
     border-color: var(--dialog-line);
     color: var(--dialog-text);
   }
 
-  .photo-preview-panel__option.is-active:hover {
+  .photo-preview-panel__option.is-active:not(:disabled):hover {
     border-color: transparent;
   }
 }

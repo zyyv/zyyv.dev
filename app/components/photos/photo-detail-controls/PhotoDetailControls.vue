@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Photo, PhotoReactionType } from '~/types'
+import type { Photo, PhotoPreviewVariant, PhotoReactionType } from '~/types'
 import PhotoDetailBackgroundControl from './PhotoDetailBackgroundControl.vue'
 import PhotoDetailDownloadControl from './PhotoDetailDownloadControl.vue'
 import PhotoDetailReactionControl from './PhotoDetailReactionControl.vue'
@@ -14,6 +14,7 @@ interface Props {
   reactionDisabled?: boolean
   downloadLoading?: boolean
   downloadProgress?: number
+  downloadVariant?: PhotoPreviewVariant
   zoomLabel?: string
 }
 
@@ -31,6 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
   reactionDisabled: false,
   downloadLoading: false,
   downloadProgress: 0,
+  downloadVariant: 'origin',
   zoomLabel: '100%',
 })
 const emit = defineEmits<Emits>()
@@ -74,6 +76,7 @@ const controlsClasses = computed(() => [
     <div class="photo-detail-controls__item">
       <PhotoDetailDownloadControl
         :photo="props.photo"
+        :variant="props.downloadVariant"
         :loading="props.downloadLoading"
         :progress="props.downloadProgress"
       />

@@ -75,6 +75,8 @@ export interface PhotoLocationDisplay {
 
 export type PhotoPreviewVariant = 'thumbnail' | 'compressed' | 'origin' | 'blurhash'
 
+export type PhotoPreviewLoadingState = Record<PhotoPreviewVariant, boolean>
+
 export interface Photo {
   id: string
   filename: string
