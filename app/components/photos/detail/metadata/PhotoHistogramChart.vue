@@ -75,7 +75,6 @@ function createChartConfiguration(): ChartConfiguration<'line'> {
     }
   })
 
-  const textColor = getCssVariable('--dialog-muted', 'rgb(17 17 15 / 46%)')
   const lineColor = getCssVariable('--dialog-line', 'rgb(17 17 15 / 16%)')
 
   return {
@@ -87,22 +86,17 @@ function createChartConfiguration(): ChartConfiguration<'line'> {
       animation: false,
       normalized: true,
       interaction: { mode: 'index', intersect: false },
-      layout: { padding: { top: 3, right: 2, bottom: 0, left: 0 } },
+      layout: { padding: { top: 3, right: 2, bottom: 16, left: 0 } },
       scales: {
         x: {
           grid: { display: false },
           border: { display: false },
-          ticks: {
-            color: textColor,
-            maxTicksLimit: 5,
-            font: { family: 'DM Sans, sans-serif', size: 9 },
-            padding: 3,
-          },
+          ticks: { display: false },
         },
         y: {
           beginAtZero: true,
           grid: { color: lineColor, drawTicks: false },
-          border: { display: false, dash: [2, 3] },
+          border: { display: false, dash: [0, 1] },
           ticks: { display: false },
         },
       },
@@ -110,6 +104,10 @@ function createChartConfiguration(): ChartConfiguration<'line'> {
         legend: { display: false },
         tooltip: {
           displayColors: true,
+          usePointStyle: true,
+          boxWidth: 8,
+          boxHeight: 8,
+          boxPadding: 4,
           intersect: false,
           mode: 'index',
           titleFont: { family: 'DM Sans, sans-serif', size: 10 },
@@ -117,6 +115,14 @@ function createChartConfiguration(): ChartConfiguration<'line'> {
           callbacks: {
             title: (items) => `Level ${items[0]?.label ?? '—'}`,
             label: (item) => `${item.dataset.label}: ${item.formattedValue} px`,
+            labelColor: (item) => {
+              const channel = item.dataset.label?.toLowerCase() as HistogramChannel
+              const style = channelStyles[channel]
+              const color = style?.color ?? '#aaa99f'
+
+              return { backgroundColor: color, borderColor: color, borderWidth: 0 }
+            },
+            labelPointStyle: () => ({ pointStyle: 'circle', rotation: 0 }),
           },
         },
       },

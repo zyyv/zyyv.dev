@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Photo } from '~/types'
 import { useImageHistogram, type HistogramChannel } from '~/composables/useImageHistogram'
+import PhotoHistogramAxis from './PhotoHistogramAxis.vue'
 import PhotoHistogramChart from './PhotoHistogramChart.vue'
 
 interface Props {
@@ -17,6 +18,7 @@ const channelOptions: readonly { key: HistogramChannel; label: string; shortLabe
   { key: 'luminance', label: 'Luminance', shortLabel: 'L' },
 ]
 const activeChannels = shallowRef<HistogramChannel[]>(['red', 'green', 'blue'])
+const loadingStatLabels = ['Shadows', 'Highlights', 'Levels'] as const
 
 const sampleCountLabel = computed(() => {
   if (!histogram.value) return 'Pixel analysis'
@@ -70,48 +72,148 @@ function formatPercentage(value: number) {
       >
         <span class="photo-histogram-panel__channel-dot" aria-hidden="true" />
         <span class="photo-histogram-panel__channel-label">{{ channel.label }}</span>
-        <span class="photo-histogram-panel__channel-short" aria-hidden="true">
-          {{ channel.shortLabel }}
-        </span>
       </button>
     </div>
 
-    <div v-if="status === 'analyzing'" class="photo-histogram-panel__loading" role="status">
-      <span class="photo-histogram-panel__loading-chart" />
-      <span>Sampling pixels…</span>
-    </div>
+    <div
+      class="photo-histogram-panel__state"
+      :class="{
+        'photo-histogram-panel__state--chart':
+          status === 'analyzing' || (status === 'ready' && histogram),
+      }"
+    >
+      <Transition name="photo-histogram-state" mode="out-in">
+        <div v-if="status === 'analyzing'" key="analyzing" class="photo-histogram-panel__content">
+          <div
+            class="photo-histogram-panel__loading"
+            role="status"
+            aria-live="polite"
+            aria-label="Sampling pixels. Analyzing."
+          >
+            <div class="photo-histogram-panel__loading-chart" aria-hidden="true">
+              <div class="photo-histogram-panel__loading-header">
+                <span class="photo-histogram-panel__loading-signal" />
+                <span class="photo-histogram-panel__loading-label">Sampling pixels</span>
+                <span class="photo-histogram-panel__loading-phase">Analyzing</span>
+              </div>
 
-    <div v-else-if="status === 'ready' && histogram" class="photo-histogram-panel__content">
-      <div class="photo-histogram-panel__chart">
-        <PhotoHistogramChart :histogram="histogram" :channels="activeChannels" />
-      </div>
+              <svg
+                class="photo-histogram-panel__loading-lines"
+                viewBox="0 0 256 144"
+                preserveAspectRatio="none"
+              >
+                <path
+                  class="photo-histogram-panel__loading-line is-red"
+                  d="M0 137 C18 135 24 108 34 120 S56 133 70 130 S94 134 110 126 S126 119 140 127 S156 90 168 104 S183 72 194 112 S214 113 228 120 S244 106 256 110"
+                />
+                <path
+                  class="photo-histogram-panel__loading-line is-green"
+                  d="M0 135 C14 128 22 72 34 94 S54 128 71 126 S94 130 110 124 S128 118 142 121 S157 52 170 72 S183 86 194 101 S212 118 226 115 S242 104 256 109"
+                />
+                <path
+                  class="photo-histogram-panel__loading-line is-blue"
+                  d="M0 138 C17 132 24 101 37 112 S58 131 76 128 S99 134 115 125 S129 121 144 123 S159 83 170 96 S185 30 194 70 S207 111 220 116 S240 107 256 112"
+                />
+              </svg>
 
-      <dl class="photo-histogram-panel__stats">
-        <div>
-          <dt>Shadows</dt>
-          <dd>{{ formatPercentage(histogram.shadowClipping) }}</dd>
-        </div>
-        <div>
-          <dt>Highlights</dt>
-          <dd>{{ formatPercentage(histogram.highlightClipping) }}</dd>
-        </div>
-        <div>
-          <dt>Levels</dt>
-          <dd>0—255</dd>
-        </div>
-      </dl>
-    </div>
+              <PhotoHistogramAxis />
+            </div>
+          </div>
 
-    <div v-else class="photo-histogram-panel__error" role="status">
-      <span>{{ error || 'Histogram analysis is unavailable.' }}</span>
-      <button type="button" data-cuelume-hover="tick" data-cuelume-toggle="pulse" @click="analyze">
-        Retry
-      </button>
+          <dl
+            class="photo-histogram-panel__stats photo-histogram-panel__stats--loading"
+            aria-hidden="true"
+          >
+            <div v-for="label in loadingStatLabels" :key="label">
+              <dt>{{ label }}</dt>
+              <dd><span class="photo-histogram-panel__loading-value">xx</span></dd>
+            </div>
+          </dl>
+        </div>
+
+        <div
+          v-else-if="status === 'ready' && histogram"
+          key="ready"
+          class="photo-histogram-panel__content"
+        >
+          <div class="photo-histogram-panel__chart">
+            <PhotoHistogramChart :histogram="histogram" :channels="activeChannels" />
+            <PhotoHistogramAxis />
+          </div>
+
+          <dl class="photo-histogram-panel__stats">
+            <div>
+              <dt>Shadows</dt>
+              <dd>{{ formatPercentage(histogram.shadowClipping) }}</dd>
+            </div>
+            <div>
+              <dt>Highlights</dt>
+              <dd>{{ formatPercentage(histogram.highlightClipping) }}</dd>
+            </div>
+            <div>
+              <dt>Levels</dt>
+              <dd>0—255</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div v-else key="error" class="photo-histogram-panel__error" role="status">
+          <div>
+            <i class="i-hugeicons:alert-diamond mr-1" />
+            <span>{{ error || 'Histogram analysis is unavailable.' }}</span>
+          </div>
+          <button
+            type="button"
+            data-cuelume-hover="tick"
+            data-cuelume-toggle="pulse"
+            @click="analyze"
+          >
+            Retry
+          </button>
+        </div>
+      </Transition>
     </div>
   </section>
 </template>
 
 <style scoped>
+.photo-histogram-panel {
+  --photo-histogram-chart-height: 9rem;
+  --photo-histogram-stats-height: 2rem;
+  --photo-histogram-content-gap: 0.7rem;
+}
+
+.photo-histogram-panel__state--chart {
+  height: calc(
+    var(--photo-histogram-chart-height) + var(--photo-histogram-content-gap) +
+      var(--photo-histogram-stats-height)
+  );
+}
+
+.photo-histogram-panel__content {
+  display: grid;
+  grid-template-rows: var(--photo-histogram-chart-height) var(--photo-histogram-stats-height);
+  height: 100%;
+  row-gap: var(--photo-histogram-content-gap);
+}
+
+.photo-histogram-state-enter-active,
+.photo-histogram-state-leave-active {
+  transition:
+    opacity 120ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photo-histogram-state-enter-from {
+  opacity: 0;
+  transform: translateY(0.3rem);
+}
+
+.photo-histogram-state-leave-to {
+  opacity: 0;
+  transform: translateY(-0.2rem);
+}
+
 .photo-histogram-panel__heading {
   display: flex;
   align-items: baseline;
@@ -149,7 +251,6 @@ function formatPercentage(value: number) {
   align-items: center;
   gap: 0.35rem;
   padding: 0.35rem 0.25rem;
-  border: 1px dashed transparent;
   background: transparent;
   color: var(--dialog-muted);
   font: inherit;
@@ -202,23 +303,25 @@ function formatPercentage(value: number) {
 }
 
 .photo-histogram-panel__channel:focus-visible {
-  outline: 1px dashed var(--dialog-text);
+  /* outline: 1px dashed var(--dialog-text); */
   outline-offset: 0.15rem;
 }
 
 .photo-histogram-panel__chart {
-  height: 9rem;
-  min-height: 7rem;
+  position: relative;
+  height: 100%;
+  min-height: 0;
   padding: 0.25rem 0 0;
-  border-top: 1px dashed var(--dialog-line);
-  border-bottom: 1px dashed var(--dialog-line);
+  box-sizing: border-box;
 }
 
 .photo-histogram-panel__stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
-  margin: 0.7rem 0 0;
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .photo-histogram-panel__stats > div {
@@ -238,34 +341,118 @@ function formatPercentage(value: number) {
 }
 
 .photo-histogram-panel__loading {
-  display: grid;
-  gap: 0.55rem;
+  height: 100%;
+  min-height: 0;
   color: var(--dialog-muted);
   font-size: 0.58rem;
 }
 
 .photo-histogram-panel__loading-chart {
+  position: relative;
   display: block;
-  height: 9rem;
-  border-top: 1px dashed var(--dialog-line);
-  border-bottom: 1px dashed var(--dialog-line);
-  background:
-    linear-gradient(
-        135deg,
-        transparent 48%,
-        color-mix(in srgb, var(--dialog-text) 10%, transparent) 49%,
-        transparent 50%
-      )
-      0 0 / 100% 100%,
-    repeating-linear-gradient(to top, transparent 0 1.7rem, var(--dialog-line) 1.7rem 1.75rem);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.photo-histogram-panel__loading-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1rem;
+  position: absolute;
+  z-index: 1;
+  top: 0.45rem;
+  right: 0.4rem;
+  left: 0.4rem;
+}
+
+.photo-histogram-panel__loading-signal {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--dialog-text);
+  box-shadow: 0 0 0 0.22rem color-mix(in srgb, var(--dialog-text) 8%, transparent);
+  animation: photo-histogram-pulse 1.4s ease-in-out infinite;
+}
+
+.photo-histogram-panel__loading-label {
+  color: var(--dialog-text);
+  font-size: 0.57rem;
+}
+
+.photo-histogram-panel__loading-phase {
+  margin-left: auto;
+  color: var(--dialog-muted);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.photo-histogram-panel__loading-lines {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0 0.1rem;
+  box-sizing: border-box;
+  opacity: 0.46;
+}
+
+.photo-histogram-panel__loading-line {
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.photo-histogram-panel__loading-line.is-red {
+  stroke: #ee7777;
+}
+
+.photo-histogram-panel__loading-line.is-green {
+  stroke: #70c992;
+}
+
+.photo-histogram-panel__loading-line.is-blue {
+  stroke: #79aee8;
+}
+
+.photo-histogram-panel__stats--loading .photo-histogram-panel__loading-value {
+  display: block;
+  width: max-content;
+  height: 0.75rem;
+  box-sizing: border-box;
+  color: var(--dialog-muted);
+  font-size: 0.62rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
   opacity: 0.72;
+}
+
+@keyframes photo-histogram-pulse {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(0.86);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .photo-histogram-panel__error {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
   color: var(--dialog-muted);
   font-size: 0.58rem;
 }
@@ -274,32 +461,16 @@ function formatPercentage(value: number) {
   flex: 0 0 auto;
   padding: 0.3rem 0.45rem;
   border: 1px dashed var(--dialog-line);
-  background: transparent;
   color: var(--dialog-text);
   font: inherit;
   cursor: pointer;
 }
 
-.photo-histogram-panel__error button:focus-visible {
-  outline: 1px dashed var(--dialog-text);
-  outline-offset: 0.15rem;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .photo-histogram-panel__channel:hover {
-    border-color: var(--dialog-line);
-  }
-
-  .photo-histogram-panel__channel.is-active:hover {
-    border-color: transparent;
-  }
-
-  .photo-histogram-panel__error button:hover {
-    border-color: var(--dialog-text);
-  }
-}
-
 @media (max-width: 767.9px) {
+  .photo-histogram-panel {
+    --photo-histogram-chart-height: 7.5rem;
+  }
+
   .photo-histogram-panel__channels {
     gap: 0.2rem;
   }
@@ -309,24 +480,24 @@ function formatPercentage(value: number) {
     padding: 0.32rem 0.2rem;
   }
 
-  .photo-histogram-panel__channel-label {
-    display: none;
-  }
-
   .photo-histogram-panel__channel-short {
     display: inline;
     margin-left: 0;
-  }
-
-  .photo-histogram-panel__chart,
-  .photo-histogram-panel__loading-chart {
-    height: 7.5rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .photo-histogram-panel__channel {
     transition-duration: 1ms;
+  }
+
+  .photo-histogram-state-enter-active,
+  .photo-histogram-state-leave-active {
+    transition-duration: 1ms;
+  }
+
+  .photo-histogram-panel__loading-signal {
+    animation: none;
   }
 }
 </style>
