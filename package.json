@@ -41,6 +41,7 @@
     "@vueuse/nuxt": "^14.4.0",
     "arthash": "^0.5.0",
     "better-sqlite3": "^13.0.3",
+    "chart.js": "^4.5.1",
     "cuelume": "^0.2.2",
     "magic-color": "^2.2.5",
     "media-chrome": "^4.19.2",
