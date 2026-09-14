@@ -4,6 +4,7 @@ import PhotoDetailCapture from './PhotoDetailCapture.vue'
 import PhotoDetailFile from './PhotoDetailFile.vue'
 import PhotoDetailPalette from './PhotoDetailPalette.vue'
 import PhotoDetailReactions from './PhotoDetailReactions.vue'
+import PhotoHistogramPanel from './PhotoHistogramPanel.vue'
 import PhotoPreviewPanel from './PhotoPreviewPanel.vue'
 
 const { detailPhoto } = usePhotoDetailContext()
@@ -15,6 +16,7 @@ const photo = computed(() => detailPhoto.value!)
     class="photo-dialog__details space-y-[clamp(1.5rem,3vh,2.5rem)] max-md:space-y-[1rem]"
     aria-label="Photo details"
   >
+    <PhotoHistogramPanel v-if="photo.mediaType === 'image'" :photo="photo" />
     <PhotoPreviewPanel v-if="photo.mediaType === 'image'" />
     <PhotoDetailFile :photo="photo" />
     <PhotoDetailCapture :photo="photo" />
