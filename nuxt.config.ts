@@ -74,6 +74,10 @@ export default defineNuxtConfig({
     port: 4321,
   },
 
+  devtools: {
+    enabled: false,
+  },
+
   typescript: {
     strict: true,
     typeCheck: true,
