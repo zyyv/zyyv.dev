@@ -3,10 +3,10 @@ import { play } from 'cuelume'
 import type { Photo } from '~/types'
 import { providePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { providePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
-import PhotoDetailCanvas from './PhotoDetailCanvas.vue'
-import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
+import PhotoDetailCanvas from './media/PhotoDetailCanvas.vue'
+import PhotoDetailControls from './controls/PhotoDetailControls.vue'
 import PhotoDetailFilmstrip from './PhotoDetailFilmstrip.vue'
-import PhotoDetailMetadata from './photo-detail-metadata/PhotoDetailMetadata.vue'
+import PhotoDetailMetadata from './metadata/PhotoDetailMetadata.vue'
 
 interface Props {
   photo: Photo | null

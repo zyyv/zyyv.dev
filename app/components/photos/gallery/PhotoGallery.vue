@@ -1,9 +1,8 @@
 <script lang="ts" setup>
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
-import PhotoEmptyState from '~/components/photos/PhotoEmptyState.vue'
-import PhotoCardMedia from '~/components/photos/PhotoCardMedia.vue'
-import PhotoHoverInfo from '~/components/photos/PhotoHoverInfo.vue'
+import PhotoCard from './card/PhotoCard.vue'
+import PhotoEmptyState from './PhotoEmptyState.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -31,8 +30,8 @@ const {
   refreshPhotos,
 } = usePhotos(() => props.photos)
 
-function openPreview(photo: Photo, event: MouseEvent) {
-  emit('open', photo, event.currentTarget as HTMLElement)
+function openPreview(photo: Photo, source: HTMLElement) {
+  emit('open', photo, source)
 }
 </script>
 
@@ -76,22 +75,11 @@ function openPreview(photo: Photo, event: MouseEvent) {
         row-key="id"
       >
         <template #default="{ item }">
-          <button
-            type="button"
-            class="photo-card"
-            :data-photo-transition-id="item.id"
-            :aria-label="`View ${item.filename}`"
-            data-cuelume-toggle="page"
-            @click="openPreview(item, $event)"
-          >
-            <PhotoCardMedia
-              :photo="item"
-              :loading="item.id === allPhotos[0]?.id ? 'eager' : 'lazy'"
-              class="photo-card__image"
-              :style="{ '--media-aspect-ratio': `${item.width} / ${item.height}` }"
-            />
-            <PhotoHoverInfo :photo="item" />
-          </button>
+          <PhotoCard
+            :photo="item"
+            :loading="item.id === allPhotos[0]?.id ? 'eager' : 'lazy'"
+            @open="openPreview"
+          />
         </template>
       </VirtualWaterfall>
 
@@ -122,41 +110,3 @@ function openPreview(photo: Photo, event: MouseEvent) {
     </div>
   </div>
 </template>
-
-<style scoped>
-.photo-card {
-  position: relative;
-  display: block;
-  width: 100%;
-  padding: 0;
-  overflow: hidden;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: zoom-in;
-  outline: none;
-}
-
-.photo-card::after {
-  position: absolute;
-  inset: 0;
-  content: '';
-  pointer-events: none;
-}
-
-.photo-card:focus-visible {
-  box-shadow: 0 0 0 2px currentColor;
-}
-
-.photo-card:focus-visible :deep(.photo-hover-info) {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .photo-card:hover :deep(.photo-hover-info) {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>

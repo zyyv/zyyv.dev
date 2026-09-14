@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onBeforeRouteLeave } from 'vue-router'
 import type { Photo } from '~/types'
-import PhotoDetail from '~/components/photos/PhotoDetail.vue'
-import PhotosGallery from '~/components/photos/Photos.vue'
-import RipplablePhotos from '~/components/photos/RipplablePhotos.vue'
+import PhotoDetail from '~/components/photos/detail/PhotoDetail.vue'
+import PhotoGallery from '~/components/photos/gallery/PhotoGallery.vue'
+import RipplablePhotos from '~/components/photos/ripplable/RipplablePhotos.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -143,7 +143,7 @@ useHead(() => ({
       :mode="isTransitioning ? undefined : 'out-in'"
       :css="!isTransitioning"
     >
-      <PhotosGallery
+      <PhotoGallery
         v-if="mode === 'waterfall'"
         key="waterfall"
         :photos="photos"

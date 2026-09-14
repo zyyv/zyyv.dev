@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
-import PhotoReactions from '../PhotoReactions.vue'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
+import PhotoReactionPicker from './reactions/PhotoReactionPicker.vue'
 
 const { detailPhoto, reactionError, reactionSaving, actions } = usePhotoDetailContext()
 const showReactions = shallowRef(false)
@@ -21,7 +21,7 @@ onKeyStroke('Escape', () => {
 <template>
   <div ref="reactionControl" class="photo-detail-reaction-control">
     <Transition name="photo-detail-reaction-popover">
-      <PhotoReactions
+      <PhotoReactionPicker
         v-show="showReactions"
         class="photo-detail-reaction-control__popover"
         :busy="reactionSaving"

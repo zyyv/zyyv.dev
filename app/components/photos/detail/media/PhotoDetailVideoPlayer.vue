@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
-import PhotoDetailControls from './photo-detail-controls/PhotoDetailControls.vue'
+import PhotoDetailControls from '../controls/PhotoDetailControls.vue'
 
 const { detailPhoto } = usePhotoDetailContext()
 const photo = computed(() => detailPhoto.value!)

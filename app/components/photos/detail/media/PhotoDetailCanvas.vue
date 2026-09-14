@@ -4,8 +4,9 @@ import type { CSSProperties } from 'vue'
 import type { Photo, PhotoPreviewLoadingState, PhotoPreviewVariant } from '~/types'
 import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { usePhotoImage, usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
-import PhotoBlurhashPreview from './PhotoBlurhashPreview.vue'
-const PhotoVideoPlayer = defineAsyncComponent(() => import('./PhotoVideoPlayer.vue'))
+import PhotoDetailBlurhashPreview from './PhotoDetailBlurhashPreview.vue'
+
+const PhotoDetailVideoPlayer = defineAsyncComponent(() => import('./PhotoDetailVideoPlayer.vue'))
 
 type SwitchDirection = 'prev' | 'next' | 'direct'
 
@@ -457,7 +458,7 @@ onBeforeUnmount(() => {
       v-if="displayedPhoto"
       class="photo-detail-canvas__media photo-detail-canvas__media--current"
     >
-      <PhotoVideoPlayer v-if="isDisplayedVideo" :key="displayedPhoto.id" />
+      <PhotoDetailVideoPlayer v-if="isDisplayedVideo" :key="displayedPhoto.id" />
       <img
         v-else
         ref="canvasImage"
@@ -499,7 +500,7 @@ onBeforeUnmount(() => {
       :aria-label="previewLabel"
       role="img"
     >
-      <PhotoBlurhashPreview
+      <PhotoDetailBlurhashPreview
         v-if="activePreviewVariant === 'blurhash'"
         :hash="displayedPhoto.blurhash"
         :width="displayedPhoto.width"
