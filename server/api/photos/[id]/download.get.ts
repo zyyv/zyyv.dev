@@ -7,7 +7,7 @@ const downloadVariants = new Set<PhotoPreviewVariant>([
   'origin',
   'compressed',
   'thumbnail',
-  'blurhash',
+  'arthash',
 ])
 
 function getDownloadVariant(value: unknown): PhotoPreviewVariant {
@@ -34,16 +34,16 @@ export default defineEventHandler(async (event) => {
   const fallbackFilename = getPhotoDownloadFilename(fallbackBaseFilename, variant)
   const encodedFilename = encodeURIComponent(filename)
 
-  if (variant === 'blurhash') {
-    const blurhash = photo.blurhash
+  if (variant === 'arthash') {
+    const arthash = photo.arthash
     setResponseHeaders(event, {
       'Cache-Control': 'private, no-store',
       'Content-Disposition': `attachment; filename="${fallbackFilename}"; filename*=UTF-8''${encodedFilename}`,
-      'Content-Length': String(new TextEncoder().encode(blurhash).byteLength),
+      'Content-Length': String(new TextEncoder().encode(arthash).byteLength),
       'Content-Type': 'text/plain; charset=utf-8',
     })
 
-    return blurhash
+    return arthash
   }
 
   const objectKey =

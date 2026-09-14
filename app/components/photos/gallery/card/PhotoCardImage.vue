@@ -10,14 +10,14 @@ const props = defineProps<Props>()
 </script>
 
 <template>
-  <ImgBlurHash
+  <ImgArthash
     class="photo-card-media__visual"
     :src="props.photo.thumbnail"
     :alt="props.photo.filename"
     :loading="props.loading"
     :width="props.photo.width"
     :height="props.photo.height"
-    :blurhash="props.photo.blurhash"
+    :arthash="props.photo.arthash"
     :aspect-ratio="props.photo.width / props.photo.height"
   />
 </template>

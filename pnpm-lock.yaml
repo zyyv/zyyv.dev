@@ -125,12 +125,12 @@ importers:
       '@vueuse/nuxt':
         specifier: ^14.4.0
         version: 14.4.0(fed918026aae188f687b9f0f7013c0ec)
+      arthash:
+        specifier: ^0.5.0
+        version: 0.5.0
       better-sqlite3:
         specifier: ^13.0.3
         version: 13.0.3
-      blurhash:
-        specifier: ^2.0.5
-        version: 2.0.5
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
@@ -2829,6 +2829,9 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
+  arthash@0.5.0:
+    resolution: {integrity: sha512-lUKLVkJf4Al5COQowyECl3wpyLtH57mypvlbcdauh1KdzqqFd8UfU1XnwmjrPKSGhwESk4hAJJXcTWwopQZELQ==}
+
   ast-kit@2.2.0:
     resolution: {integrity: sha512-m1Q/RaVOnTp9JxPX+F+Zn7IcLYMzM8kZofDImfsKZd8MbR+ikdOzTeztStWqfrqIxZnYWryyI9ePm3NGjnZgGw==}
     engines: {node: '>=20.19.0'}
@@ -2941,9 +2944,6 @@ packages:
 
   blake3-wasm@2.1.5:
     resolution: {integrity: sha512-F1+K8EbfOZE49dtoPtmxUQrpXaBIl3ICvasLh+nJta0xkz+9kF/7uet9fLnwKqhDrmj6g+6K3Tw9yQPUg2ka5g==}
-
-  blurhash@2.0.5:
-    resolution: {integrity: sha512-cRygWd7kGBQO3VEhPiTgq4Wc43ctsM+o46urrmPOiuAe+07fzlSB9OJVdpgDL0jPqXUVQ9ht7aq7kxOeJHRK+w==}
 
   boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
@@ -8925,6 +8925,8 @@ snapshots:
 
   argparse@2.0.1: {}
 
+  arthash@0.5.0: {}
+
   ast-kit@2.2.0:
     dependencies:
       '@babel/parser': 7.29.7
@@ -9013,8 +9015,6 @@ snapshots:
   birpc@4.2.0: {}
 
   blake3-wasm@2.1.5: {}
-
-  blurhash@2.0.5: {}
 
   boolbase@1.0.0: {}
 

@@ -12,7 +12,7 @@ export interface FinalizePhotoUploadBody {
   thumbnailContentType?: string
   width?: number
   height?: number
-  blurhash?: string
+  arthash?: string
   private?: boolean
   exif?: PhotoExif
 }

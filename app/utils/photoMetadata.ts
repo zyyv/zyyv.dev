@@ -1,5 +1,5 @@
 import type { PhotoExif } from '~/types'
-import { encode } from 'blurhash'
+import { encodeArthash } from '~/utils/arthash'
 import exifr from 'exifr'
 
 type LoadedImage = ImageBitmap | HTMLImageElement
@@ -21,7 +21,7 @@ async function loadBitmap(file: File): Promise<LoadedImage> {
   }
 }
 
-function createBlurhash(image: LoadedImage) {
+async function createArthash(image: LoadedImage) {
   const width = image.width
   const height = image.height
   const sampleWidth = Math.min(32, width)
@@ -33,10 +33,14 @@ function createBlurhash(image: LoadedImage) {
   if (!context) throw new Error('浏览器无法创建图片画布')
   context.drawImage(image, 0, 0, sampleWidth, sampleHeight)
   const pixels = context.getImageData(0, 0, sampleWidth, sampleHeight).data
-  return encode(pixels, sampleWidth, sampleHeight, 4, 4)
+  return encodeArthash(
+    new Uint8Array(pixels.buffer, pixels.byteOffset, pixels.byteLength),
+    sampleWidth,
+    sampleHeight,
+  )
 }
 
-function createVideoBlurhash(video: HTMLVideoElement) {
+async function createVideoArthash(video: HTMLVideoElement) {
   const sampleWidth = Math.min(32, video.videoWidth)
   const sampleHeight = Math.max(1, Math.round(sampleWidth * (video.videoHeight / video.videoWidth)))
   const canvas = document.createElement('canvas')
@@ -45,12 +49,11 @@ function createVideoBlurhash(video: HTMLVideoElement) {
   const context = canvas.getContext('2d', { willReadFrequently: true })
   if (!context) throw new Error('浏览器无法创建视频封面画布')
   context.drawImage(video, 0, 0, sampleWidth, sampleHeight)
-  return encode(
-    context.getImageData(0, 0, sampleWidth, sampleHeight).data,
+  const pixels = context.getImageData(0, 0, sampleWidth, sampleHeight).data
+  return encodeArthash(
+    new Uint8Array(pixels.buffer, pixels.byteOffset, pixels.byteLength),
     sampleWidth,
     sampleHeight,
-    4,
-    4,
   )
 }
 
@@ -140,13 +143,14 @@ async function prepareVideoUpload(file: File) {
       await seeked
     }
 
-    const [compressed, thumbnail] = await Promise.all([
+    const [compressed, thumbnail, arthash] = await Promise.all([
       createVideoPoster(video, file, 2560, 'poster'),
       createVideoPoster(video, file, 600, 'thumbnail'),
+      createVideoArthash(video),
     ])
     return {
       mediaType: 'video' as const,
-      blurhash: createVideoBlurhash(video),
+      arthash,
       width: video.videoWidth,
       height: video.videoHeight,
       compressed,
@@ -201,13 +205,14 @@ async function readExif(file: File): Promise<PhotoExif | undefined> {
 async function prepareImageUpload(file: File) {
   const [image, exif] = await Promise.all([loadBitmap(file), readExif(file)])
   try {
-    const [compressed, thumbnail] = await Promise.all([
+    const [compressed, thumbnail, arthash] = await Promise.all([
       createVariant(image, file, 2560, 'compressed'),
       createVariant(image, file, 600, 'thumbnail'),
+      createArthash(image),
     ])
     return {
       mediaType: 'image' as const,
-      blurhash: createBlurhash(image),
+      arthash,
       exif,
       width: image.width,
       height: image.height,

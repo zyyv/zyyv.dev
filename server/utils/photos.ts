@@ -15,7 +15,7 @@ export interface PhotoRow {
   thumbnail_size: number
   width: number
   height: number
-  blurhash: string
+  arthash: string
   is_private: number
   exif_json: string | null
   created_at: string
@@ -57,7 +57,7 @@ export function rowToPhoto(
     thumbnailSizeFormatted: formatPhotoSize(row.thumbnail_size),
     width: row.width,
     height: row.height,
-    blurhash: row.blurhash,
+    arthash: row.arthash,
     private: Boolean(row.is_private),
     createdAt: row.created_at,
     modifiedAt: row.modified_at,

@@ -15,20 +15,20 @@ const downloadVariant = computed<PhotoPreviewVariant>(() =>
 const isLoading = computed(() => downloadLoading.value && downloadVariant.value === 'compressed')
 const variantLabel = computed(() => {
   if (downloadVariant.value === 'origin') return 'original'
-  if (downloadVariant.value === 'blurhash') return 'BlurHash'
+  if (downloadVariant.value === 'arthash') return 'Arthash'
   return downloadVariant.value
 })
 const label = computed(() =>
   isLoading.value
     ? `Loading compressed ${mediaLabel.value}`
-    : downloadVariant.value === 'blurhash'
-      ? 'Download BlurHash'
+    : downloadVariant.value === 'arthash'
+      ? 'Download Arthash'
       : `Download ${variantLabel.value} ${mediaLabel.value}`,
 )
 const href = computed(() =>
   !photo.value || isLoading.value
     ? undefined
-    : getPhotoDownloadUrl(photo.value.id, downloadVariant.value, photo.value.blurhash),
+    : getPhotoDownloadUrl(photo.value.id, downloadVariant.value, photo.value.arthash),
 )
 const filename = computed(() =>
   getPhotoDownloadFilename(photo.value?.filename ?? 'photo', downloadVariant.value),

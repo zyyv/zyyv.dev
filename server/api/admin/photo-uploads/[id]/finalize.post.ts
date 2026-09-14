@@ -23,13 +23,13 @@ export default defineEventHandler(async (event) => {
   const originContentType = validateOriginContentType(body.originContentType, mediaType)
   const width = Number(body.width)
   const height = Number(body.height)
-  const blurhash = body.blurhash?.trim()
+  const arthash = body.arthash?.trim()
 
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) {
     throw createError({ statusCode: 400, statusMessage: '图片尺寸无效' })
   }
-  if (!blurhash || blurhash.length > 200) {
-    throw createError({ statusCode: 400, statusMessage: '无法读取图片 BlurHash' })
+  if (!arthash || arthash.length > 200) {
+    throw createError({ statusCode: 400, statusMessage: '无法读取图片 Arthash' })
   }
   if (await getPhotoRow(DB, id)) {
     throw createError({ statusCode: 409, statusMessage: '图片记录已存在' })
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
     await DB.prepare(
       `INSERT INTO photos (
         id, filename, media_type, origin_key, origin_size, compressed_key, compressed_size,
-        thumbnail_key, thumbnail_size, width, height, blurhash, is_private,
+        thumbnail_key, thumbnail_size, width, height, arthash, is_private,
         exif_json, created_at, modified_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
         thumbnail.size,
         width,
         height,
-        blurhash,
+        arthash,
         body.private ? 1 : 0,
         exif ? JSON.stringify(exif) : null,
         now,
