@@ -205,6 +205,6 @@ function createPreviewLoadingState(): PhotoPreviewLoadingState {
     thumbnail: false,
     compressed: false,
     origin: false,
-    blurhash: false,
+    arthash: false,
   }
 }

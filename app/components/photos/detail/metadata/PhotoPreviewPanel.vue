@@ -12,14 +12,14 @@ const photoPreviewVariants: readonly PhotoPreviewVariant[] = [
   'thumbnail',
   'compressed',
   'origin',
-  'blurhash',
+  'arthash',
 ]
 
 const previewIcons: Record<PhotoPreviewVariant, string> = {
   thumbnail: 'i-hugeicons:image-crop',
   compressed: 'i-hugeicons:image-composition',
   origin: 'i-hugeicons:image-03',
-  blurhash: 'i-hugeicons:colors',
+  arthash: 'i-hugeicons:colors',
 }
 
 const variantDetails = computed<
@@ -28,7 +28,7 @@ const variantDetails = computed<
   thumbnail: { label: 'Thumbnail', description: detailPhoto.value?.thumbnailSizeFormatted ?? '—' },
   compressed: { label: 'Compress', description: detailPhoto.value?.compressedSizeFormatted ?? '—' },
   origin: { label: 'Original', description: detailPhoto.value?.originSizeFormatted ?? '—' },
-  blurhash: { label: 'BlurHash', description: 'Encoded' },
+  arthash: { label: 'Arthash', description: 'Encoded' },
 }))
 
 function previewLabel(variant: PhotoPreviewVariant) {

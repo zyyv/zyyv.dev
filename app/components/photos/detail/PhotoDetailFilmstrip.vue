@@ -147,7 +147,7 @@ onBeforeUnmount(() => {
       v-memo="[
         item.id,
         item.thumbnail,
-        item.blurhash,
+        item.arthash,
         item.mediaType,
         item.width,
         item.height,
@@ -163,10 +163,10 @@ onBeforeUnmount(() => {
       data-cuelume-toggle="page"
       @click="actions.select(item)"
     >
-      <ImgBlurHash
+      <ImgArthash
         :src="item.thumbnail"
         :alt="item.filename"
-        :blurhash="item.blurhash"
+        :arthash="item.arthash"
         :fetchpriority="item.id === activePhotoId ? 'high' : 'low'"
         :loading="item.id === activePhotoId ? 'eager' : 'lazy'"
         :aspect-ratio="item.width / item.height"

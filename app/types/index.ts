@@ -73,7 +73,7 @@ export interface PhotoLocationDisplay {
   href?: string
 }
 
-export type PhotoPreviewVariant = 'thumbnail' | 'compressed' | 'origin' | 'blurhash'
+export type PhotoPreviewVariant = 'thumbnail' | 'compressed' | 'origin' | 'arthash'
 
 export type PhotoPreviewLoadingState = Record<PhotoPreviewVariant, boolean>
 
@@ -96,7 +96,7 @@ export interface Photo {
 
   width: number
   height: number
-  blurhash: string
+  arthash: string
   createdAt: Date | string
   modifiedAt: Date | string
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { decode } from 'blurhash'
+import { decodeArthash } from '~/utils/arthash'
 import { usePhotoImage } from '~/composables/usePhotoImageLoadState'
 
 interface Props {
-  blurhash?: string
+  arthash?: string
   src: string
   srcset?: string
   aspectRatio?: number
@@ -20,25 +20,39 @@ const image = useTemplateRef<HTMLImageElement>('image')
 const visible = useElementVisibility(image)
 const placeholder = shallowRef<string>()
 const imageLoad = usePhotoImage(() => props.src)
+let renderRequest = 0
 
-watch([visible, () => props.blurhash, imageLoad.status], ([isVisible, hash]) => {
+async function renderPlaceholder() {
+  const request = ++renderRequest
   placeholder.value = undefined
-  if (!isVisible || !hash || imageLoad.isLoaded.value || image.value?.complete) return
+  if (
+    !import.meta.client ||
+    !visible.value ||
+    !props.arthash ||
+    imageLoad.isLoaded.value ||
+    image.value?.complete
+  ) {
+    return
+  }
+
   try {
-    const width = 32
-    const height = Math.max(1, Math.min(64, Math.round(width / props.aspectRatio)))
+    const { w, h, rgba } = await decodeArthash(props.arthash, 64)
+    if (request !== renderRequest) return
+
     const canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
+    canvas.width = w
+    canvas.height = h
     const context = canvas.getContext('2d')
     if (!context) return
-    const pixels = context.createImageData(width, height)
-    pixels.data.set(decode(hash, width, height))
-    context.putImageData(pixels, 0, 0)
+    context.putImageData(new ImageData(new Uint8ClampedArray(rgba), w, h), 0, 0)
     placeholder.value = canvas.toDataURL()
   } catch {
     // Invalid optional metadata must never prevent the real image from loading.
   }
+}
+
+watch([visible, () => props.arthash, imageLoad.status], () => void renderPlaceholder(), {
+  immediate: true,
 })
 </script>
 

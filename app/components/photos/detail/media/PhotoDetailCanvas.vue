@@ -4,7 +4,7 @@ import type { CSSProperties } from 'vue'
 import type { Photo, PhotoPreviewLoadingState, PhotoPreviewVariant } from '~/types'
 import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { usePhotoImage, usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
-import PhotoDetailBlurhashPreview from './PhotoDetailBlurhashPreview.vue'
+import PhotoDetailArthashPreview from './PhotoDetailArthashPreview.vue'
 
 const PhotoDetailVideoPlayer = defineAsyncComponent(() => import('./PhotoDetailVideoPlayer.vue'))
 
@@ -87,7 +87,7 @@ const activePreviewVariant = computed<PhotoPreviewVariant>(() => {
     !thumbnailImage.isLoaded.value &&
     !isFullImageLoaded.value
   ) {
-    return 'blurhash'
+    return 'arthash'
   }
   if (previewVariant.value === 'compressed' && !isFullImageLoaded.value) return 'thumbnail'
   return previewVariant.value
@@ -103,12 +103,12 @@ const previewLoading = computed<PhotoPreviewLoadingState>(() => ({
     previewVariant.value === 'origin' &&
     !originImage.isLoaded.value &&
     !originImage.hasError.value,
-  blurhash: false,
+  arthash: false,
 }))
 const previewSrc = computed(() => {
   const photo = displayedPhoto.value
   const variant = activePreviewVariant.value
-  if (!photo || variant === 'blurhash') return ''
+  if (!photo || variant === 'arthash') return ''
   if (variant === 'thumbnail') return photo.thumbnail
   if (variant === 'origin') return photo.origin
   return photo.compressed
@@ -116,7 +116,7 @@ const previewSrc = computed(() => {
 const previewLabel = computed(() => {
   if (activePreviewVariant.value === 'thumbnail') return 'Thumbnail preview'
   if (activePreviewVariant.value === 'origin') return 'Original preview'
-  if (activePreviewVariant.value === 'blurhash') return 'BlurHash preview'
+  if (activePreviewVariant.value === 'arthash') return 'Arthash preview'
   return 'Compressed preview'
 })
 const currentImageStyle = computed<CSSProperties>(() => {
@@ -500,9 +500,9 @@ onBeforeUnmount(() => {
       :aria-label="previewLabel"
       role="img"
     >
-      <PhotoDetailBlurhashPreview
-        v-if="activePreviewVariant === 'blurhash'"
-        :hash="displayedPhoto.blurhash"
+      <PhotoDetailArthashPreview
+        v-if="activePreviewVariant === 'arthash'"
+        :arthash="displayedPhoto.arthash"
         :width="displayedPhoto.width"
         :height="displayedPhoto.height"
         :style="previewImageStyle"
@@ -711,7 +711,7 @@ onBeforeUnmount(() => {
 }
 
 .photo-detail-canvas__image--preview,
-:deep(.photo-detail-canvas__preview-blurhash) {
+:deep(.photo-detail-canvas__preview-arthash) {
   position: absolute;
   inset: 0;
   display: block;

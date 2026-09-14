@@ -7,7 +7,7 @@ export interface PhotoUploadPayload {
   thumbnail: File
   width: number
   height: number
-  blurhash: string
+  arthash: string
   exif?: PhotoExif
   private: boolean
 }
@@ -103,7 +103,7 @@ export function useAdminPhotos() {
           ...variantContentTypes,
           width: payload.width,
           height: payload.height,
-          blurhash: payload.blurhash,
+          arthash: payload.arthash,
           private: payload.private,
           exif: payload.exif,
         },

@@ -43,9 +43,9 @@ export default defineEventHandler(async (event) => {
     return part ? new TextDecoder().decode(part.data) : undefined
   }
 
-  const blurhash = getField('blurhash')?.trim()
-  if (!blurhash || blurhash.length > 200) {
-    throw createError({ statusCode: 400, statusMessage: '无法读取图片 BlurHash' })
+  const arthash = getField('arthash')?.trim()
+  if (!arthash || arthash.length > 200) {
+    throw createError({ statusCode: 400, statusMessage: '无法读取图片 Arthash' })
   }
 
   const id = crypto.randomUUID()
@@ -73,7 +73,7 @@ export default defineEventHandler(async (event) => {
     await DB.prepare(
       `INSERT INTO photos (
         id, filename, origin_key, origin_size, compressed_key, compressed_size,
-        thumbnail_key, thumbnail_size, width, height, blurhash, is_private,
+        thumbnail_key, thumbnail_size, width, height, arthash, is_private,
         exif_json, created_at, modified_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
@@ -88,7 +88,7 @@ export default defineEventHandler(async (event) => {
         stored.thumbnailSize,
         stored.width,
         stored.height,
-        blurhash,
+        arthash,
         parseBoolean(getField('private')) ? 1 : 0,
         exif ? JSON.stringify(exif) : null,
         now,
