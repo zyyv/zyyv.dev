@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { ComponentPublicInstance, CSSProperties } from 'vue'
-import type { Photo } from '~/types'
+import type { ComponentPublicInstance } from 'vue'
 import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
 import {
@@ -27,10 +26,6 @@ const activePhotoId = computed(() => selectedPhoto.value?.id ?? '')
 
 let scrollFrame: number | undefined
 let preloadTimer: ReturnType<typeof setTimeout> | undefined
-
-function thumbnailStyle(photo: Photo): CSSProperties {
-  return { aspectRatio: `${photo.width} / ${photo.height}` }
-}
 
 function setThumbnailRef(element: Element | ComponentPublicInstance | null, photoId: string) {
   if (element instanceof HTMLElement) thumbnailRefs.set(photoId, element)
@@ -144,20 +139,11 @@ onBeforeUnmount(() => {
     <button
       v-for="item in photos"
       :key="item.id"
-      v-memo="[
-        item.id,
-        item.thumbnail,
-        item.arthash,
-        item.mediaType,
-        item.width,
-        item.height,
-        item.id === activePhotoId,
-      ]"
+      v-memo="[item.id, item.thumbnail, item.arthash, item.mediaType, item.id === activePhotoId]"
       :ref="(element) => setThumbnailRef(element, item.id)"
       type="button"
       class="photo-dialog__filmstrip-item"
       :class="{ 'is-active': item.id === activePhotoId }"
-      :style="thumbnailStyle(item)"
       :aria-label="`View ${item.filename || item.id}`"
       :aria-current="item.id === activePhotoId ? 'true' : undefined"
       data-cuelume-toggle="page"
@@ -169,7 +155,6 @@ onBeforeUnmount(() => {
         :arthash="item.arthash"
         :fetchpriority="item.id === activePhotoId ? 'high' : 'low'"
         :loading="item.id === activePhotoId ? 'eager' : 'lazy'"
-        :aspect-ratio="item.width / item.height"
         class="photo-dialog__filmstrip-image"
         draggable="false"
       />
@@ -180,6 +165,9 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .photo-dialog__filmstrip {
+  --filmstrip-thumb-height: 4.375rem;
+  --filmstrip-thumb-width: 2.9rem;
+
   display: flex;
   align-items: center;
   min-height: 5.25rem;
@@ -199,10 +187,12 @@ onBeforeUnmount(() => {
 
 .photo-dialog__filmstrip-item {
   position: relative;
-  flex: 0 0 auto;
-  height: 3.25rem;
+  flex: 0 0 var(--filmstrip-thumb-width);
+  width: var(--filmstrip-thumb-width);
+  height: var(--filmstrip-thumb-height);
   padding: 0;
   border: 0;
+  border-radius: 0.52rem;
   background: transparent;
   opacity: 0.34;
   cursor: pointer;
@@ -210,6 +200,8 @@ onBeforeUnmount(() => {
   transform: translateY(0);
   contain: layout;
   transition:
+    flex-basis 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    width 420ms cubic-bezier(0.16, 1, 0.3, 1),
     filter 320ms ease,
     opacity 320ms ease,
     transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -231,6 +223,8 @@ onBeforeUnmount(() => {
 }
 
 .photo-dialog__filmstrip-item.is-active {
+  flex-basis: var(--filmstrip-thumb-height);
+  width: var(--filmstrip-thumb-height);
   opacity: 1;
   filter: grayscale(0) contrast(1);
   transform: translateY(-0.2rem);
@@ -245,6 +239,7 @@ onBeforeUnmount(() => {
   display: block;
   width: 100%;
   height: 100%;
+  border-radius: inherit;
   object-fit: cover;
 }
 
@@ -278,12 +273,15 @@ onBeforeUnmount(() => {
 
 @media (max-width: 767.9px) {
   .photo-dialog__filmstrip {
+    --filmstrip-thumb-height: 3.4rem;
+    --filmstrip-thumb-width: 2.25rem;
+
     min-height: 4.75rem;
     padding-inline: 1rem;
   }
 
   .photo-dialog__filmstrip-item {
-    height: 2.8rem;
+    border-radius: 0.42rem;
   }
 }
 
