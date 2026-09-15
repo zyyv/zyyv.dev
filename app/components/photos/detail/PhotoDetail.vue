@@ -144,7 +144,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                 <i class="i-hugeicons:arrow-left-01" aria-hidden="true" />
               </button>
 
-              <PhotoDetailCanvas />
+              <PhotoDetailCanvas :transitioning="props.transitioning" />
 
               <button
                 v-if="hasNext"

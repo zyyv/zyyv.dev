@@ -18,7 +18,7 @@ export type SuperImageArthashOptions = Omit<ArthashSvgOptions, 'codec'> &
 export interface SuperImageProps {
   resources?: SuperImageResources
   assetStyle?: CSSProperties
-  backdrop?: boolean
+  viewTransitionName?: string
   arthashCodec?: Codec
   arthashOptions?: SuperImageArthashOptions
   loading?: 'lazy' | 'eager'

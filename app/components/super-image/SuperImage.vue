@@ -86,6 +86,14 @@ const arthashRevealed = computed(() =>
     (targetAsset.value || keepVisibleAssetDuringResourceChange.value) && hasRenderedImage.value,
   ),
 )
+const transitionAssetSource = computed(() => {
+  if (!props.viewTransitionName) return null
+  if (visibleAsset.value && visibleAssetVisible.value) return visibleAsset.value.source
+  return incomingAsset.value?.source ?? visibleAsset.value?.source ?? null
+})
+const viewTransitionStyle = computed(() =>
+  props.viewTransitionName ? { viewTransitionName: props.viewTransitionName } : undefined,
+)
 const renderedAssets = computed<RenderedAsset[]>(() => {
   const current = visibleAsset.value
   const incoming = incomingAsset.value
@@ -269,31 +277,13 @@ onBeforeUnmount(() => {
     v-bind="$attrs"
   >
     <SuperImageArthash
-      v-if="!arthashRevealed"
       :arthash="resources.arthash"
       :arthash-codec="props.arthashCodec"
       :arthash-options="props.arthashOptions"
+      :asset-style="props.assetStyle"
       :revealed="arthashRevealed"
       :animate-reveal="false"
     />
-
-    <span v-if="props.backdrop" class="super-image__backdrop-stack" aria-hidden="true">
-      <img
-        v-for="rendered in renderedAssets"
-        :key="`backdrop-${rendered.asset.source}`"
-        class="super-image__backdrop-image"
-        :class="{
-          'super-image__backdrop-image--current': rendered.role === 'current',
-          'super-image__backdrop-image--incoming': rendered.role === 'incoming',
-          'is-visible': rendered.role === 'current' ? visibleAssetVisible : incomingReady,
-        }"
-        :src="rendered.asset.source"
-        :alt="''"
-        :loading="props.loading"
-        :decoding="props.decoding"
-        :draggable="props.draggable"
-      />
-    </span>
 
     <span class="super-image__asset-stack">
       <img
@@ -316,7 +306,11 @@ onBeforeUnmount(() => {
         :decoding="props.decoding"
         :draggable="props.draggable"
         :fetchpriority="props.fetchpriority"
-        :style="[imageStyle, props.assetStyle]"
+        :style="[
+          imageStyle,
+          props.assetStyle,
+          transitionAssetSource === rendered.asset.source ? viewTransitionStyle : undefined,
+        ]"
         @load="handleImageLoad(rendered)"
         @error="handleImageError(rendered)"
       />
@@ -339,40 +333,6 @@ onBeforeUnmount(() => {
   inset: 0;
   z-index: 2;
   pointer-events: none;
-}
-
-.super-image__backdrop-stack {
-  position: absolute;
-  z-index: 0;
-  inset: -3rem;
-  overflow: hidden;
-  opacity: 0.72;
-  filter: blur(2rem) saturate(0.72);
-  pointer-events: none;
-  transform: scale(1.06);
-}
-
-.super-image__backdrop-image {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 260ms ease;
-}
-
-.super-image__backdrop-image--current {
-  z-index: 0;
-}
-
-.super-image__backdrop-image--incoming {
-  z-index: 1;
-}
-
-.super-image__backdrop-image.is-visible {
-  opacity: 1;
 }
 
 .super-image__image {

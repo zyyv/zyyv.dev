@@ -8,6 +8,12 @@ import type { SuperImageMode } from '~/components/super-image/types'
 
 const PhotoDetailVideoPlayer = defineAsyncComponent(() => import('./PhotoDetailVideoPlayer.vue'))
 
+interface Props {
+  transitioning?: boolean
+}
+
+const props = defineProps<Props>()
+
 const SWIPE_MIN_DISTANCE = 48
 const SWIPE_AXIS_RATIO = 1.2
 
@@ -80,6 +86,31 @@ const currentImageStyle = computed<CSSProperties>(() => {
 })
 const swipeStart = shallowRef<SwipeStart | null>(null)
 const activeTouchPointers = new Set<number>()
+
+const BACKDROP_FADE_MS = 260
+
+interface BackdropAsset {
+  source: string
+  role: 'current' | 'incoming'
+}
+
+const backdropTargetSource = shallowRef<string | null>(null)
+const backdropCurrentSource = shallowRef<string | null>(null)
+const backdropIncomingSource = shallowRef<string | null>(null)
+const backdropCurrentVisible = shallowRef(false)
+const backdropIncomingReady = shallowRef(false)
+let backdropTransitionId = 0
+let backdropTransitionTimer: ReturnType<typeof setTimeout> | undefined
+
+const backdropAssets = computed<BackdropAsset[]>(() => {
+  const assets: BackdropAsset[] = []
+  const current = backdropCurrentSource.value
+  const incoming = backdropIncomingSource.value
+
+  if (current) assets.push({ source: current, role: 'current' })
+  if (incoming && incoming !== current) assets.push({ source: incoming, role: 'incoming' })
+  return assets
+})
 
 watch(
   [showLoading, loadProgress],
@@ -202,6 +233,130 @@ function stopLoadingIndicator() {
   showLoading.value = false
 }
 
+function clearBackdropTransition() {
+  if (!backdropTransitionTimer) return
+  clearTimeout(backdropTransitionTimer)
+  backdropTransitionTimer = undefined
+}
+
+function removeBackdropCurrentAfterFade(transitionId: number) {
+  clearBackdropTransition()
+  backdropTransitionTimer = setTimeout(() => {
+    backdropTransitionTimer = undefined
+    if (backdropTransitionId !== transitionId || backdropTargetSource.value) return
+    backdropCurrentSource.value = null
+    backdropCurrentVisible.value = false
+  }, BACKDROP_FADE_MS)
+}
+
+function commitBackdropIncoming(source: string, transitionId: number) {
+  clearBackdropTransition()
+  backdropTransitionTimer = setTimeout(() => {
+    backdropTransitionTimer = undefined
+    if (
+      backdropTransitionId !== transitionId ||
+      backdropIncomingSource.value !== source ||
+      !backdropIncomingReady.value
+    ) {
+      return
+    }
+
+    backdropCurrentSource.value = source
+    backdropCurrentVisible.value = true
+    backdropIncomingSource.value = null
+    backdropIncomingReady.value = false
+  }, BACKDROP_FADE_MS)
+}
+
+function queueBackdropFade(source: string) {
+  const transitionId = ++backdropTransitionId
+  void nextTick(() => {
+    requestAnimationFrame(() => {
+      if (
+        backdropTransitionId !== transitionId ||
+        backdropIncomingSource.value !== source ||
+        !backdropIncomingReady.value
+      ) {
+        return
+      }
+
+      backdropCurrentVisible.value = false
+      commitBackdropIncoming(source, transitionId)
+    })
+  })
+}
+
+function resetBackdropForPhotoChange() {
+  backdropTransitionId += 1
+  clearBackdropTransition()
+  backdropTargetSource.value = null
+  backdropIncomingSource.value = null
+  backdropIncomingReady.value = false
+  if (backdropCurrentSource.value) backdropCurrentVisible.value = true
+}
+
+function syncBackdropTarget(source: string | null) {
+  backdropTargetSource.value = source
+  backdropTransitionId += 1
+  clearBackdropTransition()
+
+  if (!source) {
+    backdropIncomingSource.value = null
+    backdropIncomingReady.value = false
+    if (!backdropCurrentSource.value) {
+      backdropCurrentVisible.value = false
+      return
+    }
+
+    backdropCurrentVisible.value = false
+    removeBackdropCurrentAfterFade(backdropTransitionId)
+    return
+  }
+
+  if (backdropCurrentSource.value === source) {
+    backdropIncomingSource.value = null
+    backdropIncomingReady.value = false
+    backdropCurrentVisible.value = true
+    return
+  }
+
+  if (backdropIncomingSource.value === source) return
+
+  if (backdropCurrentSource.value && !backdropCurrentVisible.value) {
+    backdropCurrentVisible.value = true
+  }
+  backdropIncomingSource.value = source
+  backdropIncomingReady.value = false
+}
+
+function handleBackdropImageLoad(asset: BackdropAsset) {
+  if (asset.role === 'current') {
+    if (backdropCurrentSource.value === asset.source) backdropCurrentVisible.value = true
+    return
+  }
+  if (backdropIncomingSource.value !== asset.source) return
+
+  backdropIncomingReady.value = true
+  queueBackdropFade(asset.source)
+}
+
+function handleBackdropImageError(asset: BackdropAsset) {
+  if (asset.role === 'current') {
+    if (backdropCurrentSource.value !== asset.source) return
+    backdropTransitionId += 1
+    clearBackdropTransition()
+    backdropCurrentSource.value = null
+    backdropCurrentVisible.value = false
+    return
+  }
+  if (backdropIncomingSource.value !== asset.source) return
+
+  backdropTransitionId += 1
+  clearBackdropTransition()
+  backdropIncomingSource.value = null
+  backdropIncomingReady.value = false
+}
+
 function handleCurrentImageLoad(_mode: SuperImageMode, source: string) {
   const photo = displayedPhoto.value
   if (!photo || photo.mediaType === 'video') return
@@ -241,6 +396,8 @@ function handleCurrentMediaReady() {
 async function displayPhoto(photo: Photo) {
   const currentRequest = ++requestId
   if (displayedPhoto.value?.id === photo.id) return
+  resetBackdropForPhotoChange()
+  if (photo.mediaType === 'video') syncBackdropTarget(null)
   const hasCachedThumbnail = imageLoadState.isLoaded(photo.thumbnail)
   const compressedSrc = photo.compressed
   const hasCachedCompressedImage = imageLoadState.isLoaded(compressedSrc)
@@ -249,6 +406,7 @@ async function displayPhoto(photo: Photo) {
   loadProgress.value = hasCachedCompressedImage ? 100 : 0
   loadFailed.value = false
   showLoading.value = !hasCachedCompressedImage
+  syncBackdropTarget(photo.mediaType === 'image' ? photo.thumbnail : null)
   resetCanvas()
   actions.setDisplayedPhoto(photo)
 
@@ -295,6 +453,8 @@ async function displayPhoto(photo: Photo) {
 onBeforeUnmount(() => {
   actions.registerCanvasControls(null)
   requestId += 1
+  backdropTransitionId += 1
+  clearBackdropTransition()
 })
 </script>
 
@@ -309,6 +469,29 @@ onBeforeUnmount(() => {
     @pointerup="isDisplayedVideo ? undefined : handleCanvasPointerEnd($event)"
     @pointercancel="isDisplayedVideo ? undefined : handleCanvasPointerCancel($event)"
   >
+    <div
+      v-if="backdropAssets.length"
+      class="photo-detail-canvas__backdrop-stack"
+      aria-hidden="true"
+    >
+      <img
+        v-for="asset in backdropAssets"
+        :key="`backdrop-${asset.source}`"
+        class="photo-detail-canvas__backdrop-image"
+        :class="{
+          'photo-detail-canvas__backdrop-image--current': asset.role === 'current',
+          'photo-detail-canvas__backdrop-image--incoming': asset.role === 'incoming',
+          'is-visible': asset.role === 'current' ? backdropCurrentVisible : backdropIncomingReady,
+        }"
+        :src="asset.source"
+        alt=""
+        loading="eager"
+        decoding="async"
+        @load="handleBackdropImageLoad(asset)"
+        @error="handleBackdropImageError(asset)"
+      />
+    </div>
+
     <div
       v-if="displayedPhoto"
       class="photo-detail-canvas__media photo-detail-canvas__media--current"
@@ -338,7 +521,7 @@ onBeforeUnmount(() => {
           object-fit="contain"
           class="photo-detail-canvas__image-content"
           :asset-style="currentImageStyle"
-          backdrop
+          :view-transition-name="props.transitioning ? 'photo-detail-image' : undefined"
           :mode="previewVariant"
           @load="handleCurrentImageLoad"
           @error="handleCurrentImageError"
@@ -366,6 +549,7 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
   background-color: var(--dialog-canvas);
   cursor: grab;
+  isolation: isolate;
   place-items: center;
   touch-action: none;
 }
@@ -386,6 +570,40 @@ onBeforeUnmount(() => {
 
 .photo-detail-canvas.is-dragging {
   cursor: grabbing;
+}
+
+.photo-detail-canvas__backdrop-stack {
+  position: absolute;
+  z-index: 0;
+  inset: -3rem;
+  overflow: hidden;
+  opacity: 0.72;
+  filter: blur(2rem) saturate(0.72);
+  pointer-events: none;
+  transform: scale(1.06);
+}
+
+.photo-detail-canvas__backdrop-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.photo-detail-canvas__backdrop-image--current {
+  z-index: 0;
+}
+
+.photo-detail-canvas__backdrop-image--incoming {
+  z-index: 1;
+}
+
+.photo-detail-canvas__backdrop-image.is-visible {
+  opacity: 1;
 }
 
 .photo-detail-canvas.is-video {
@@ -461,6 +679,7 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .photo-detail-canvas__backdrop-image,
   .photo-detail-canvas__media,
   .photo-detail-canvas__image-content {
     transition-duration: 1ms;
