@@ -10,10 +10,12 @@ const props = withDefaults(
     arthashCodec?: Codec
     arthashOptions?: SuperImageArthashOptions
     revealed?: boolean
+    animateReveal?: boolean
   }>(),
   {
     arthash: null,
     revealed: false,
+    animateReveal: true,
   },
 )
 
@@ -82,6 +84,7 @@ onBeforeUnmount(() => {
     :arthash-codec="props.arthashCodec"
     :arthash-options="svgOptions"
     :revealed="props.revealed"
+    :animate-reveal="props.animateReveal"
   />
   <canvas
     v-else-if="bitmap"

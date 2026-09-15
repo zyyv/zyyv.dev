@@ -50,8 +50,16 @@ function getPhoto(item: RipplableListItem | null) {
   return props.photos.find((photo) => photo.id === photoId)
 }
 
-function getPhotoArthash(item: RipplableListItem | null) {
-  return getPhoto(item)?.arthash
+function getPhotoResources(item: RipplableListItem | null) {
+  const photo = getPhoto(item)
+  if (!photo) return {}
+
+  return {
+    arthash: photo.arthash,
+    thumbnail: photo.thumbnail,
+    compressed: photo.compressed,
+    origin: photo.origin,
+  }
 }
 
 function getPhotoAspectRatio(item: RipplableListItem | null) {
@@ -81,7 +89,7 @@ function openPreview(item: RipplableListItem | null, event: Event) {
         :focus-on-click="false"
         fps
       >
-        <template #card="{ item, src, alt }">
+        <template #card="{ item, alt }">
           <figure
             class="ripplable-photo"
             role="button"
@@ -94,11 +102,10 @@ function openPreview(item: RipplableListItem | null, event: Event) {
             @keydown.space.prevent="openPreview(item, $event)"
           >
             <div class="ripplable-photo__media">
-              <ImgArthash
+              <SuperImage
                 class="ripplable-photo__image"
-                :src="src"
+                :resources="getPhotoResources(item)"
                 :alt="alt"
-                :arthash="getPhotoArthash(item)"
                 :aspect-ratio="getPhotoAspectRatio(item)"
                 decoding="async"
                 draggable="false"

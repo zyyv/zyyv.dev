@@ -13,10 +13,12 @@ const props = withDefaults(
     revealed: boolean
     arthashCodec?: Codec
     arthashOptions?: Omit<ArthashSvgOptions, 'codec'>
+    animateReveal?: boolean
   }>(),
   {
     arthash: null,
     revealed: false,
+    animateReveal: true,
   },
 )
 
@@ -133,6 +135,8 @@ watch(
     clearRemovalTimer()
     removed.value = false
 
+    if (!props.animateReveal) return
+
     // If the real image won the race against WASM initialization, do not
     // mount a placeholder after the image has already loaded.
     if (revealed && !wasVisible.value) {
@@ -166,6 +170,7 @@ onBeforeUnmount(clearRemovalTimer)
     v-if="rendered && !removed"
     ref="placeholder"
     class="arthash-placeholder"
+    :class="{ 'arthash-placeholder--revealed': !props.animateReveal && props.revealed }"
     aria-hidden="true"
     v-html="rendered"
   />
@@ -178,11 +183,22 @@ onBeforeUnmount(clearRemovalTimer)
   z-index: 1;
   contain: paint;
   pointer-events: none;
+  transition: opacity 260ms ease;
+}
+
+.arthash-placeholder--revealed {
+  opacity: 0;
 }
 
 .arthash-placeholder :deep(svg) {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arthash-placeholder {
+    transition-duration: 1ms;
+  }
 }
 </style>

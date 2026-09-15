@@ -60,10 +60,14 @@ function photoDate(photo: Photo) {
           data-cuelume-toggle="page"
           @click="emit('edit', photo)"
         >
-          <ImgArthash
-            :src="photo.thumbnail"
+          <SuperImage
+            :resources="{
+              arthash: photo.arthash,
+              thumbnail: photo.thumbnail,
+              compressed: photo.compressed,
+              origin: photo.origin,
+            }"
             :alt="photo.filename"
-            :arthash="photo.arthash"
             :aspect-ratio="photo.width / photo.height"
             loading="lazy"
           />
@@ -204,13 +208,13 @@ function photoDate(photo: Photo) {
   background: color-mix(in srgb, currentColor 7%, transparent);
   cursor: pointer;
 }
-.photo-preview .img-arthash {
+.photo-preview .super-image {
   width: 100%;
   height: 100%;
   transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 @media (hover: hover) and (pointer: fine) {
-  .photo-preview:hover .img-arthash {
+  .photo-preview:hover .super-image {
     transform: scale(1.025);
   }
 }
@@ -388,7 +392,7 @@ function photoDate(photo: Photo) {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .photo-preview .img-arthash,
+  .photo-preview .super-image,
   .photo-skeleton {
     transition: none;
     animation: none;

@@ -9,7 +9,12 @@ import {
   watch,
 } from 'vue'
 import type { MaybeRefOrGetter, Ref } from 'vue'
-import { markSuperImageLoaded, preloadSuperImage } from './super-image-cache'
+import {
+  forgetSuperImage,
+  isSuperImageCached,
+  markSuperImageLoaded,
+  preloadSuperImage,
+} from './super-image-cache'
 import type { SuperImageMode, SuperImageResources } from './types'
 import type { SuperImageResourceStatus } from './super-image-cache'
 
@@ -26,14 +31,23 @@ function normalizeSource(source: string | null | undefined): string {
   return source?.trim() ?? ''
 }
 
+function normalizeResources(value: SuperImageResources) {
+  return {
+    arthash: normalizeSource(value.arthash),
+    thumbnail: normalizeSource(value.thumbnail),
+    compressed: normalizeSource(value.compressed),
+    origin: normalizeSource(value.origin),
+  }
+}
+
 export function useSuperImage(
   resources: MaybeRefOrGetter<SuperImageResources>,
   requestedMode: Ref<SuperImageMode>,
   options: UseSuperImageOptions,
 ) {
-  const activeMode = shallowRef<SuperImageMode>('arthash')
   const visible = shallowRef(false)
   const mounted = shallowRef(false)
+  const resourceVersion = shallowRef(0)
   const progressiveEnabled = shallowRef(toValue(options.progressive))
   const initialPreloadStarted = shallowRef(false)
   const statuses = reactive<Record<SuperImageMode, SuperImageResourceStatus>>({
@@ -47,24 +61,55 @@ export function useSuperImage(
   let runId = 0
 
   const normalizedResources = computed(() => {
-    const value = toValue(resources)
-    return {
-      arthash: normalizeSource(value.arthash),
-      thumbnail: normalizeSource(value.thumbnail),
-      compressed: normalizeSource(value.compressed),
-      origin: normalizeSource(value.origin),
-    }
+    return normalizeResources(toValue(resources))
   })
 
+  function isResourceCached(source: string) {
+    return isSuperImageCached(source)
+  }
+
+  function getInitialMode(value: typeof normalizedResources.value, requested: SuperImageMode) {
+    if (requested !== 'arthash' && isResourceCached(value[requested])) return requested
+    if ((requested === 'origin' || requested === 'arthash') && isResourceCached(value.compressed)) {
+      return 'compressed'
+    }
+    if (
+      (requested === 'origin' || requested === 'compressed' || requested === 'arthash') &&
+      isResourceCached(value.thumbnail)
+    ) {
+      return 'thumbnail'
+    }
+    return 'arthash'
+  }
+
+  const activeMode = shallowRef<SuperImageMode>(
+    getInitialMode(normalizedResources.value, requestedMode.value),
+  )
+
   const activeSource = computed(() => normalizedResources.value[activeMode.value])
+  const hasImageResource = computed(() =>
+    Boolean(
+      normalizedResources.value.thumbnail ||
+      normalizedResources.value.compressed ||
+      normalizedResources.value.origin,
+    ),
+  )
   const hasVisibleAsset = computed(
     () => activeMode.value !== 'arthash' && Boolean(activeSource.value),
   )
 
   function resetStatuses() {
-    for (const mode of imageModes) statuses[mode] = 'idle'
+    for (const mode of imageModes) {
+      const source = normalizedResources.value[mode]
+      statuses[mode] = !source ? 'error' : isResourceCached(source) ? 'loaded' : 'idle'
+    }
     statuses.arthash = normalizedResources.value.arthash ? 'loaded' : 'error'
     pending.clear()
+  }
+
+  function markResourceLoaded(source: string) {
+    if (!source) return
+    markSuperImageLoaded(source)
   }
 
   function priorityFor(mode: SuperImageMode) {
@@ -75,23 +120,45 @@ export function useSuperImage(
   }
 
   function activateLoadedMode(mode: SuperImageMode) {
-    if (requestedMode.value === mode && statuses[mode] === 'loaded') {
+    const requested = requestedMode.value
+
+    if (requested === mode && statuses[mode] === 'loaded') {
       activeMode.value = mode
       return
     }
 
-    if (!progressiveEnabled.value || requestedMode.value !== 'arthash') return
-    if (mode === 'compressed' && statuses.compressed === 'loaded') {
-      activeMode.value = mode
+    if (!progressiveEnabled.value || activeMode.value !== 'arthash') return
+
+    if (requested === 'arthash') {
+      if (mode === 'compressed' && statuses.compressed === 'loaded') {
+        activeMode.value = mode
+        return
+      }
+      if (mode === 'thumbnail' && statuses.compressed !== 'loaded') {
+        activeMode.value = mode
+      }
       return
     }
-    if (
-      mode === 'thumbnail' &&
-      activeMode.value === 'arthash' &&
-      statuses.compressed !== 'loaded'
-    ) {
+
+    // When compressed is requested on first render, thumbnail is a safe
+    // fallback while both lightweight resources race. Compressed always wins
+    // as soon as it finishes.
+    if (requested === 'compressed' && mode === 'thumbnail') {
       activeMode.value = mode
     }
+  }
+
+  function getOriginFallbackMode(): 'thumbnail' | 'compressed' | null {
+    const currentMode = activeMode.value
+    if (
+      (currentMode === 'thumbnail' || currentMode === 'compressed') &&
+      normalizedResources.value[currentMode]
+    ) {
+      return currentMode
+    }
+    if (normalizedResources.value.compressed) return 'compressed'
+    if (normalizedResources.value.thumbnail) return 'thumbnail'
+    return null
   }
 
   async function loadMode(mode: SuperImageMode, expectedRun = runId): Promise<boolean> {
@@ -102,6 +169,12 @@ export function useSuperImage(
     if (!source) {
       statuses[mode] = 'error'
       return false
+    }
+    if (isResourceCached(source)) {
+      statuses[mode] = 'loaded'
+      markResourceLoaded(source)
+      activateLoadedMode(mode)
+      return true
     }
     if (statuses[mode] === 'loaded') {
       activateLoadedMode(mode)
@@ -118,7 +191,7 @@ export function useSuperImage(
       if (expectedRun !== runId) return loaded
       statuses[mode] = loaded ? 'loaded' : 'error'
       if (loaded) {
-        markSuperImageLoaded(source)
+        markResourceLoaded(source)
         activateLoadedMode(mode)
       }
       return loaded
@@ -136,10 +209,32 @@ export function useSuperImage(
     initialPreloadStarted.value = true
     const currentRun = runId
 
+    if (!progressiveEnabled.value && requestedMode.value !== 'arthash') {
+      void loadMode(requestedMode.value, currentRun)
+      return
+    }
+
     // Both lightweight variants intentionally start in the same turn. The
     // completion handler promotes compressed over thumbnail when it wins.
     void loadMode('thumbnail', currentRun)
     void loadMode('compressed', currentRun)
+  }
+
+  function requestMode(mode: SuperImageMode) {
+    if (mode !== 'origin' && toValue(options.loading) !== 'eager' && !visible.value) return
+
+    if (mode === 'origin') {
+      const fallbackMode = getOriginFallbackMode()
+      if (fallbackMode) {
+        void loadMode(fallbackMode).then((loaded) => {
+          if (loaded && requestedMode.value === 'origin' && activeMode.value === 'arthash') {
+            activeMode.value = fallbackMode
+          }
+        })
+      }
+    }
+
+    void loadMode(mode)
   }
 
   function observeVisibility() {
@@ -172,34 +267,37 @@ export function useSuperImage(
 
   function markNativeImageLoaded(source: string) {
     if (!source) return
-    markSuperImageLoaded(source)
+    markResourceLoaded(source)
     const mode = imageModes.find((candidate) => normalizedResources.value[candidate] === source)
     if (mode) statuses[mode] = 'loaded'
   }
 
   function markNativeImageError(source: string) {
     if (!source) return
+    forgetSuperImage(source)
     const mode = imageModes.find((candidate) => normalizedResources.value[candidate] === source)
-    if (mode && statuses[mode] !== 'loaded') statuses[mode] = 'error'
+    if (mode) statuses[mode] = 'error'
   }
 
   watch(
-    () => [
-      normalizedResources.value.arthash,
-      normalizedResources.value.thumbnail,
-      normalizedResources.value.compressed,
-      normalizedResources.value.origin,
+    [
+      () => normalizedResources.value.arthash,
+      () => normalizedResources.value.thumbnail,
+      () => normalizedResources.value.compressed,
+      () => normalizedResources.value.origin,
     ],
     () => {
       runId += 1
-      activeMode.value = 'arthash'
+      resourceVersion.value += 1
+      activeMode.value = getInitialMode(normalizedResources.value, requestedMode.value)
+      progressiveEnabled.value = toValue(options.progressive)
       initialPreloadStarted.value = false
       resetStatuses()
       if (!mounted.value) return
 
       if (toValue(options.loading) === 'eager') visible.value = true
       startInitialPreload()
-      if (requestedMode.value !== 'arthash') void loadMode(requestedMode.value)
+      if (requestedMode.value !== 'arthash') requestMode(requestedMode.value)
     },
     { immediate: true },
   )
@@ -213,8 +311,8 @@ export function useSuperImage(
         return
       }
 
-      progressiveEnabled.value = false
-      void loadMode(mode)
+      if (previousMode !== undefined) progressiveEnabled.value = false
+      requestMode(mode)
     },
     { immediate: true },
   )
@@ -242,7 +340,7 @@ export function useSuperImage(
   onMounted(() => {
     mounted.value = true
     observeVisibility()
-    if (requestedMode.value !== 'arthash') void loadMode(requestedMode.value)
+    if (requestedMode.value !== 'arthash') requestMode(requestedMode.value)
   })
 
   onBeforeUnmount(() => {
@@ -255,6 +353,9 @@ export function useSuperImage(
     activeMode: readonly(activeMode),
     activeSource,
     hasVisibleAsset,
+    hasImageResource,
+    resourceVersion: readonly(resourceVersion),
+    isResourceCached,
     statuses: readonly(statuses),
     isVisible: readonly(visible),
     preload: loadMode,

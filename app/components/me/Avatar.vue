@@ -32,9 +32,12 @@ onMounted(loadUser)
     }"
     :style="avatarStyle"
   >
-    <ImgArthash
-      :src="avatarUrl"
-      arthash="f1JTmDejG8c1bCFngWOI4s3//CQAhbHe+tFCLsEH3M7KHEtMr/S+bwrlpZUU4kmhYmocgYvQX7414zS0nG89X6TwzgMAAKNYf/qRMg4="
+    <SuperImage
+      :resources="{
+        arthash:
+          'f1JTmDejG8c1bCFngWOI4s3//CQAhbHe+tFCLsEH3M7KHEtMr/S+bwrlpZUU4kmhYmocgYvQX7414zS0nG89X6TwzgMAAKNYf/qRMg4=',
+        thumbnail: avatarUrl,
+      }"
       alt="Avatar"
       class="w-[clamp(calc(var(--spacing)*10),calc(100cqw/10),calc(var(--spacing)*30))] animate-shape"
       :class="{

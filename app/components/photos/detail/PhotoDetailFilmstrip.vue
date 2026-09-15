@@ -149,13 +149,19 @@ onBeforeUnmount(() => {
       data-cuelume-toggle="page"
       @click="actions.select(item)"
     >
-      <ImgArthash
-        :src="item.thumbnail"
+      <SuperImage
+        :resources="{
+          arthash: item.arthash,
+          thumbnail: item.thumbnail,
+          compressed: item.compressed,
+        }"
+        mode="thumbnail"
+        :progressive="false"
         :alt="item.filename"
-        :arthash="item.arthash"
         :fetchpriority="item.id === activePhotoId ? 'high' : 'low'"
         :loading="item.id === activePhotoId ? 'eager' : 'lazy'"
         class="photo-dialog__filmstrip-image"
+        object-fit="cover"
         draggable="false"
       />
       <i v-if="item.mediaType === 'video'" class="i-hugeicons:play" aria-hidden="true" />

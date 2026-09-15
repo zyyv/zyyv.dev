@@ -11,7 +11,7 @@ interface PointerPosition {
 
 export function useImageCanvas() {
   const canvasRef = useTemplateRef<HTMLElement>('imageCanvas')
-  const imageRef = useTemplateRef<HTMLImageElement>('canvasImage')
+  const imageRef = useTemplateRef<HTMLElement>('canvasImage')
   const scale = shallowRef(1)
   const offsetX = shallowRef(0)
   const offsetY = shallowRef(0)
