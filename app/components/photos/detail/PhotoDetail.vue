@@ -24,6 +24,12 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const detailsOpen = shallowRef(false)
+const detailsSwipeStart = shallowRef<{
+  pointerId: number
+  x: number
+  y: number
+} | null>(null)
 const detailContext = providePhotoDetailContext({
   photo: () => props.photo,
   photos: () => props.photos,
@@ -49,6 +55,7 @@ watch(
   [currentIndex, visible],
   async ([index, isVisible]) => {
     if (!isVisible || index < 0) {
+      detailsOpen.value = false
       actions.setDisplayedPhoto(null)
       return
     }
@@ -63,6 +70,10 @@ function handleKeydown(event: KeyboardEvent) {
   if (!visible.value) return
 
   if (event.key === 'Escape') {
+    if (detailsOpen.value) {
+      closeDetails()
+      return
+    }
     play('droplet')
     actions.close()
     return
@@ -83,6 +94,63 @@ function handleBackdropMouseDown() {
   actions.close()
 }
 
+function toggleDetails() {
+  detailsOpen.value = !detailsOpen.value
+}
+
+function closeDetails() {
+  if (!detailsOpen.value) return
+  play('droplet')
+  detailsOpen.value = false
+}
+
+function isInteractiveTarget(target: EventTarget | null) {
+  return target instanceof Element && Boolean(target.closest('button, a, input, select, textarea'))
+}
+
+function handleDialogPointerDown(event: PointerEvent) {
+  if (!detailsOpen.value || event.pointerType === 'mouse') return
+  const target = event.target
+  if (isInteractiveTarget(target)) return
+  if (target instanceof Element && target.closest('.photo-detail-canvas')) return
+
+  detailsSwipeStart.value = {
+    pointerId: event.pointerId,
+    x: event.clientX,
+    y: event.clientY,
+  }
+}
+
+function handleDialogPointerEnd(event: PointerEvent) {
+  const start = detailsSwipeStart.value
+  detailsSwipeStart.value = null
+  if (!start || start.pointerId !== event.pointerId) return
+
+  const deltaX = event.clientX - start.x
+  const deltaY = event.clientY - start.y
+  const horizontalSwipe = Math.abs(deltaX) >= 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2
+  const downwardSwipe = deltaY >= 48 && deltaY > Math.abs(deltaX) * 1.1
+
+  if (downwardSwipe) {
+    closeDetails()
+    return
+  }
+
+  if (!horizontalSwipe) return
+
+  const direction = deltaX > 0 ? 'prev' : 'next'
+  const canNavigate = direction === 'prev' ? hasPrev.value : hasNext.value
+  if (!canNavigate) return
+
+  play('page')
+  if (direction === 'prev') actions.previous()
+  else actions.next()
+}
+
+function handleDialogPointerCancel() {
+  detailsSwipeStart.value = null
+}
+
 onMounted(() => document.addEventListener('keydown', handleKeydown))
 onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 </script>
@@ -98,26 +166,18 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
         <section
           ref="dialog"
           class="photo-dialog"
+          :class="{ 'is-details-open': detailsOpen }"
           role="dialog"
           aria-modal="true"
           aria-label="Photo details"
           tabindex="-1"
           @click.stop
+          @pointerdown="handleDialogPointerDown"
+          @pointerup="handleDialogPointerEnd"
+          @pointercancel="handleDialogPointerCancel"
         >
           <div class="photo-dialog__body">
             <div class="photo-dialog__stage">
-              <button
-                type="button"
-                class="photo-dialog__close"
-                aria-label="Close photo details"
-                title="Close"
-                data-cuelume-hover="tick"
-                data-cuelume-toggle="droplet"
-                @click="actions.close"
-              >
-                <i class="i-hugeicons:cancel-01" aria-hidden="true" />
-              </button>
-
               <button
                 v-if="hasPrev"
                 type="button"
@@ -143,16 +203,22 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               >
                 <i class="i-hugeicons:arrow-right-01" aria-hidden="true" />
               </button>
+
+              <div
+                v-if="detailPhoto && detailPhoto.mediaType !== 'video'"
+                class="photo-dialog__controls"
+              >
+                <PhotoDetailControls
+                  :details-open="detailsOpen"
+                  show-details-toggle
+                  @toggle-details="toggleDetails"
+                />
+              </div>
             </div>
 
-            <div
-              v-if="detailPhoto && detailPhoto.mediaType !== 'video'"
-              class="photo-dialog__controls"
-            >
-              <PhotoDetailControls />
+            <div v-if="detailPhoto" class="photo-dialog__details-layer" :aria-hidden="!detailsOpen">
+              <PhotoDetailMetadata />
             </div>
-
-            <PhotoDetailMetadata v-if="detailPhoto" />
           </div>
 
           <PhotoDetailFilmstrip />
@@ -196,17 +262,19 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 .photo-dialog {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) var(--dialog-filmstrip-height);
   width: 100%;
   height: 100%;
   overflow: hidden;
+  position: relative;
   outline: none;
   background: var(--dialog-bg);
   color: var(--dialog-text);
   font-family: 'DM Sans', sans-serif;
+  --dialog-filmstrip-height: 5.25rem;
+  --dialog-details-width: clamp(16rem, 19vw, 24rem);
 }
 
-.photo-dialog__close,
 .photo-dialog__nav {
   padding: 0;
   border: 0;
@@ -216,26 +284,21 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   cursor: pointer;
 }
 
-.photo-dialog__close {
-  position: absolute;
-  z-index: 5;
-  top: clamp(0.75rem, 2vw, 1.5rem);
-  right: clamp(0.75rem, 2vw, 1.5rem);
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  color: var(--dialog-muted);
-  font-size: 1.12rem;
-  place-items: center;
-  transition:
-    color 220ms ease,
-    transform 220ms ease;
-}
-
 .photo-dialog__body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(16rem, 19vw);
+  grid-column: 1;
+  grid-row: 1;
+  grid-template-columns: minmax(0, 1fr) 0px;
+  grid-template-rows: minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
   min-height: 0;
+  overflow: hidden;
+  transition: grid-template-columns 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photo-dialog.is-details-open .photo-dialog__body {
+  grid-template-columns: minmax(0, 1fr) var(--dialog-details-width);
 }
 
 .photo-dialog__stage {
@@ -251,13 +314,18 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 }
 
 .photo-dialog__controls {
-  z-index: 4;
-  grid-column: 1;
-  grid-row: 1;
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  top: clamp(0.9rem, 2vw, 1.5rem);
+  right: clamp(0.9rem, 2vw, 1.5rem);
+  width: max-content;
+  min-height: 0;
+  align-items: center;
+  justify-content: flex-end;
   min-width: 0;
-  align-self: end;
-  justify-self: center;
-  margin-bottom: 1rem;
+  padding: 0;
+  pointer-events: auto;
 }
 
 .photo-dialog__nav {
@@ -284,17 +352,60 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   right: clamp(0.25rem, 1.5vw, 1.5rem);
 }
 
-.photo-dialog__details {
+.photo-dialog__details-layer {
+  display: grid;
   grid-column: 2;
   grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    visibility 0s linear 360ms;
+}
+
+.photo-dialog.is-details-open .photo-dialog__details-layer {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    opacity 180ms ease 120ms,
+    visibility 0s linear;
+}
+
+:deep(.photo-dialog__details) {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  max-width: none;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: clamp(1.25rem, 2vw, 2rem) clamp(0.75rem, 1.5vw, 1.5rem);
-  scrollbar-width: thin;
+  box-sizing: border-box;
+  border-left: 1px dashed var(--dialog-line);
+  background: var(--dialog-bg);
+  box-shadow: -1.5rem 0 3rem rgb(0 0 0 / 10%);
+  pointer-events: auto;
+  scrollbar-width: none;
+}
+
+:deep(.photo-dialog__details::-webkit-scrollbar) {
+  display: none;
+}
+
+:deep(.photo-dialog__filmstrip) {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  position: relative;
+  z-index: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .photo-dialog__close:hover,
   .photo-dialog__nav:hover {
     color: var(--dialog-text);
   }
@@ -308,11 +419,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   }
 }
 
-.photo-dialog__close:active {
-  transform: scale(0.97);
-}
-
-.photo-dialog__close:focus-visible,
 .photo-dialog__nav:focus-visible {
   outline: 1px dashed var(--dialog-text);
   outline-offset: 0.35rem;
@@ -343,14 +449,30 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 }
 
 @media (max-width: 767.9px) {
-  .photo-dialog__close {
-    top: 0.75rem;
-    right: 0.75rem;
+  .photo-dialog {
+    grid-template-columns: 1fr;
+    --dialog-filmstrip-height: 4.75rem;
+    transition: grid-template-rows 360ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .photo-dialog.is-details-open {
+    grid-template-rows: minmax(0, 1fr) 0px;
   }
 
   .photo-dialog__body {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(46dvh, 1fr) auto minmax(0, 31dvh);
+    grid-template-rows: calc(100% - 0px) 0px;
+    transition: grid-template-rows 360ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .photo-dialog.is-details-open .photo-dialog__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 55dvh calc(100% - 55dvh);
+  }
+
+  .photo-dialog__body {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .photo-dialog__stage {
@@ -358,35 +480,47 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
     grid-row: 1;
   }
 
-  .photo-dialog__controls {
-    display: flex;
-    grid-column: 1;
-    grid-row: 2;
-    align-self: stretch;
-    justify-self: stretch;
-    margin-bottom: 0;
-    padding: 0 0.75rem 0;
-    margin-top: -1px;
-    /* margin-bottom: -1px; */
-    /* border-top: 1px dashed var(--dialog-line); */
-    background: var(--dialog-bg);
-    box-sizing: border-box;
-    justify-content: center;
-  }
-
-  .photo-dialog__details {
-    grid-column: 1;
-    grid-row: 3;
-    padding: 0.75rem 0.625rem;
-    border-top: 1px dashed var(--dialog-line);
-    border-left: 0;
-    position: relative;
-    top: -1px;
-    z-index: 10;
-  }
-
   .photo-dialog__nav {
     display: none;
+  }
+
+  .photo-dialog.is-details-open :deep(.photo-dialog__filmstrip) {
+    display: none;
+  }
+
+  .photo-dialog__details-layer {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  :deep(.photo-dialog__details) {
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    min-width: 0;
+    padding: 0.75rem 0.625rem;
+    border-top: 1px dashed var(--dialog-line);
+    border-right: 0;
+    border-left: 0;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 16%);
+  }
+
+  :deep(.photo-dialog__details::before) {
+    position: absolute;
+    top: 0.55rem;
+    left: 50%;
+    width: 2.5rem;
+    height: 0.22rem;
+    border-radius: 999px;
+    background: var(--dialog-muted);
+    content: '';
+    transform: translateX(-50%);
   }
 }
 
@@ -395,7 +529,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   .photo-dialog-leave-active,
   .photo-dialog-enter-active .photo-detail-canvas,
   .photo-dialog-leave-active .photo-detail-canvas,
-  .photo-dialog__close,
+  .photo-dialog__body,
+  .photo-dialog__details-layer,
   .photo-dialog__nav {
     transition-duration: 1ms;
   }

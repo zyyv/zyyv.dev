@@ -70,12 +70,6 @@ onKeyStroke('Escape', () => {
   transform: translateX(-50%) translateY(0.45rem) scale(0.98);
 }
 
-@media (max-width: 767.9px) {
-  .photo-detail-reaction-control {
-    min-height: 1.9rem;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .photo-detail-reaction-popover-enter-active,
   .photo-detail-reaction-popover-leave-active {

@@ -2,7 +2,7 @@
 import type { PhotoPreviewVariant } from '~/types'
 import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 
-const { detailPhoto, previewVariant, previewLoading, actions } = usePhotoDetailContext()
+const { detailPhoto, previewVariant, previewLoading, zoomLabel, actions } = usePhotoDetailContext()
 const hoveredVariant = shallowRef<PhotoPreviewVariant | null>(null)
 const isOriginDisabled = computed(
   () => previewLoading.value.thumbnail || previewLoading.value.compressed,
@@ -56,6 +56,16 @@ function clearHoveredVariant() {
   >
     <div class="photo-preview-panel__heading">
       <h3 id="preview-title">Preview</h3>
+      <button
+        type="button"
+        class="photo-preview-panel__zoom-label"
+        :aria-label="`Reset image view, ${zoomLabel}`"
+        data-cuelume-hover="tick"
+        data-cuelume-toggle="droplet"
+        @click="actions.resetZoom"
+      >
+        {{ zoomLabel }}
+      </button>
     </div>
 
     <div class="photo-preview-panel__options" role="list" aria-label="Image preview sources">
@@ -111,6 +121,18 @@ function clearHoveredVariant() {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin: 0;
+}
+
+.photo-preview-panel__zoom-label {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.45rem;
+  color: var(--dialog-muted);
+  font: inherit;
+  font-size: 0.58rem;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 180ms ease;
 }
 
 .photo-preview-panel__options {
@@ -260,6 +282,10 @@ function clearHoveredVariant() {
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .photo-preview-panel__zoom-label:hover {
+    color: var(--dialog-text);
+  }
+
   .photo-preview-panel__option:not(:disabled):hover {
     border-color: var(--dialog-line);
     color: var(--dialog-text);
@@ -271,6 +297,7 @@ function clearHoveredVariant() {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .photo-preview-panel__zoom-label,
   .photo-preview-panel__option,
   .photo-preview-panel__option-label,
   .photo-preview-panel__option-description {

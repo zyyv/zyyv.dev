@@ -181,6 +181,11 @@ function formatPercentage(value: number) {
   --photo-histogram-chart-height: 9rem;
   --photo-histogram-stats-height: 2rem;
   --photo-histogram-content-gap: 0.7rem;
+
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .photo-histogram-panel__state--chart {
@@ -193,6 +198,8 @@ function formatPercentage(value: number) {
 .photo-histogram-panel__content {
   display: grid;
   grid-template-rows: var(--photo-histogram-chart-height) var(--photo-histogram-stats-height);
+  min-width: 0;
+  max-width: 100%;
   height: 100%;
   row-gap: var(--photo-histogram-content-gap);
 }
@@ -311,6 +318,9 @@ function formatPercentage(value: number) {
   position: relative;
   height: 100%;
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   padding: 0.25rem 0 0;
   box-sizing: border-box;
 }
@@ -318,6 +328,8 @@ function formatPercentage(value: number) {
 .photo-histogram-panel__stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-width: 0;
+  max-width: 100%;
   gap: 0.45rem;
   height: 100%;
   margin: 0;

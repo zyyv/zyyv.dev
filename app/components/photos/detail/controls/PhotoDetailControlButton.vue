@@ -4,6 +4,7 @@ import { computed } from 'vue'
 type PopupValue = boolean | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog'
 type ButtonVariant = 'default' | 'value'
 type ButtonTone = 'default' | 'success'
+type ControlSound = 'toggle' | 'pulse' | 'droplet' | 'page' | 'scan' | 'sparkle'
 
 interface Props {
   label: string
@@ -21,6 +22,7 @@ interface Props {
   live?: 'polite' | 'assertive' | 'off'
   variant?: ButtonVariant
   tone?: ButtonTone
+  sound?: ControlSound
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -36,6 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
   live: undefined,
   variant: 'default',
   tone: 'default',
+  sound: 'pulse',
 })
 
 const emit = defineEmits<{
@@ -53,6 +56,7 @@ const buttonClasses = computed(() => [
   'photo-detail-control-button',
   `photo-detail-control-button--${props.variant}`,
   {
+    'is-pressed': props.pressed === true,
     'is-success': props.tone === 'success',
     'is-loading': props.loading,
   },
@@ -80,7 +84,7 @@ function handleClick(event: MouseEvent) {
     :aria-live="props.live"
     :title="accessibleTitle"
     data-cuelume-hover="tick"
-    data-cuelume-toggle="pulse"
+    :data-cuelume-toggle="props.sound"
     @click.stop="handleClick"
   >
     <svg
@@ -122,7 +126,9 @@ function handleClick(event: MouseEvent) {
   cursor: pointer;
   place-items: center;
   text-decoration: none;
-  transition: background 180ms ease;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
 }
 
 .photo-detail-control-button--value {
@@ -136,6 +142,10 @@ function handleClick(event: MouseEvent) {
 
 .photo-detail-control-button.is-success {
   color: var(--photo-detail-control-success, #4b9b68);
+}
+
+.photo-detail-control-button.is-pressed {
+  color: var(--photo-detail-control-active, #e3a06b);
 }
 
 .photo-detail-control-button i {
@@ -187,12 +197,6 @@ function handleClick(event: MouseEvent) {
       --photo-detail-control-hover-background,
       var(--media-control-hover-background, var(--dialog-checker, rgb(244 244 240 / 8%)))
     );
-  }
-}
-
-@media (max-width: 767.9px) {
-  .photo-detail-control-button {
-    min-height: 1.9rem;
   }
 }
 
