@@ -35,7 +35,6 @@ const detailContext = providePhotoDetailContext({
 })
 const {
   photo: selectedPhoto,
-  photos,
   detailPhoto,
   currentIndex,
   hasPrev,
@@ -101,21 +100,12 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
           class="photo-dialog"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="photo-dialog-title"
+          aria-label="Photo details"
           tabindex="-1"
           @click.stop
         >
-          <header class="photo-dialog__header">
-            <div class="photo-dialog__identity">
-              <p v-if="currentIndex >= 0">
-                {{ String(currentIndex + 1).padStart(2, '0') }} / {{ photos.length }}
-              </p>
-              <h2 id="photo-dialog-title">
-                {{ detailPhoto?.filename || detailPhoto?.id }}
-              </h2>
-            </div>
-
-            <div class="photo-dialog__actions">
+          <div class="photo-dialog__body">
+            <div class="photo-dialog__stage">
               <button
                 type="button"
                 class="photo-dialog__close"
@@ -127,11 +117,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               >
                 <i class="i-hugeicons:cancel-01" aria-hidden="true" />
               </button>
-            </div>
-          </header>
 
-          <div class="photo-dialog__body">
-            <div class="photo-dialog__stage">
               <button
                 v-if="hasPrev"
                 type="button"
@@ -210,7 +196,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 .photo-dialog {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -218,49 +204,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   background: var(--dialog-bg);
   color: var(--dialog-text);
   font-family: 'DM Sans', sans-serif;
-}
-
-.photo-dialog__header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  min-height: 4.4rem;
-  gap: 2rem;
-  padding: 0 clamp(1rem, 3vw, 3rem);
-  border-bottom: 1px dashed var(--dialog-line);
-}
-
-.photo-dialog__identity {
-  display: flex;
-  align-items: baseline;
-  min-width: 0;
-  gap: clamp(1rem, 3vw, 3rem);
-}
-
-.photo-dialog__identity p,
-.photo-dialog__identity h2 {
-  margin: 0;
-}
-
-.photo-dialog__identity p {
-  flex: 0 0 auto;
-  color: var(--dialog-muted);
-  font-size: 0.62rem;
-  letter-spacing: 0.06em;
-}
-
-.photo-dialog__identity h2 {
-  overflow: hidden;
-  font-size: 0.78rem;
-  font-weight: 400;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.photo-dialog__actions {
-  display: flex;
-  align-items: center;
-  gap: clamp(1rem, 2.4vw, 2.5rem);
 }
 
 .photo-dialog__close,
@@ -274,6 +217,10 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 }
 
 .photo-dialog__close {
+  position: absolute;
+  z-index: 5;
+  top: clamp(0.75rem, 2vw, 1.5rem);
+  right: clamp(0.75rem, 2vw, 1.5rem);
   display: grid;
   width: 2rem;
   height: 2rem;
@@ -396,28 +343,9 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 }
 
 @media (max-width: 767.9px) {
-  .photo-dialog__header {
-    min-height: 3rem;
-    gap: 0.75rem;
-    padding: 0 0.75rem 0 1rem;
-  }
-
-  .photo-dialog__identity {
-    display: grid;
-    gap: 0.1rem;
-  }
-
-  .photo-dialog__identity p {
-    font-size: 0.55rem;
-  }
-
-  .photo-dialog__identity h2 {
-    max-width: 8rem;
-    font-size: 0.68rem;
-  }
-
-  .photo-dialog__actions {
-    gap: 0.8rem;
+  .photo-dialog__close {
+    top: 0.75rem;
+    right: 0.75rem;
   }
 
   .photo-dialog__body {

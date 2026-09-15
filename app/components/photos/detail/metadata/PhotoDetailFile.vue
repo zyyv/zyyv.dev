@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Photo, PhotoDetailRow } from '~/types'
+import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { getFileFormat } from '~/utils/fileFormat'
 import PhotoDetailGroup from './PhotoDetailGroup.vue'
 import PhotoDetailRows from './PhotoDetailRows.vue'
@@ -9,8 +10,13 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { currentIndex, photos } = usePhotoDetailContext()
 
 const fileFormat = computed(() => getFileFormat(props.photo.filename))
+const sequenceLabel = computed(() => {
+  if (currentIndex.value < 0) return ''
+  return `${String(currentIndex.value + 1).padStart(2, '0')} / ${photos.value.length}`
+})
 
 const fileDetails = computed<PhotoDetailRow[]>(() => [
   // {
@@ -71,6 +77,21 @@ function greatestCommonDivisor(a: number, b: number): number {
 
 <template>
   <PhotoDetailGroup title="File">
+    <template #title-end>
+      <span v-if="sequenceLabel" class="photo-dialog__detail-sequence">
+        {{ sequenceLabel }}
+      </span>
+    </template>
     <PhotoDetailRows :details="fileDetails" />
   </PhotoDetailGroup>
 </template>
+
+<style scoped>
+.photo-dialog__detail-sequence {
+  flex: 0 0 auto;
+  color: var(--dialog-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+</style>

@@ -12,14 +12,25 @@ const liveRegion = computed(() => (props.live === 'off' ? undefined : props.live
 
 <template>
   <section class="photo-dialog__detail-group" :aria-live="liveRegion">
-    <h3>{{ title }}</h3>
+    <div class="photo-dialog__detail-group-heading">
+      <h3>{{ title }}</h3>
+      <slot name="title-end" />
+    </div>
     <slot />
   </section>
 </template>
 
 <style scoped>
-.photo-dialog__detail-group h3 {
-  margin: 0 0 1rem;
+.photo-dialog__detail-group-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.photo-dialog__detail-group-heading h3 {
+  margin: 0;
   color: var(--dialog-muted);
   font-size: 0.58rem;
   font-weight: 500;
