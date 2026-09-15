@@ -50,6 +50,15 @@ function getPhoto(item: RipplableListItem | null) {
   return props.photos.find((photo) => photo.id === photoId)
 }
 
+function getPhotoArthash(item: RipplableListItem | null) {
+  return getPhoto(item)?.arthash
+}
+
+function getPhotoAspectRatio(item: RipplableListItem | null) {
+  const photo = getPhoto(item)
+  return photo ? photo.width / photo.height : 1
+}
+
 function openPreview(item: RipplableListItem | null, event: Event) {
   const photo = getPhoto(item)
   if (!photo) return
@@ -85,10 +94,12 @@ function openPreview(item: RipplableListItem | null, event: Event) {
             @keydown.space.prevent="openPreview(item, $event)"
           >
             <div class="ripplable-photo__media">
-              <img
+              <ImgArthash
                 class="ripplable-photo__image"
                 :src="src"
                 :alt="alt"
+                :arthash="getPhotoArthash(item)"
+                :aspect-ratio="getPhotoAspectRatio(item)"
                 decoding="async"
                 draggable="false"
                 loading="eager"

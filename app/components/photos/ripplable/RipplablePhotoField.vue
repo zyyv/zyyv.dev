@@ -107,26 +107,32 @@ watch(
         :class="['photo-field__orbit', orbit.className]"
       >
         <span class="photo-field__node">
-          <img
+          <ImgArthash
             v-if="orbitPhotos[index]"
             :src="orbitPhotos[index].thumbnail"
+            :arthash="orbitPhotos[index].arthash"
+            :aspect-ratio="orbitPhotos[index].width / orbitPhotos[index].height"
             alt=""
             decoding="async"
             draggable="false"
+            loading="eager"
           />
         </span>
       </span>
 
       <span class="photo-field__focus">
         <Transition name="photo-field-image">
-          <img
+          <ImgArthash
             v-if="activePhoto"
             :key="activePhoto.id"
             class="photo-field__preview"
             :src="activePhoto.thumbnail"
+            :arthash="activePhoto.arthash"
+            :aspect-ratio="activePhoto.width / activePhoto.height"
             alt=""
             decoding="async"
             draggable="false"
+            loading="eager"
           />
         </Transition>
         <span v-if="pulseId" :key="pulseId" class="photo-field__pulse" />
@@ -274,11 +280,10 @@ watch(
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
-.photo-field__node img {
+.photo-field__node .img-arthash {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   filter: grayscale(1) contrast(1.08);
   opacity: 0.62;
   transition:
@@ -433,7 +438,7 @@ watch(
     transform: scale(1.08);
   }
 
-  .photo-field:hover .photo-field__node img {
+  .photo-field:hover .photo-field__node .img-arthash {
     filter: grayscale(0.35) contrast(1.02);
     opacity: 0.82;
     transform: scale(1.12);
@@ -501,7 +506,7 @@ watch(
   .photo-field__stage,
   .photo-field__focus,
   .photo-field__preview,
-  .photo-field__node img {
+  .photo-field__node .img-arthash {
     transition: none;
   }
 

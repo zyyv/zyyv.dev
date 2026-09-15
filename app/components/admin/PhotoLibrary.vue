@@ -60,7 +60,13 @@ function photoDate(photo: Photo) {
           data-cuelume-toggle="page"
           @click="emit('edit', photo)"
         >
-          <img :src="photo.thumbnail" :alt="photo.filename" loading="lazy" />
+          <ImgArthash
+            :src="photo.thumbnail"
+            :alt="photo.filename"
+            :arthash="photo.arthash"
+            :aspect-ratio="photo.width / photo.height"
+            loading="lazy"
+          />
           <span v-if="photo.mediaType === 'video'" class="video-badge">
             <i class="i-hugeicons:play" aria-hidden="true" /> 视频
           </span>
@@ -198,14 +204,13 @@ function photoDate(photo: Photo) {
   background: color-mix(in srgb, currentColor 7%, transparent);
   cursor: pointer;
 }
-.photo-preview img {
+.photo-preview .img-arthash {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 @media (hover: hover) and (pointer: fine) {
-  .photo-preview:hover img {
+  .photo-preview:hover .img-arthash {
     transform: scale(1.025);
   }
 }
@@ -383,7 +388,7 @@ function photoDate(photo: Photo) {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .photo-preview img,
+  .photo-preview .img-arthash,
   .photo-skeleton {
     transition: none;
     animation: none;
