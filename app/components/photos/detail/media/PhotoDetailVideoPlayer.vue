@@ -145,7 +145,7 @@ watch(ready, async (isReady) => {
   width: min(calc(100% - 7rem), 80rem);
   height: min(calc(100% - 4rem), 50rem);
   overflow: hidden;
-  background: #080808;
+  background: transparent;
   color: #f4f4f0;
   pointer-events: auto;
   --media-primary-color: #f4f4f0;
@@ -209,7 +209,7 @@ watch(ready, async (isReady) => {
   width: 100%;
   box-sizing: border-box;
   padding: 2.5rem 0.75rem 0.75rem;
-  background: linear-gradient(180deg, transparent 0%, rgb(8 8 8 / 45%) 38%, rgb(8 8 8 / 92%) 100%);
+  /* background: linear-gradient(180deg, transparent 0%, rgb(8 8 8 / 45%) 38%, rgb(8 8 8 / 92%) 100%); */
 }
 
 .photo-video-player__button {

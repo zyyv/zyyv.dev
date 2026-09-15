@@ -153,7 +153,6 @@ onBeforeUnmount(() => {
         :resources="{
           arthash: item.arthash,
           thumbnail: item.thumbnail,
-          compressed: item.compressed,
         }"
         mode="thumbnail"
         :progressive="false"
@@ -172,7 +171,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .photo-dialog__filmstrip {
   --filmstrip-thumb-height: 4.375rem;
-  --filmstrip-thumb-width: 2.9rem;
 
   display: flex;
   align-items: center;
@@ -193,12 +191,11 @@ onBeforeUnmount(() => {
 
 .photo-dialog__filmstrip-item {
   position: relative;
-  flex: 0 0 var(--filmstrip-thumb-width);
-  width: var(--filmstrip-thumb-width);
   height: var(--filmstrip-thumb-height);
+  aspect-ratio: 3 / 4;
   padding: 0;
   border: 0;
-  border-radius: 0.52rem;
+  border-radius: 0.35rem;
   background: transparent;
   opacity: 0.34;
   cursor: pointer;
@@ -213,32 +210,11 @@ onBeforeUnmount(() => {
     transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.photo-dialog__filmstrip-item::after {
-  position: absolute;
-  right: 0;
-  bottom: -0.48rem;
-  left: 0;
-  height: 1px;
-  background: var(--dialog-text);
-  content: '';
-  opacity: 0;
-  transform: scaleX(0);
-  transition:
-    opacity 220ms ease,
-    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 .photo-dialog__filmstrip-item.is-active {
-  flex-basis: var(--filmstrip-thumb-height);
   width: var(--filmstrip-thumb-height);
+  aspect-ratio: 1 / 1;
   opacity: 1;
   filter: grayscale(0) contrast(1);
-  transform: translateY(-0.2rem);
-}
-
-.photo-dialog__filmstrip-item.is-active::after {
-  opacity: 0.82;
-  transform: scaleX(1);
 }
 
 .photo-dialog__filmstrip-image {
@@ -255,7 +231,6 @@ onBeforeUnmount(() => {
   width: 1rem;
   height: 1rem;
   padding: 0.32rem;
-  border-radius: 50%;
   color: white;
   transform: translate(-50%, -50%);
 }
@@ -280,7 +255,7 @@ onBeforeUnmount(() => {
 @media (max-width: 767.9px) {
   .photo-dialog__filmstrip {
     --filmstrip-thumb-height: 3.4rem;
-    --filmstrip-thumb-width: 2.25rem;
+    /* --filmstrip-thumb-width: 2.25rem; */
 
     min-height: 4.75rem;
     padding-inline: 1rem;

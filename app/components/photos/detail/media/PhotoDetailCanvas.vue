@@ -393,7 +393,6 @@ async function displayPhoto(photo: Photo) {
   const currentRequest = ++requestId
   if (displayedPhoto.value?.id === photo.id) return
   resetBackdropForPhotoChange()
-  if (photo.mediaType === 'video') syncBackdropTarget(null)
   const hasCachedThumbnail = imageLoadState.isLoaded(photo.thumbnail)
   const compressedSrc = photo.compressed
   const hasCachedCompressedImage = imageLoadState.isLoaded(compressedSrc)
@@ -402,7 +401,7 @@ async function displayPhoto(photo: Photo) {
   loadProgress.value = hasCachedCompressedImage ? 100 : 0
   loadFailed.value = false
   showLoading.value = !hasCachedCompressedImage
-  syncBackdropTarget(photo.mediaType === 'image' ? photo.thumbnail : null)
+  syncBackdropTarget(photo.thumbnail)
   resetCanvas()
   actions.setDisplayedPhoto(photo)
 
@@ -467,6 +466,7 @@ onBeforeUnmount(() => {
   >
     <div
       v-if="backdropAssets.length"
+      v-show="!useCheckerboard"
       class="photo-detail-canvas__backdrop-stack"
       aria-hidden="true"
     >
