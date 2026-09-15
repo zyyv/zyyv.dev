@@ -204,6 +204,30 @@ export function useSuperImage(
     return request
   }
 
+  async function fallbackAfterError(source: string): Promise<boolean> {
+    const failedMode = imageModes.find((mode) => normalizedResources.value[mode] === source)
+    if (!failedMode) return false
+
+    const fallbackModes: SuperImageMode[] =
+      failedMode === 'origin'
+        ? ['compressed', 'thumbnail']
+        : failedMode === 'compressed'
+          ? ['thumbnail']
+          : []
+    const expectedRun = runId
+
+    for (const fallbackMode of fallbackModes) {
+      if (expectedRun !== runId || !normalizedResources.value[fallbackMode]) continue
+      if (await loadMode(fallbackMode, expectedRun)) {
+        if (expectedRun === runId) activeMode.value = fallbackMode
+        return true
+      }
+    }
+
+    if (expectedRun === runId) activeMode.value = 'arthash'
+    return false
+  }
+
   function startInitialPreload() {
     if (!mounted.value || !visible.value || initialPreloadStarted.value) return
     initialPreloadStarted.value = true
@@ -359,6 +383,7 @@ export function useSuperImage(
     statuses: readonly(statuses),
     isVisible: readonly(visible),
     preload: loadMode,
+    fallbackAfterError,
     markNativeImageLoaded,
     markNativeImageError,
   }

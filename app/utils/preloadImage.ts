@@ -23,10 +23,14 @@ interface CachedImage {
 }
 
 const imageCache = new Map<string, CachedImage>()
-const loadedImageSources = new Set<string>()
 
 export function isImagePreloaded(src: string): boolean {
-  return import.meta.client && loadedImageSources.has(src)
+  return import.meta.client && Boolean(imageCache.get(src)?.settled)
+}
+
+export function forgetPreloadedImage(src: string) {
+  if (!src) return
+  imageCache.delete(src)
 }
 
 function touchCache(src: string, entry: CachedImage) {
@@ -56,8 +60,8 @@ async function decodeImage(image: HTMLImageElement, src: string): Promise<boolea
   return await new Promise<boolean>((resolve) => {
     image.onload = () => {
       void image.decode().then(
-        () => resolve(true),
-        () => resolve(true),
+        () => resolve(image.naturalWidth > 0),
+        () => resolve(false),
       )
     }
     image.onerror = () => resolve(false)
@@ -133,8 +137,6 @@ export function preloadImage(src: string, options: PreloadImageOptions = {}): Pr
   entry.promise = fetchAndDecodeImage(src, expectedBytes, image, entry).then((loaded) => {
     entry.settled = true
     entry.listeners.clear()
-    if (loaded) loadedImageSources.add(src)
-    else loadedImageSources.delete(src)
 
     if (!loaded && imageCache.get(src) === entry) imageCache.delete(src)
     else if (imageCache.get(src) === entry) touchCache(src, entry)

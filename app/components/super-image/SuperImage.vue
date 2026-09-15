@@ -40,6 +40,7 @@ const {
   hasVisibleAsset,
   isResourceCached,
   resourceVersion,
+  fallbackAfterError,
 } = image
 
 type ImageMode = Exclude<SuperImageMode, 'arthash'>
@@ -178,7 +179,7 @@ function syncVisualAsset(target: VisualAsset | null, nextResourceVersion: number
 
   if (!visibleAsset.value && isResourceCached(target.source)) {
     visibleAsset.value = target
-    visibleAssetVisible.value = true
+    visibleAssetVisible.value = false
     incomingAsset.value = null
     incomingReady.value = false
     return
@@ -188,7 +189,6 @@ function syncVisualAsset(target: VisualAsset | null, nextResourceVersion: number
     incomingAsset.value = null
     incomingReady.value = false
     visibleAsset.value = target
-    visibleAssetVisible.value = true
     return
   }
 
@@ -199,17 +199,23 @@ function syncVisualAsset(target: VisualAsset | null, nextResourceVersion: number
 
   // A fast second switch must restore the old layer before replacing the
   // pending target; otherwise both layers can be transparent for one frame.
-  if (visibleAsset.value && !visibleAssetVisible.value) visibleAssetVisible.value = true
+  if (visibleAsset.value && !visibleAssetVisible.value && incomingReady.value) {
+    visibleAssetVisible.value = true
+  }
   incomingAsset.value = target
-  incomingReady.value = isResourceCached(target.source)
-  if (incomingReady.value) queueIncomingFade(target)
+  incomingReady.value = false
 }
 
 function handleImageLoad(rendered: RenderedAsset) {
   image.markNativeImageLoaded(rendered.asset.source)
   emit('load', rendered.asset.mode, rendered.asset.source)
 
-  if (rendered.role !== 'incoming') return
+  if (rendered.role === 'current') {
+    if (visibleAsset.value?.source === rendered.asset.source) {
+      visibleAssetVisible.value = true
+    }
+    return
+  }
   if (incomingAsset.value?.source !== rendered.asset.source) return
 
   incomingReady.value = true
@@ -220,7 +226,17 @@ function handleImageError(rendered: RenderedAsset) {
   image.markNativeImageError(rendered.asset.source)
   emit('error', rendered.asset.mode, rendered.asset.source)
 
-  if (rendered.role !== 'incoming') return
+  if (rendered.role === 'current') {
+    if (visibleAsset.value?.source === rendered.asset.source) {
+      visualTransitionId += 1
+      clearVisualTransition()
+      visibleAsset.value = null
+      visibleAssetVisible.value = false
+    }
+
+    if (activeSource.value === rendered.asset.source) void fallbackAfterError(rendered.asset.source)
+    return
+  }
   if (incomingAsset.value?.source !== rendered.asset.source) return
 
   visualTransitionId += 1
@@ -248,7 +264,7 @@ onBeforeUnmount(() => {
   <span
     ref="container"
     class="super-image"
-    :class="{ 'super-image--loading': !hasVisibleAsset }"
+    :class="{ 'super-image--loading': !hasRenderedImage }"
     :style="[{ aspectRatio: props.aspectRatio }, $attrs.style]"
     v-bind="$attrs"
   >
