@@ -25,6 +25,11 @@ export const PHOTO_UPLOAD_LIMITS: Record<PhotoUploadVariant, number> = {
   thumbnail: 10 * 1024 * 1024,
 }
 
+// The current rect(n=64) codec produces up to 400 Base64 characters.
+// Keep a little headroom for codec/aspect variations without accepting
+// unbounded metadata in the upload endpoints.
+export const MAX_ARTHASH_LENGTH = 512
+
 export const PHOTO_UPLOAD_CONTENT_TYPES: Record<PhotoUploadVariant, ReadonlySet<string>> = {
   origin: new Set(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm']),
   compressed: new Set(['image/jpeg', 'image/png', 'image/webp']),

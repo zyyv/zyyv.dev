@@ -2,6 +2,7 @@ import { requireAdmin } from '../../../../utils/admin-auth'
 import { useCloudflareBindings } from '../../../../utils/cloudflare'
 import {
   deletePhotoUpload,
+  MAX_ARTHASH_LENGTH,
   type FinalizePhotoUploadBody,
   PHOTO_UPLOAD_LIMITS,
   photoUploadKeys,
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) {
     throw createError({ statusCode: 400, statusMessage: '图片尺寸无效' })
   }
-  if (!arthash || arthash.length > 200) {
+  if (!arthash || arthash.length > MAX_ARTHASH_LENGTH) {
     throw createError({ statusCode: 400, statusMessage: '无法读取图片 Arthash' })
   }
   if (await getPhotoRow(DB, id)) {

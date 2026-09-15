@@ -4,6 +4,7 @@ import { useCloudflareBindings } from '../../../utils/cloudflare'
 import { processAndStorePhoto } from '../../../utils/photo-processing'
 import { getPhotoRow, rowToPhoto } from '../../../utils/photos'
 import { enrichPhotoExif } from '../../../utils/photo-location'
+import { MAX_ARTHASH_LENGTH } from '../../../utils/photo-upload'
 
 function parseBoolean(value: string | undefined) {
   return value === 'true' || value === '1'
@@ -44,7 +45,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const arthash = getField('arthash')?.trim()
-  if (!arthash || arthash.length > 200) {
+  if (!arthash || arthash.length > MAX_ARTHASH_LENGTH) {
     throw createError({ statusCode: 400, statusMessage: '无法读取图片 Arthash' })
   }
 
