@@ -1,6 +1,9 @@
-import { codec, decode, encodeRgba, init, toSvgSync } from 'arthash'
+import { codec, decode, encodeRgba, init, toImageData, toSvgSync } from 'arthash'
+import type { Codec, DecodeOptions, SvgRenderOptions } from 'arthash'
 import arthashWasmUrl from 'arthash/wasm/pkg/arthash_wasm_bg.wasm?url'
 import { shallowRef } from 'vue'
+
+export type { Codec, DecodeOptions, SvgRenderOptions } from 'arthash'
 
 // New hashes use the same codec as Liora. The old codec remains available so
 // photos generated before this migration keep rendering correctly.
@@ -13,6 +16,16 @@ const LEGACY_HASH_MAX_BYTES = 160
 // keeps cornerRadius visually identical to the reference implementation.
 const SVG_BASE_SIZE = 512
 const SVG_STYLE = { cornerRadius: 4 } as const
+
+export interface ArthashSvgOptions extends Omit<SvgRenderOptions, 'style'> {
+  codec?: Codec
+  style?: SvgRenderOptions['style']
+}
+
+export interface ArthashBitmapOptions extends Omit<DecodeOptions, 'style'> {
+  codec?: Codec
+  style?: DecodeOptions['style']
+}
 
 export const arthashReady = shallowRef(false)
 let initPromise: Promise<void> | null = null
@@ -60,15 +73,21 @@ function isLegacyHash(bytes: Uint8Array): boolean {
   return bytes.length <= LEGACY_HASH_MAX_BYTES
 }
 
-function renderSvg(bytes: Uint8Array): string {
-  if (isLegacyHash(bytes)) {
-    return toSvgSync(bytes, LEGACY_ARTHASH_CODEC, { baseSize: SVG_BASE_SIZE })
-  }
+function resolveCodec(bytes: Uint8Array, customCodec?: Codec): Codec {
+  if (customCodec) return customCodec
+  return isLegacyHash(bytes) ? LEGACY_ARTHASH_CODEC : ARTHASH_CODEC
+}
 
-  return toSvgSync(bytes, ARTHASH_CODEC, {
+function renderSvg(bytes: Uint8Array, options: ArthashSvgOptions = {}): string {
+  const { codec: customCodec, ...renderOptions } = options
+  const defaultOptions = !customCodec && !isLegacyHash(bytes) ? { style: SVG_STYLE } : {}
+  const svg = toSvgSync(bytes, resolveCodec(bytes, customCodec), {
     baseSize: SVG_BASE_SIZE,
-    style: SVG_STYLE,
+    ...defaultOptions,
+    ...renderOptions,
   })
+
+  return svg.replace(/<svg\b([^>]*)>/, '<svg$1 preserveAspectRatio="none">')
 }
 
 export async function encodeArthash(
@@ -91,13 +110,16 @@ export async function decodeArthash(value: string, baseSize = 64) {
   return decode(bytes, ARTHASH_CODEC, { baseSize })
 }
 
-export function decodeArthashToDataUrl(value: string | undefined): string | null {
+export function decodeArthashToDataUrl(
+  value: string | undefined,
+  options: ArthashSvgOptions = {},
+): string | null {
   if (!value || !arthashReady.value) {
     return null
   }
 
   try {
-    const svg = renderSvg(base64ToBytes(value))
+    const svg = renderSvg(base64ToBytes(value), options)
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
   } catch (error) {
     console.warn('Failed to decode arthash:', error)
@@ -105,16 +127,41 @@ export function decodeArthashToDataUrl(value: string | undefined): string | null
   }
 }
 
-export function decodeArthashToSvg(value: string | undefined): string | null {
+export function decodeArthashToSvg(
+  value: string | undefined,
+  options: ArthashSvgOptions = {},
+): string | null {
   if (!value || !arthashReady.value) {
     return null
   }
 
   try {
-    const svg = renderSvg(base64ToBytes(value))
-    return svg.replace(/<svg\b([^>]*)>/, '<svg$1 preserveAspectRatio="none">')
+    return renderSvg(base64ToBytes(value), options)
   } catch (error) {
     console.warn('Failed to decode arthash:', error)
+    return null
+  }
+}
+
+export function supportsArthashSvg(customCodec?: Codec): boolean {
+  if (!customCodec) return true
+  if (customCodec.kind === 'dct' || customCodec.kind === 'pixel') return false
+  return customCodec.kind !== 'raw' || !['dct', 'pixel'].includes(customCodec.spec.shape)
+}
+
+export async function decodeArthashToImageData(
+  value: string | undefined,
+  options: ArthashBitmapOptions = {},
+): Promise<ImageData | null> {
+  if (!value) return null
+
+  try {
+    const bytes = base64ToBytes(value)
+    await ensureArthashReady()
+    const { codec: customCodec, ...renderOptions } = options
+    return await toImageData(bytes, resolveCodec(bytes, customCodec), renderOptions)
+  } catch (error) {
+    console.warn('Failed to decode arthash bitmap:', error)
     return null
   }
 }

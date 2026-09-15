@@ -1,4 +1,6 @@
-const MAX_CACHED_IMAGES = 6
+const MAX_CACHED_IMAGES = 48
+
+type ImageFetchPriority = 'high' | 'low' | 'auto'
 
 export interface ImageLoadProgress {
   loadedBytes: number
@@ -8,6 +10,7 @@ export interface ImageLoadProgress {
 
 export interface PreloadImageOptions {
   expectedBytes?: number
+  fetchPriority?: ImageFetchPriority
   onProgress?: (progress: ImageLoadProgress) => void
 }
 
@@ -116,6 +119,7 @@ export function preloadImage(src: string, options: PreloadImageOptions = {}): Pr
   const expectedBytes = Math.max(0, options.expectedBytes ?? 0)
   const image = new Image()
   image.decoding = 'async'
+  if (options.fetchPriority) image.fetchPriority = options.fetchPriority
 
   const entry: CachedImage = {
     image,

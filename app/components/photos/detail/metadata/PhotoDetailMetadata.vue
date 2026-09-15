@@ -16,10 +16,10 @@ const photo = computed(() => detailPhoto.value!)
     class="photo-dialog__details space-y-[clamp(1.5rem,3vh,2.5rem)] max-md:space-y-[1rem]"
     aria-label="Photo details"
   >
-    <PhotoHistogramPanel v-if="photo.mediaType === 'image'" :photo="photo" />
     <PhotoPreviewPanel v-if="photo.mediaType === 'image'" />
     <PhotoDetailFile :photo="photo" />
     <PhotoDetailCapture :photo="photo" />
+    <PhotoHistogramPanel v-if="photo.mediaType === 'image'" :photo="photo" />
     <PhotoDetailPalette :photo="photo" />
     <PhotoDetailReactions />
   </aside>

@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { arthashReady, decodeArthashToSvg, ensureArthashReady } from '~/utils/arthash'
+import type { Codec } from 'arthash'
+import {
+  arthashReady,
+  decodeArthashToSvg,
+  ensureArthashReady,
+  type ArthashSvgOptions,
+} from '~/utils/arthash'
 
 const props = withDefaults(
   defineProps<{
     arthash?: string | null
     revealed: boolean
+    arthashCodec?: Codec
+    arthashOptions?: Omit<ArthashSvgOptions, 'codec'>
   }>(),
   {
     arthash: null,
@@ -14,7 +22,10 @@ const props = withDefaults(
 
 const rendered = computed(() => {
   void arthashReady.value
-  return decodeArthashToSvg(props.arthash ?? undefined)
+  return decodeArthashToSvg(props.arthash ?? undefined, {
+    ...props.arthashOptions,
+    codec: props.arthashCodec,
+  })
 })
 
 const placeholder = useTemplateRef<HTMLDivElement>('placeholder')
