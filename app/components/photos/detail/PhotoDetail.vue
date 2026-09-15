@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { play } from 'cuelume'
+import type { CSSProperties } from 'vue'
 import type { Photo } from '~/types'
 import { providePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { providePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
@@ -30,6 +31,15 @@ const detailsSwipeStart = shallowRef<{
   x: number
   y: number
 } | null>(null)
+const detailsTouchStart = shallowRef<number | null>(null)
+const detailsTouchOffset = shallowRef(0)
+const detailsTouchDragging = shallowRef(false)
+let detailsTouchResetTimer: ReturnType<typeof setTimeout> | undefined
+const detailsLayerStyle = computed<CSSProperties | undefined>(() =>
+  detailsTouchOffset.value > 0
+    ? { transform: `translateY(${detailsTouchOffset.value}px)` }
+    : undefined,
+)
 const detailContext = providePhotoDetailContext({
   photo: () => props.photo,
   photos: () => props.photos,
@@ -55,6 +65,7 @@ watch(
   [currentIndex, visible],
   async ([index, isVisible]) => {
     if (!isVisible || index < 0) {
+      resetDetailsTouchState()
       detailsOpen.value = false
       actions.setDisplayedPhoto(null)
       return
@@ -95,13 +106,81 @@ function handleBackdropMouseDown() {
 }
 
 function toggleDetails() {
+  if (!detailsOpen.value) resetDetailsTouchState()
   detailsOpen.value = !detailsOpen.value
 }
 
-function closeDetails() {
+function clearDetailsTouchResetTimer() {
+  if (!detailsTouchResetTimer) return
+  clearTimeout(detailsTouchResetTimer)
+  detailsTouchResetTimer = undefined
+}
+
+function resetDetailsTouchState() {
+  clearDetailsTouchResetTimer()
+  detailsTouchStart.value = null
+  detailsTouchOffset.value = 0
+  detailsTouchDragging.value = false
+}
+
+function closeDetails(options: { preserveTouchOffset?: boolean } = {}) {
   if (!detailsOpen.value) return
   play('droplet')
+  detailsTouchStart.value = null
+  detailsTouchDragging.value = false
   detailsOpen.value = false
+
+  if (options.preserveTouchOffset) {
+    clearDetailsTouchResetTimer()
+    detailsTouchResetTimer = setTimeout(() => {
+      detailsTouchOffset.value = 0
+      detailsTouchResetTimer = undefined
+    }, 360)
+    return
+  }
+
+  resetDetailsTouchState()
+}
+
+function handleDetailsTouchStart(event: TouchEvent) {
+  const touch = event.touches[0]
+  if (!detailsOpen.value || event.touches.length !== 1 || !touch) return
+  clearDetailsTouchResetTimer()
+  detailsTouchStart.value = touch.clientY
+  detailsTouchOffset.value = 0
+  detailsTouchDragging.value = true
+}
+
+function handleDetailsTouchMove(event: TouchEvent) {
+  const startY = detailsTouchStart.value
+  const touch = event.touches[0]
+  if (startY === null || !touch || event.touches.length !== 1) return
+
+  const offset = touch.clientY - startY
+  detailsTouchOffset.value = Math.max(0, offset)
+  if (offset > 0) event.preventDefault()
+}
+
+function handleDetailsTouchEnd(event: TouchEvent) {
+  const startY = detailsTouchStart.value
+  const touch = event.changedTouches[0]
+  if (startY === null || !touch) return
+
+  const offset = Math.max(0, touch.clientY - startY)
+  detailsTouchStart.value = null
+  detailsTouchDragging.value = false
+
+  if (offset >= 64) {
+    detailsTouchOffset.value = Math.max(offset, 120)
+    closeDetails({ preserveTouchOffset: true })
+    return
+  }
+
+  detailsTouchOffset.value = 0
+}
+
+function handleDetailsTouchCancel() {
+  resetDetailsTouchState()
 }
 
 function isInteractiveTarget(target: EventTarget | null) {
@@ -152,7 +231,10 @@ function handleDialogPointerCancel() {
 }
 
 onMounted(() => document.addEventListener('keydown', handleKeydown))
-onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+  clearDetailsTouchResetTimer()
+})
 </script>
 
 <template>
@@ -216,8 +298,19 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               </div>
             </div>
 
-            <div v-if="detailPhoto" class="photo-dialog__details-layer" :aria-hidden="!detailsOpen">
-              <PhotoDetailMetadata />
+            <div
+              v-if="detailPhoto"
+              class="photo-dialog__details-layer"
+              :class="{ 'is-touch-dragging': detailsTouchDragging }"
+              :style="detailsLayerStyle"
+              :aria-hidden="!detailsOpen"
+            >
+              <PhotoDetailMetadata
+                @details-touch-start="handleDetailsTouchStart"
+                @details-touch-move="handleDetailsTouchMove"
+                @details-touch-end="handleDetailsTouchEnd"
+                @details-touch-cancel="handleDetailsTouchCancel"
+              />
             </div>
           </div>
 
@@ -363,6 +456,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   opacity: 0;
   pointer-events: none;
   transition:
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
     opacity 180ms ease,
     visibility 0s linear 360ms;
 }
@@ -372,8 +466,13 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
   opacity: 1;
   pointer-events: auto;
   transition:
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
     opacity 180ms ease 120ms,
     visibility 0s linear;
+}
+
+.photo-dialog__details-layer.is-touch-dragging {
+  transition: none;
 }
 
 :deep(.photo-dialog__details) {
@@ -504,23 +603,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
     max-height: none;
     min-width: 0;
     padding: 0.75rem 0.625rem;
-    border-top: 1px dashed var(--dialog-line);
-    border-right: 0;
-    border-left: 0;
-    border-radius: 1rem 1rem 0 0;
     box-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 16%);
-  }
-
-  :deep(.photo-dialog__details::before) {
-    position: absolute;
-    top: 0.55rem;
-    left: 50%;
-    width: 2.5rem;
-    height: 0.22rem;
-    border-radius: 999px;
-    background: var(--dialog-muted);
-    content: '';
-    transform: translateX(-50%);
   }
 }
 
