@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, shallowRef, watch } from 'vue'
+import type { CSSProperties } from 'vue'
 import type { Codec } from '~/utils/arthash'
 import { decodeArthashToImageData, supportsArthashSvg } from '~/utils/arthash'
 import type { SuperImageArthashOptions } from './types'
@@ -9,11 +10,14 @@ const props = withDefaults(
     arthash?: string | null
     arthashCodec?: Codec
     arthashOptions?: SuperImageArthashOptions
+    assetStyle?: CSSProperties
     revealed?: boolean
+    animateReveal?: boolean
   }>(),
   {
     arthash: null,
     revealed: false,
+    animateReveal: true,
   },
 )
 
@@ -81,13 +85,16 @@ onBeforeUnmount(() => {
     :arthash="props.arthash"
     :arthash-codec="props.arthashCodec"
     :arthash-options="svgOptions"
+    :style="props.assetStyle"
     :revealed="props.revealed"
+    :animate-reveal="props.animateReveal"
   />
   <canvas
     v-else-if="bitmap"
     ref="canvas"
     class="super-image__arthash super-image__arthash--bitmap"
     :class="{ 'is-revealed': props.revealed }"
+    :style="props.assetStyle"
     aria-hidden="true"
   />
 </template>
@@ -98,6 +105,9 @@ onBeforeUnmount(() => {
   inset: 0;
   z-index: 1;
   display: block;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
   width: 100%;
   height: 100%;
   pointer-events: none;

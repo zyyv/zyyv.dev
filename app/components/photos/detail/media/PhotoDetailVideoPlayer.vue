@@ -8,10 +8,14 @@ const photo = computed(() => detailPhoto.value!)
 const video = useTemplateRef<HTMLVideoElement>('video')
 const ready = shallowRef(false)
 const loadFailed = shallowRef(false)
+const emit = defineEmits<{
+  ready: []
+}>()
 
 function attemptAutoplay() {
   const player = video.value
 
+  emit('ready')
   if (!player || !player.paused) return
 
   void player.play().catch(() => {
@@ -123,7 +127,15 @@ watch(ready, async (isReady) => {
     @canplay="attemptAutoplay"
   />
   <div v-else class="photo-video-player photo-video-player--loading">
-    <img :src="photo.compressed" alt="" />
+    <SuperImage
+      :resources="{ compressed: photo.compressed }"
+      mode="compressed"
+      :progressive="false"
+      class="photo-video-player__poster"
+      alt=""
+      object-fit="contain"
+      @load="emit('ready')"
+    />
     <i class="i-hugeicons:loading-03" aria-hidden="true" />
   </div>
 </template>
@@ -171,11 +183,10 @@ watch(ready, async (isReady) => {
   place-items: center;
 }
 
-.photo-video-player--loading img {
+.photo-video-player__poster {
   position: absolute;
   width: 100%;
   height: 100%;
-  object-fit: contain;
   opacity: 0.72;
 }
 

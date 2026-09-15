@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { play } from 'cuelume'
 import type { CSSProperties } from 'vue'
-import type { Photo, PhotoPreviewLoadingState, PhotoPreviewVariant } from '~/types'
+import type { Photo, PhotoPreviewLoadingState } from '~/types'
 import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { usePhotoImage, usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
-import PhotoDetailArthashPreview from './PhotoDetailArthashPreview.vue'
+import type { SuperImageMode } from '~/components/super-image/types'
 
 const PhotoDetailVideoPlayer = defineAsyncComponent(() => import('./PhotoDetailVideoPlayer.vue'))
 
-type SwitchDirection = 'prev' | 'next' | 'direct'
+interface Props {
+  transitioning?: boolean
+}
 
-const COMPRESSED_IMAGE_MAX_WIDTH = 2560
+const props = defineProps<Props>()
+
 const SWIPE_MIN_DISTANCE = 48
 const SWIPE_AXIS_RATIO = 1.2
 
@@ -31,19 +34,10 @@ const {
   actions,
 } = detailContext
 const imageLoadState = usePhotoImageLoadState()
-const preferredMotion = usePreferredReducedMotion()
 const displayedPhoto = shallowRef<Photo | null>(null)
-const displayedImageSrc = shallowRef('')
-const compressedImageSrc = shallowRef('')
-const isFullImageLoaded = shallowRef(false)
 const thumbnailImage = usePhotoImage(() => displayedPhoto.value?.thumbnail ?? '')
 const compressedImage = usePhotoImage(() => displayedPhoto.value?.compressed ?? '')
 const originImage = usePhotoImage(() => displayedPhoto.value?.origin ?? '')
-const previousPhoto = shallowRef<Photo | null>(null)
-const previousImageSrc = shallowRef('')
-const previousImageStyle = shallowRef<CSSProperties>()
-const direction = shallowRef<SwitchDirection>('direct')
-const isAnimating = shallowRef(false)
 const showLoading = shallowRef(false)
 const loadProgress = shallowRef(0)
 const loadFailed = shallowRef(false)
@@ -69,32 +63,13 @@ const { width: canvasWidth, height: canvasHeight } = useElementSize(canvasRef)
 const { width: viewportWidth, height: viewportHeight } = useWindowSize()
 
 let requestId = 0
-let transitionTimer: ReturnType<typeof setTimeout> | undefined
 
 const canvasClasses = computed(() => ({
-  'has-previous': Boolean(previousPhoto.value),
-  'is-animating': isAnimating.value,
   'is-checkerboard': useCheckerboard.value,
   'is-dragging': isDragging.value,
   'is-video': displayedPhoto.value?.mediaType === 'video',
-  [`is-${direction.value}`]: true,
 }))
 const isDisplayedVideo = computed(() => displayedPhoto.value?.mediaType === 'video')
-const activePreviewVariant = computed<PhotoPreviewVariant>(() => {
-  if (
-    previewVariant.value === 'compressed' &&
-    !isDisplayedVideo.value &&
-    !thumbnailImage.isLoaded.value &&
-    !isFullImageLoaded.value
-  ) {
-    return 'arthash'
-  }
-  if (previewVariant.value === 'compressed' && !isFullImageLoaded.value) return 'thumbnail'
-  return previewVariant.value
-})
-const isVariantPreviewVisible = computed(
-  () => !isDisplayedVideo.value && activePreviewVariant.value !== 'compressed',
-)
 const previewLoading = computed<PhotoPreviewLoadingState>(() => ({
   thumbnail: !isDisplayedVideo.value && thumbnailImage.isLoading.value,
   compressed: !isDisplayedVideo.value && compressedImage.isLoading.value,
@@ -105,32 +80,37 @@ const previewLoading = computed<PhotoPreviewLoadingState>(() => ({
     !originImage.hasError.value,
   arthash: false,
 }))
-const previewSrc = computed(() => {
-  const photo = displayedPhoto.value
-  const variant = activePreviewVariant.value
-  if (!photo || variant === 'arthash') return ''
-  if (variant === 'thumbnail') return photo.thumbnail
-  if (variant === 'origin') return photo.origin
-  return photo.compressed
-})
-const previewLabel = computed(() => {
-  if (activePreviewVariant.value === 'thumbnail') return 'Thumbnail preview'
-  if (activePreviewVariant.value === 'origin') return 'Original preview'
-  if (activePreviewVariant.value === 'arthash') return 'Arthash preview'
-  return 'Compressed preview'
-})
 const currentImageStyle = computed<CSSProperties>(() => {
   const photo = displayedPhoto.value
-  return photo ? getCompressedImageStyle(photo, imageStyle.value) : imageStyle.value
-})
-const previewImageStyle = computed<CSSProperties>(() => {
-  const photo = displayedPhoto.value
-  if (!photo) return imageStyle.value
-  const maxWidth = activePreviewVariant.value === 'thumbnail' ? 600 : Infinity
-  return getImageStyle(photo, maxWidth, imageStyle.value)
+  return photo ? getImageStyle(photo, Infinity, imageStyle.value) : imageStyle.value
 })
 const swipeStart = shallowRef<SwipeStart | null>(null)
 const activeTouchPointers = new Set<number>()
+
+const BACKDROP_FADE_MS = 260
+
+interface BackdropAsset {
+  source: string
+  role: 'current' | 'incoming'
+}
+
+const backdropTargetSource = shallowRef<string | null>(null)
+const backdropCurrentSource = shallowRef<string | null>(null)
+const backdropIncomingSource = shallowRef<string | null>(null)
+const backdropCurrentVisible = shallowRef(false)
+const backdropIncomingReady = shallowRef(false)
+let backdropTransitionId = 0
+let backdropTransitionTimer: ReturnType<typeof setTimeout> | undefined
+
+const backdropAssets = computed<BackdropAsset[]>(() => {
+  const assets: BackdropAsset[] = []
+  const current = backdropCurrentSource.value
+  const incoming = backdropIncomingSource.value
+
+  if (current) assets.push({ source: current, role: 'current' })
+  if (incoming && incoming !== current) assets.push({ source: incoming, role: 'incoming' })
+  return assets
+})
 
 watch(
   [showLoading, loadProgress],
@@ -138,9 +118,6 @@ watch(
   { immediate: true },
 )
 watch(zoomLabel, (label) => actions.setZoomLabel(label), { immediate: true })
-watch(activePreviewVariant, (variant) => actions.setActivePreviewVariant(variant), {
-  immediate: true,
-})
 watch(previewLoading, (loading) => actions.setPreviewLoading(loading), { immediate: true })
 
 watch(
@@ -166,13 +143,6 @@ watch(
 function getPhotoIndex(photo: Photo | null): number {
   if (!photo) return -1
   return photos.value.findIndex((item) => item.id === photo.id)
-}
-
-function getDirection(from: Photo | null, to: Photo): SwitchDirection {
-  const fromIndex = getPhotoIndex(from)
-  const toIndex = getPhotoIndex(to)
-  if (fromIndex < 0 || toIndex < 0 || Math.abs(toIndex - fromIndex) !== 1) return 'direct'
-  return toIndex > fromIndex ? 'next' : 'prev'
 }
 
 function preloadNeighbors(photo: Photo) {
@@ -213,10 +183,6 @@ function getImageStyle(
     height: `${Math.max(1, Math.round(imageHeight * containScale))}px`,
     ...transformStyle,
   }
-}
-
-function getCompressedImageStyle(photo: Photo, transformStyle: CSSProperties): CSSProperties {
-  return getImageStyle(photo, COMPRESSED_IMAGE_MAX_WIDTH, transformStyle)
 }
 
 function handleCanvasPointerDown(event: PointerEvent) {
@@ -267,61 +233,180 @@ function stopLoadingIndicator() {
   showLoading.value = false
 }
 
-function handleImageLoad(photoId: string, src: string) {
-  if (displayedPhoto.value?.id !== photoId) return
-  imageLoadState.markLoaded(src)
+function clearBackdropTransition() {
+  if (!backdropTransitionTimer) return
+  clearTimeout(backdropTransitionTimer)
+  backdropTransitionTimer = undefined
 }
 
-function handleImageError(photoId: string, src: string) {
-  if (displayedPhoto.value?.id !== photoId) return
-  imageLoadState.markError(src)
+function removeBackdropCurrentAfterFade(transitionId: number) {
+  clearBackdropTransition()
+  backdropTransitionTimer = setTimeout(() => {
+    backdropTransitionTimer = undefined
+    if (backdropTransitionId !== transitionId || backdropTargetSource.value) return
+    backdropCurrentSource.value = null
+    backdropCurrentVisible.value = false
+  }, BACKDROP_FADE_MS)
 }
 
-function scheduleTransitionCleanup(photoId: string) {
-  if (transitionTimer) clearTimeout(transitionTimer)
+function commitBackdropIncoming(source: string, transitionId: number) {
+  clearBackdropTransition()
+  backdropTransitionTimer = setTimeout(() => {
+    backdropTransitionTimer = undefined
+    if (
+      backdropTransitionId !== transitionId ||
+      backdropIncomingSource.value !== source ||
+      !backdropIncomingReady.value
+    ) {
+      return
+    }
 
-  const duration = preferredMotion.value === 'reduce' ? 1 : 520
-  transitionTimer = setTimeout(() => {
-    if (displayedPhoto.value?.id !== photoId) return
-    previousPhoto.value = null
-    previousImageSrc.value = ''
-    previousImageStyle.value = undefined
-    isAnimating.value = false
-  }, duration)
+    backdropCurrentSource.value = source
+    backdropCurrentVisible.value = true
+    backdropIncomingSource.value = null
+    backdropIncomingReady.value = false
+  }, BACKDROP_FADE_MS)
+}
+
+function queueBackdropFade(source: string) {
+  const transitionId = ++backdropTransitionId
+  void nextTick(() => {
+    requestAnimationFrame(() => {
+      if (
+        backdropTransitionId !== transitionId ||
+        backdropIncomingSource.value !== source ||
+        !backdropIncomingReady.value
+      ) {
+        return
+      }
+
+      backdropCurrentVisible.value = false
+      commitBackdropIncoming(source, transitionId)
+    })
+  })
+}
+
+function resetBackdropForPhotoChange() {
+  backdropTransitionId += 1
+  clearBackdropTransition()
+  backdropTargetSource.value = null
+  backdropIncomingSource.value = null
+  backdropIncomingReady.value = false
+  if (backdropCurrentSource.value) backdropCurrentVisible.value = true
+}
+
+function syncBackdropTarget(source: string | null) {
+  backdropTargetSource.value = source
+  backdropTransitionId += 1
+  clearBackdropTransition()
+
+  if (!source) {
+    backdropIncomingSource.value = null
+    backdropIncomingReady.value = false
+    if (!backdropCurrentSource.value) {
+      backdropCurrentVisible.value = false
+      return
+    }
+
+    backdropCurrentVisible.value = false
+    removeBackdropCurrentAfterFade(backdropTransitionId)
+    return
+  }
+
+  if (backdropCurrentSource.value === source) {
+    backdropIncomingSource.value = null
+    backdropIncomingReady.value = false
+    backdropCurrentVisible.value = true
+    return
+  }
+
+  if (backdropIncomingSource.value === source) return
+
+  if (backdropCurrentSource.value && !backdropCurrentVisible.value) {
+    backdropCurrentVisible.value = true
+  }
+  backdropIncomingSource.value = source
+  backdropIncomingReady.value = false
+}
+
+function handleBackdropImageLoad(asset: BackdropAsset) {
+  if (asset.role === 'current') {
+    if (backdropCurrentSource.value === asset.source) backdropCurrentVisible.value = true
+    return
+  }
+  if (backdropIncomingSource.value !== asset.source) return
+
+  backdropIncomingReady.value = true
+  queueBackdropFade(asset.source)
+}
+
+function handleBackdropImageError(asset: BackdropAsset) {
+  if (asset.role === 'current') {
+    if (backdropCurrentSource.value !== asset.source) return
+    backdropTransitionId += 1
+    clearBackdropTransition()
+    backdropCurrentSource.value = null
+    backdropCurrentVisible.value = false
+    return
+  }
+  if (backdropIncomingSource.value !== asset.source) return
+
+  backdropTransitionId += 1
+  clearBackdropTransition()
+  backdropIncomingSource.value = null
+  backdropIncomingReady.value = false
+}
+
+function handleCurrentImageLoad(_mode: SuperImageMode, source: string) {
+  const photo = displayedPhoto.value
+  if (!photo || photo.mediaType === 'video') return
+
+  const expectedSources = [photo.thumbnail, photo.compressed, photo.origin].filter(Boolean)
+  if (!expectedSources.includes(source)) return
+  imageLoadState.markLoaded(source)
+  if (source === photo.compressed) {
+    loadProgress.value = 100
+    stopLoadingIndicator()
+  }
+}
+
+function handleCurrentImageError(_mode: SuperImageMode, source: string) {
+  const photo = displayedPhoto.value
+  if (!photo || photo.mediaType === 'video') return
+
+  const expectedSources = [photo.thumbnail, photo.compressed, photo.origin].filter(Boolean)
+  if (!expectedSources.includes(source)) return
+  imageLoadState.markError(source)
+  if (source === photo.compressed) {
+    loadFailed.value = true
+    stopLoadingIndicator()
+  }
+}
+
+function handleCurrentImageMode(mode: SuperImageMode) {
+  actions.setActivePreviewVariant(mode)
+}
+
+function handleCurrentMediaReady() {
+  if (!isDisplayedVideo.value) return
+  loadProgress.value = 100
+  stopLoadingIndicator()
 }
 
 async function displayPhoto(photo: Photo) {
   const currentRequest = ++requestId
-  const outgoingPhoto = displayedPhoto.value
-  if (outgoingPhoto?.id === photo.id) return
+  if (displayedPhoto.value?.id === photo.id) return
+  resetBackdropForPhotoChange()
+  if (photo.mediaType === 'video') syncBackdropTarget(null)
   const hasCachedThumbnail = imageLoadState.isLoaded(photo.thumbnail)
   const compressedSrc = photo.compressed
   const hasCachedCompressedImage = imageLoadState.isLoaded(compressedSrc)
 
-  if (previousPhoto.value) {
-    previousPhoto.value = null
-    previousImageSrc.value = ''
-    previousImageStyle.value = undefined
-    isAnimating.value = false
-  }
-
-  if (transitionTimer) clearTimeout(transitionTimer)
-
-  direction.value = getDirection(outgoingPhoto, photo)
-  previousPhoto.value = outgoingPhoto
-  previousImageSrc.value =
-    (isFullImageLoaded.value ? compressedImageSrc.value : displayedImageSrc.value) ||
-    outgoingPhoto?.thumbnail ||
-    ''
-  previousImageStyle.value = outgoingPhoto ? { ...currentImageStyle.value } : undefined
-  isAnimating.value = false
   displayedPhoto.value = photo
-  displayedImageSrc.value = photo.thumbnail
-  compressedImageSrc.value = hasCachedCompressedImage ? compressedSrc : ''
-  isFullImageLoaded.value = hasCachedCompressedImage
   loadProgress.value = hasCachedCompressedImage ? 100 : 0
   loadFailed.value = false
   showLoading.value = !hasCachedCompressedImage
+  syncBackdropTarget(photo.mediaType === 'image' ? photo.thumbnail : null)
   resetCanvas()
   actions.setDisplayedPhoto(photo)
 
@@ -350,20 +435,6 @@ async function displayPhoto(photo: Photo) {
   await nextTick()
   if (currentRequest !== requestId) return
 
-  if (!outgoingPhoto || preferredMotion.value === 'reduce') {
-    previousPhoto.value = null
-    previousImageSrc.value = ''
-    previousImageStyle.value = undefined
-  } else {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (currentRequest !== requestId) return
-        isAnimating.value = true
-        scheduleTransitionCleanup(photo.id)
-      })
-    })
-  }
-
   if (!loadingPromise) return
 
   const loaded = await loadingPromise
@@ -376,27 +447,14 @@ async function displayPhoto(photo: Photo) {
   }
 
   loadProgress.value = 100
-  compressedImageSrc.value = compressedSrc
-
-  await nextTick()
-  if (currentRequest !== requestId) return
-
-  if (preferredMotion.value === 'reduce') {
-    isFullImageLoaded.value = true
-    return
-  }
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      if (currentRequest === requestId) isFullImageLoaded.value = true
-    })
-  })
+  stopLoadingIndicator()
 }
 
 onBeforeUnmount(() => {
   actions.registerCanvasControls(null)
   requestId += 1
-  if (transitionTimer) clearTimeout(transitionTimer)
+  backdropTransitionId += 1
+  clearBackdropTransition()
 })
 </script>
 
@@ -411,46 +469,26 @@ onBeforeUnmount(() => {
     @pointerup="isDisplayedVideo ? undefined : handleCanvasPointerEnd($event)"
     @pointercancel="isDisplayedVideo ? undefined : handleCanvasPointerCancel($event)"
   >
-    <template v-if="!useCheckerboard">
-      <div
-        v-if="previousPhoto"
-        class="photo-detail-canvas__background photo-detail-canvas__background--previous"
-      >
-        <img
-          :src="previousPhoto.thumbnail"
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          draggable="false"
-        />
-      </div>
-
-      <div
-        v-if="displayedPhoto"
-        class="photo-detail-canvas__background photo-detail-canvas__background--current"
-      >
-        <img
-          class="photo-detail-canvas__background-image"
-          :src="displayedImageSrc"
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          draggable="false"
-        />
-      </div>
-    </template>
-
     <div
-      v-if="previousPhoto"
-      class="photo-detail-canvas__media photo-detail-canvas__media--previous"
+      v-if="backdropAssets.length"
+      class="photo-detail-canvas__backdrop-stack"
+      aria-hidden="true"
     >
       <img
-        class="photo-detail-canvas__image"
-        :src="previousImageSrc"
-        :alt="previousPhoto.filename"
+        v-for="asset in backdropAssets"
+        :key="`backdrop-${asset.source}`"
+        class="photo-detail-canvas__backdrop-image"
+        :class="{
+          'photo-detail-canvas__backdrop-image--current': asset.role === 'current',
+          'photo-detail-canvas__backdrop-image--incoming': asset.role === 'incoming',
+          'is-visible': asset.role === 'current' ? backdropCurrentVisible : backdropIncomingReady,
+        }"
+        :src="asset.source"
+        alt=""
+        loading="eager"
         decoding="async"
-        draggable="false"
-        :style="previousImageStyle"
+        @load="handleBackdropImageLoad(asset)"
+        @error="handleBackdropImageError(asset)"
       />
     </div>
 
@@ -458,66 +496,38 @@ onBeforeUnmount(() => {
       v-if="displayedPhoto"
       class="photo-detail-canvas__media photo-detail-canvas__media--current"
     >
-      <PhotoDetailVideoPlayer v-if="isDisplayedVideo" :key="displayedPhoto.id" />
-      <img
-        v-else
-        ref="canvasImage"
-        class="photo-detail-canvas__image photo-detail-canvas__image--current photo-detail-canvas__image--thumbnail"
-        :class="{
-          'is-hidden': isFullImageLoaded,
-          'is-transition-source': !isFullImageLoaded,
-        }"
-        :src="displayedImageSrc"
-        :alt="displayedPhoto.filename"
-        decoding="async"
-        draggable="false"
-        :style="currentImageStyle"
-        @load="handleImageLoad(displayedPhoto.id, displayedImageSrc)"
-        @error="handleImageError(displayedPhoto.id, displayedImageSrc)"
+      <PhotoDetailVideoPlayer
+        v-if="isDisplayedVideo"
+        :key="displayedPhoto.id"
+        @ready="handleCurrentMediaReady"
       />
-      <img
-        v-if="compressedImageSrc && !isDisplayedVideo"
-        class="photo-detail-canvas__image photo-detail-canvas__image--current photo-detail-canvas__image--compressed"
-        :class="{
-          'is-visible': isFullImageLoaded,
-          'is-transition-source': isFullImageLoaded,
-        }"
-        :src="compressedImageSrc"
-        alt=""
-        aria-hidden="true"
-        decoding="async"
-        draggable="false"
-        :style="currentImageStyle"
-        @load="handleImageLoad(displayedPhoto.id, compressedImageSrc)"
-        @error="handleImageError(displayedPhoto.id, compressedImageSrc)"
-      />
-    </div>
-
-    <div
-      v-if="isVariantPreviewVisible && displayedPhoto"
-      :key="`${displayedPhoto.id}-${activePreviewVariant}`"
-      class="photo-detail-canvas__preview"
-      :aria-label="previewLabel"
-      role="img"
-    >
-      <PhotoDetailArthashPreview
-        v-if="activePreviewVariant === 'arthash'"
-        :arthash="displayedPhoto.arthash"
-        :width="displayedPhoto.width"
-        :height="displayedPhoto.height"
-        :style="previewImageStyle"
-      />
-      <img
-        v-else
-        class="photo-detail-canvas__image photo-detail-canvas__image--preview"
-        :src="previewSrc"
-        :alt="`${displayedPhoto.filename} ${previewLabel}`"
-        decoding="async"
-        draggable="false"
-        :style="previewImageStyle"
-        @load="handleImageLoad(displayedPhoto.id, previewSrc)"
-        @error="handleImageError(displayedPhoto.id, previewSrc)"
-      />
+      <div v-else class="photo-detail-canvas__image-frame">
+        <div
+          ref="canvasImage"
+          class="photo-detail-canvas__image-measure"
+          :style="currentImageStyle"
+          aria-hidden="true"
+        />
+        <SuperImage
+          :resources="{
+            arthash: displayedPhoto.arthash,
+            thumbnail: displayedPhoto.thumbnail,
+            compressed: displayedPhoto.compressed,
+            origin: displayedPhoto.origin,
+          }"
+          :alt="displayedPhoto.filename"
+          decoding="async"
+          draggable="false"
+          object-fit="contain"
+          class="photo-detail-canvas__image-content"
+          :asset-style="currentImageStyle"
+          :view-transition-name="props.transitioning ? 'photo-detail-image' : undefined"
+          :mode="previewVariant"
+          @load="handleCurrentImageLoad"
+          @error="handleCurrentImageError"
+          @active-mode="handleCurrentImageMode"
+        />
+      </div>
     </div>
 
     <figcaption>
@@ -530,9 +540,6 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .photo-detail-canvas {
-  --enter-x: 0;
-  --exit-x: 0;
-
   position: relative;
   display: grid;
   width: 100%;
@@ -542,18 +549,9 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
   background-color: var(--dialog-canvas);
   cursor: grab;
+  isolation: isolate;
   place-items: center;
   touch-action: none;
-}
-
-.photo-detail-canvas.is-next {
-  --enter-x: 1rem;
-  --exit-x: -0.5rem;
-}
-
-.photo-detail-canvas.is-prev {
-  --enter-x: -1rem;
-  --exit-x: 0.5rem;
 }
 
 .photo-detail-canvas.is-checkerboard {
@@ -574,154 +572,77 @@ onBeforeUnmount(() => {
   cursor: grabbing;
 }
 
+.photo-detail-canvas__backdrop-stack {
+  position: absolute;
+  z-index: 0;
+  inset: -3rem;
+  overflow: hidden;
+  opacity: 0.72;
+  filter: blur(2rem) saturate(0.72);
+  pointer-events: none;
+  transform: scale(1.06);
+}
+
+.photo-detail-canvas__backdrop-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.photo-detail-canvas__backdrop-image--current {
+  z-index: 0;
+}
+
+.photo-detail-canvas__backdrop-image--incoming {
+  z-index: 1;
+}
+
+.photo-detail-canvas__backdrop-image.is-visible {
+  opacity: 1;
+}
+
 .photo-detail-canvas.is-video {
   cursor: default;
   touch-action: auto;
 }
 
-.photo-detail-canvas__background,
 .photo-detail-canvas__media {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  will-change: opacity, transform;
-}
-
-.photo-detail-canvas__background {
-  z-index: 0;
-  transition:
-    opacity 480ms ease,
-    transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.photo-detail-canvas__background--current {
-  opacity: 1;
-  transform: scale(1.06);
-}
-
-.photo-detail-canvas__background--previous {
-  opacity: 1;
-  transform: scale(1.06);
-}
-
-.photo-detail-canvas.has-previous .photo-detail-canvas__background--current {
-  opacity: 0;
-  transform: scale(1.1);
-}
-
-.photo-detail-canvas.is-animating .photo-detail-canvas__background--current {
-  opacity: 1;
-  transform: scale(1.06);
-}
-
-.photo-detail-canvas.is-animating .photo-detail-canvas__background--previous {
-  opacity: 0;
-  transform: scale(1.03);
-}
-
-.photo-detail-canvas__background img {
-  position: absolute;
-  inset: -3rem;
-  display: block;
-  width: calc(100% + 6rem);
-  height: calc(100% + 6rem);
-  object-fit: cover;
-  opacity: 0.72;
-  filter: blur(2rem) saturate(0.72);
-  user-select: none;
-  will-change: opacity;
-}
-
-.photo-detail-canvas__media {
   z-index: 1;
   display: grid;
-  opacity: 1;
   place-items: center;
-  transform: translate3d(0, 0, 0) scale(1);
-  transition:
-    opacity 240ms ease,
-    transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.photo-detail-canvas__media--current {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-}
-
-.photo-detail-canvas__preview {
+.photo-detail-canvas__image-frame {
   position: absolute;
-  z-index: 2;
   inset: 0;
-  display: grid;
-  overflow: hidden;
-  place-items: center;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
-.photo-detail-canvas.has-previous .photo-detail-canvas__media--current {
-  opacity: 0;
-  transform: translate3d(var(--enter-x), 0, 0) scale(0.985);
-}
-
-.photo-detail-canvas.is-animating .photo-detail-canvas__media--current {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-}
-
-.photo-detail-canvas.is-animating .photo-detail-canvas__media--previous {
-  opacity: 0;
-  transform: translate3d(var(--exit-x), 0, 0) scale(0.992);
-}
-
-.photo-detail-canvas__image {
+.photo-detail-canvas__image-measure {
   position: absolute;
   inset: 0;
-  display: block;
   max-width: 100%;
   max-height: 100%;
   margin: auto;
-  object-fit: contain;
+  visibility: hidden;
   pointer-events: none;
-  transform-origin: center;
-  user-select: none;
-  will-change: transform;
 }
 
-.photo-detail-canvas__image--thumbnail,
-.photo-detail-canvas__image--compressed {
-  transition: opacity 520ms ease;
-  will-change: opacity, transform;
-}
-
-.photo-detail-canvas__image--thumbnail.is-hidden {
-  opacity: 0;
-}
-
-.photo-detail-canvas__image--compressed {
-  z-index: 1;
-  opacity: 0;
-}
-
-.photo-detail-canvas__image--compressed.is-visible {
-  opacity: 1;
-}
-
-.photo-detail-canvas__image--current.is-transition-source {
-  view-transition-name: photo-detail-image;
-}
-
-.photo-detail-canvas__image--preview,
-:deep(.photo-detail-canvas__preview-arthash) {
+.photo-detail-canvas__image-content {
   position: absolute;
   inset: 0;
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
-  margin: auto;
-  object-fit: contain;
-  pointer-events: none;
-  transform-origin: center;
-  user-select: none;
+  width: 100%;
+  height: 100%;
 }
 
 .photo-detail-canvas figcaption {
@@ -758,12 +679,9 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .photo-detail-canvas__background,
-  .photo-detail-canvas__background img,
+  .photo-detail-canvas__backdrop-image,
   .photo-detail-canvas__media,
-  .photo-detail-canvas__image--thumbnail,
-  .photo-detail-canvas__image--compressed,
-  .photo-detail-canvas__preview {
+  .photo-detail-canvas__image-content {
     transition-duration: 1ms;
   }
 }

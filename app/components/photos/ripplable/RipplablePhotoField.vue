@@ -107,10 +107,14 @@ watch(
         :class="['photo-field__orbit', orbit.className]"
       >
         <span class="photo-field__node">
-          <ImgArthash
+          <SuperImage
             v-if="orbitPhotos[index]"
-            :src="orbitPhotos[index].thumbnail"
-            :arthash="orbitPhotos[index].arthash"
+            :resources="{
+              arthash: orbitPhotos[index].arthash,
+              thumbnail: orbitPhotos[index].thumbnail,
+              compressed: orbitPhotos[index].compressed,
+              origin: orbitPhotos[index].origin,
+            }"
             :aspect-ratio="orbitPhotos[index].width / orbitPhotos[index].height"
             alt=""
             decoding="async"
@@ -122,12 +126,16 @@ watch(
 
       <span class="photo-field__focus">
         <Transition name="photo-field-image">
-          <ImgArthash
+          <SuperImage
             v-if="activePhoto"
             :key="activePhoto.id"
             class="photo-field__preview"
-            :src="activePhoto.thumbnail"
-            :arthash="activePhoto.arthash"
+            :resources="{
+              arthash: activePhoto.arthash,
+              thumbnail: activePhoto.thumbnail,
+              compressed: activePhoto.compressed,
+              origin: activePhoto.origin,
+            }"
             :aspect-ratio="activePhoto.width / activePhoto.height"
             alt=""
             decoding="async"
@@ -280,7 +288,7 @@ watch(
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
-.photo-field__node .img-arthash {
+.photo-field__node .super-image {
   display: block;
   width: 100%;
   height: 100%;
@@ -438,7 +446,7 @@ watch(
     transform: scale(1.08);
   }
 
-  .photo-field:hover .photo-field__node .img-arthash {
+  .photo-field:hover .photo-field__node .super-image {
     filter: grayscale(0.35) contrast(1.02);
     opacity: 0.82;
     transform: scale(1.12);
@@ -506,7 +514,7 @@ watch(
   .photo-field__stage,
   .photo-field__focus,
   .photo-field__preview,
-  .photo-field__node .img-arthash {
+  .photo-field__node .super-image {
     transition: none;
   }
 

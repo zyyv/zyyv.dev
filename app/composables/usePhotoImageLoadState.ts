@@ -1,6 +1,12 @@
 import { computed, inject, provide, shallowRef, toRef, toValue } from 'vue'
 import type { InjectionKey, MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
-import { isImagePreloaded, preloadImage, type ImageLoadProgress } from '~/utils/preloadImage'
+import {
+  forgetSuperImage,
+  isSuperImageCached,
+  markSuperImageLoaded,
+  preloadSuperImage,
+} from '~/components/super-image/super-image-cache'
+import type { ImageLoadProgress } from '~/utils/preloadImage'
 
 export type PhotoImageLoadStatus = 'idle' | 'loading' | 'loaded' | 'error'
 
@@ -38,7 +44,7 @@ function createPhotoImageLoadState(): PhotoImageLoadState {
     let record = records.get(source)
     if (!record) {
       record = shallowRef({
-        status: source && isImagePreloaded(source) ? 'loaded' : 'idle',
+        status: source && isSuperImageCached(source) ? 'loaded' : 'idle',
         progress: EMPTY_PROGRESS,
       })
       records.set(source, record)
@@ -62,6 +68,7 @@ function createPhotoImageLoadState(): PhotoImageLoadState {
 
   function markLoaded(source: string) {
     if (!source) return
+    markSuperImageLoaded(source)
     updateRecord(source, 'loaded', {
       loadedBytes: 0,
       totalBytes: 0,
@@ -70,7 +77,8 @@ function createPhotoImageLoadState(): PhotoImageLoadState {
   }
 
   function markError(source: string) {
-    if (!source || isLoaded(source)) return
+    if (!source) return
+    forgetSuperImage(source)
     updateRecord(source, 'error')
   }
 
@@ -89,7 +97,7 @@ function createPhotoImageLoadState(): PhotoImageLoadState {
     if (pending) return pending
 
     updateRecord(source, 'loading')
-    const request = preloadImage(source, {
+    const request = preloadSuperImage(source, {
       expectedBytes: options.expectedBytes,
       onProgress(progress) {
         updateRecord(source, 'loading', progress)

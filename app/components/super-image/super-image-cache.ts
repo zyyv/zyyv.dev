@@ -1,4 +1,5 @@
-import { isImagePreloaded, preloadImage } from '~/utils/preloadImage'
+import { forgetPreloadedImage, isImagePreloaded, preloadImage } from '~/utils/preloadImage'
+import type { ImageLoadProgress } from '~/utils/preloadImage'
 
 export type SuperImageResourceStatus = 'idle' | 'loading' | 'loaded' | 'error'
 
@@ -29,7 +30,11 @@ export function isSuperImageCached(source: string): boolean {
 
 export function preloadSuperImage(
   source: string,
-  options: { fetchPriority?: 'high' | 'low' | 'auto'; expectedBytes?: number } = {},
+  options: {
+    fetchPriority?: 'high' | 'low' | 'auto'
+    expectedBytes?: number
+    onProgress?: (progress: ImageLoadProgress) => void
+  } = {},
 ): Promise<boolean> {
   if (!source || !import.meta.client) return Promise.resolve(false)
 
@@ -48,11 +53,15 @@ export function preloadSuperImage(
   const request = preloadImage(source, {
     expectedBytes: options.expectedBytes,
     fetchPriority: options.fetchPriority,
+    onProgress: options.onProgress,
   }).then((loaded) => {
     entry.status = loaded ? 'loaded' : 'error'
     entry.promise = undefined
-    if (loaded) touch(source, entry)
-    else statusCache.delete(source)
+    if (loaded) {
+      touch(source, entry)
+    } else {
+      statusCache.delete(source)
+    }
     return loaded
   })
 
@@ -67,4 +76,10 @@ export function markSuperImageLoaded(source: string) {
   entry.status = 'loaded'
   entry.promise = undefined
   touch(source, entry)
+}
+
+export function forgetSuperImage(source: string) {
+  if (!source) return
+  statusCache.delete(source)
+  forgetPreloadedImage(source)
 }
