@@ -5,7 +5,6 @@ import type { ArthashConfig } from '#shared/constants/arthash'
 import { DEFAULT_ARTHASH_CONFIG } from '#shared/constants/arthash'
 import type { Photo, PhotoExif } from '~/types'
 import type { PhotoUpdatePayload, PhotoUploadPayload } from '~/composables/admin/useAdminPhotos'
-import { inferArthashConfig, LEGACY_ARTHASH_CONFIG } from '~/utils/arthash'
 import {
   getMediaType,
   prepareMediaUpload,
@@ -38,9 +37,6 @@ const generating = shallowRef(false)
 const dragging = shallowRef(false)
 const localError = shallowRef<string | null>(null)
 const settings = shallowRef<ArthashConfig>({ ...DEFAULT_ARTHASH_CONFIG })
-const initialSettings = shallowRef<ArthashConfig | null>(null)
-const initialArthash = shallowRef('')
-const hasPersistedArthashConfig = shallowRef(false)
 const isEditing = computed(() => Boolean(props.photo))
 const exif = reactive<PhotoExif>({})
 let parseRun = 0
@@ -105,11 +101,8 @@ function resetForm(nextPhoto: Photo | null | undefined) {
   settings.value = nextPhoto
     ? nextPhoto.arthashConfig
       ? { ...nextPhoto.arthashConfig }
-      : (inferArthashConfig(nextPhoto.arthash) ?? { ...LEGACY_ARTHASH_CONFIG })
+      : { ...DEFAULT_ARTHASH_CONFIG, shape: 'triangle', n: 12 }
     : { ...DEFAULT_ARTHASH_CONFIG }
-  initialSettings.value = nextPhoto ? { ...settings.value } : null
-  initialArthash.value = nextPhoto?.arthash ?? ''
-  hasPersistedArthashConfig.value = Boolean(nextPhoto?.arthashConfig)
   filename.value = nextPhoto?.filename ?? ''
   isPrivate.value = nextPhoto?.private ?? false
   arthash.value = nextPhoto?.arthash ?? ''
@@ -278,20 +271,13 @@ function submit() {
     : undefined
 
   if (isEditing.value && props.photo) {
-    const nextHash = arthash.value.trim()
-    const shouldPersistArthashConfig =
-      hasPersistedArthashConfig.value ||
-      !initialSettings.value ||
-      JSON.stringify(settings.value) !== JSON.stringify(initialSettings.value) ||
-      nextHash !== initialArthash.value.trim()
-    const payload: PhotoUpdatePayload = {
+    emit('update', {
       filename: filename.value.trim(),
-      arthash: nextHash,
+      arthash: arthash.value,
+      arthashConfig: { ...settings.value },
       exif: currentExif ?? {},
       private: isPrivate.value,
-    }
-    if (shouldPersistArthashConfig) payload.arthashConfig = { ...settings.value }
-    emit('update', payload)
+    })
     return
   }
 
