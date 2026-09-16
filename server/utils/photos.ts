@@ -17,7 +17,7 @@ export interface PhotoRow {
   width: number
   height: number
   arthash: string
-  arthash_config_json: string | null
+  arthash_config_json?: string | null
   is_private: number
   exif_json: string | null
   created_at: string
