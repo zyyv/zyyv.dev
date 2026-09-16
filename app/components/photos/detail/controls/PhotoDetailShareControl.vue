@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { play } from 'cuelume'
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
 
 const { detailPhoto } = usePhotoDetailContext()

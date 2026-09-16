@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PHOTO_REACTIONS } from '#shared/constants/photo-reactions'
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
 import type { PhotoReactionType } from '~/types'
 import PhotoDetailGroup from './PhotoDetailGroup.vue'
 

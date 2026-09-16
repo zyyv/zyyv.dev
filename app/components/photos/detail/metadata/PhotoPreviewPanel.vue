@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PhotoPreviewVariant } from '~/types'
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
 
 const { detailPhoto, previewVariant, previewLoading, zoomLabel, actions } = usePhotoDetailContext()
 const hoveredVariant = shallowRef<PhotoPreviewVariant | null>(null)

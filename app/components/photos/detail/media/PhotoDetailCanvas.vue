@@ -2,8 +2,11 @@
 import { play } from 'cuelume'
 import type { CSSProperties } from 'vue'
 import type { Photo, PhotoPreviewLoadingState } from '~/types'
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
-import { usePhotoImage, usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
+import {
+  usePhotoImage,
+  usePhotoImageLoadState,
+} from '~/composables/photos/detail/usePhotoImageLoadState'
 import type { SuperImageMode } from '~/components/super-image/types'
 
 const PhotoDetailVideoPlayer = defineAsyncComponent(() => import('./PhotoDetailVideoPlayer.vue'))

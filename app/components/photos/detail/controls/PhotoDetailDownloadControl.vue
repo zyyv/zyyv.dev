@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
 import type { PhotoPreviewVariant } from '~/types'
 import { getPhotoDownloadFilename, getPhotoDownloadUrl } from '~/utils/photoDownload'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'

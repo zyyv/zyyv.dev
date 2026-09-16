@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PhotoUploadPayload } from '~/composables/useAdminPhotos'
+import type { PhotoUploadPayload } from '~/composables/admin/useAdminPhotos'
 import { getMediaType, prepareMediaUpload } from '~/utils/photoMetadata'
 
 defineProps<{ busy: boolean }>()

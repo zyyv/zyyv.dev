@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Photo, PhotoDetailRow } from '~/types'
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
 import { getFileFormat } from '~/utils/fileFormat'
 import PhotoDetailGroup from './PhotoDetailGroup.vue'
 import PhotoDetailRows from './PhotoDetailRows.vue'

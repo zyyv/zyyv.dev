@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance } from 'vue'
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
-import { usePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
+import { usePhotoImageLoadState } from '~/composables/photos/detail/usePhotoImageLoadState'
 import {
   getPhotoFilmstripCacheKey,
   usePhotoFilmstripScroll,
-} from '~/composables/usePhotoFilmstripScroll'
+} from '~/composables/photos/detail/usePhotoFilmstripScroll'
 
 const PRELOAD_RADIUS = 2
 const SCROLL_SAVE_THROTTLE = 120
@@ -170,7 +170,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .photo-dialog__filmstrip {
-  --filmstrip-thumb-height: 4.375rem;
+  --filmstrip-thumb-height: 100%;
 
   display: flex;
   align-items: center;

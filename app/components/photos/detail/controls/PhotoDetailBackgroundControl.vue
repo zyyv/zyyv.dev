@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
 
 const { checkerboard, actions } = usePhotoDetailContext()

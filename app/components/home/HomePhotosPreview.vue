@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
 import type { Photo } from '~/types'
-import { useVgpuPhotoTunnel } from '~/composables/useVgpuPhotoTunnel'
+import { useVgpuPhotoTunnel } from '~/composables/visual/useVgpuPhotoTunnel'
 import { hashFraction } from '~/utils/shuffle'
 
 const props = defineProps<{

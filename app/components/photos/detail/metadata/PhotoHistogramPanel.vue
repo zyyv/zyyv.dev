@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { Photo } from '~/types'
-import { useImageHistogram, type HistogramChannel } from '~/composables/useImageHistogram'
+import {
+  useImageHistogram,
+  type HistogramChannel,
+} from '~/composables/photos/detail/useImageHistogram'
 import PhotoHistogramAxis from './PhotoHistogramAxis.vue'
 import PhotoHistogramChart from './PhotoHistogramChart.vue'
 

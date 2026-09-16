@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePhotoDetailContext } from '~/composables/usePhotoDetailContext'
+import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
 import PhotoDetailCapture from './PhotoDetailCapture.vue'
 import PhotoDetailFile from './PhotoDetailFile.vue'
 import PhotoDetailPalette from './PhotoDetailPalette.vue'

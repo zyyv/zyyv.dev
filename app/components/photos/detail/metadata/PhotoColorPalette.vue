@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ImageColor, ImageColorsStatus } from '~/composables/useImageColors'
+import type { ImageColor, ImageColorsStatus } from '~/composables/photos/detail/useImageColors'
 
 interface Props {
   colors: readonly ImageColor[]

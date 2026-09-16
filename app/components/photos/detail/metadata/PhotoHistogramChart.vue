@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
 import type { Chart as ChartInstance, ChartConfiguration } from 'chart.js'
-import type { HistogramChannel, ImageHistogram } from '~/composables/useImageHistogram'
+import type {
+  HistogramChannel,
+  ImageHistogram,
+} from '~/composables/photos/detail/useImageHistogram'
 
 interface Props {
   histogram: ImageHistogram
