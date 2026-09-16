@@ -4,7 +4,7 @@ import { useCloudflareBindings } from '../../../utils/cloudflare'
 import { processAndStorePhoto } from '../../../utils/photo-processing'
 import { getPhotoRow, rowToPhoto } from '../../../utils/photos'
 import { enrichPhotoExif } from '../../../utils/photo-location'
-import { MAX_ARTHASH_LENGTH } from '../../../utils/photo-upload'
+import { MAX_ARTHASH_LENGTH, serializePhotoArthashConfig } from '../../../utils/photo-upload'
 
 function parseBoolean(value: string | undefined) {
   return value === 'true' || value === '1'
@@ -45,6 +45,15 @@ export default defineEventHandler(async (event) => {
   }
 
   const arthash = getField('arthash')?.trim()
+  const serializedArthashConfig = getField('arthashConfig')
+  let arthashConfig: string | null = null
+  if (serializedArthashConfig) {
+    try {
+      arthashConfig = serializePhotoArthashConfig(JSON.parse(serializedArthashConfig))
+    } catch {
+      throw createError({ statusCode: 400, statusMessage: 'Arthash 配置格式不正确' })
+    }
+  }
   if (!arthash || arthash.length > MAX_ARTHASH_LENGTH) {
     throw createError({ statusCode: 400, statusMessage: '无法读取图片 Arthash' })
   }
@@ -74,9 +83,9 @@ export default defineEventHandler(async (event) => {
     await DB.prepare(
       `INSERT INTO photos (
         id, filename, origin_key, origin_size, compressed_key, compressed_size,
-        thumbnail_key, thumbnail_size, width, height, arthash, is_private,
+        thumbnail_key, thumbnail_size, width, height, arthash, arthash_config_json, is_private,
         exif_json, created_at, modified_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
       .bind(
         id,
@@ -90,6 +99,7 @@ export default defineEventHandler(async (event) => {
         stored.width,
         stored.height,
         arthash,
+        arthashConfig,
         parseBoolean(getField('private')) ? 1 : 0,
         exif ? JSON.stringify(exif) : null,
         now,

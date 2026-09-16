@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { Photo } from '~/types'
+import type { Bookmark, BookmarkKind } from '~/types'
+import { bookmarkHost } from '~/utils/bookmarks'
 
 const props = defineProps<{
-  photos: readonly Photo[]
+  bookmarks: readonly Bookmark[]
+  folders: readonly Bookmark[]
+  childCounts: ReadonlyMap<string, number>
+  folderNames: ReadonlyMap<string, string>
   loading: boolean
   total: number
   page: number
@@ -10,49 +14,58 @@ const props = defineProps<{
 }>()
 
 const search = defineModel<string>('search', { required: true })
+const kind = defineModel<'all' | BookmarkKind>('kind', { required: true })
 const visibility = defineModel<'all' | 'public' | 'private'>('visibility', { required: true })
-const mediaType = defineModel<'all' | 'image' | 'video'>('mediaType', { required: true })
+const parentId = defineModel<string>('parentId', { required: true })
 const emit = defineEmits<{
-  edit: [photo: Photo]
-  delete: [photo: Photo]
+  edit: [bookmark: Bookmark]
+  delete: [bookmark: Bookmark]
   page: [page: number]
   reset: []
 }>()
 
-function photoDate(photo: Photo) {
+function bookmarkDate(value: string) {
   return new Intl.DateTimeFormat('zh-CN', {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(photo.createdAt))
+  }).format(new Date(value))
 }
 
-function sourceLabel(photo: Photo) {
-  return photo.mediaType === 'video' ? '视频' : '图片'
+function kindLabel(value: BookmarkKind) {
+  return value === 'folder' ? '文件夹' : '书签'
 }
 
-function hashPreviewKey(photo: Photo) {
-  return `${photo.id}:${photo.arthash}:${String(photo.modifiedAt)}`
+function parentLabel(bookmark: Bookmark) {
+  return bookmark.parentId ? (props.folderNames.get(bookmark.parentId) ?? '未知文件夹') : '根目录'
 }
 </script>
 
 <template>
-  <section class="library" aria-labelledby="library-title">
+  <section class="bookmark-library" aria-labelledby="bookmark-library-title">
     <div class="library-toolbar">
       <div class="library-heading">
-        <span class="library-kicker">ASSET REGISTER / 02</span>
+        <span class="library-kicker">BOOKMARK OPERATIONS / 02</span>
         <div>
-          <h2 id="library-title">媒体资源</h2>
+          <h2 id="bookmark-library-title">书签资源</h2>
           <span>{{ total }} 项记录</span>
         </div>
       </div>
 
-      <div class="library-filters" aria-label="媒体资源查询条件">
+      <div class="library-filters" aria-label="书签查询条件">
         <label class="search-control">
           <i class="i-hugeicons:search-01" aria-hidden="true" />
-          <span class="sr-only">搜索文件名</span>
-          <input v-model="search" type="search" placeholder="搜索文件名" />
+          <span class="sr-only">搜索书签</span>
+          <input v-model="search" type="search" placeholder="搜索名称、网址或标签" />
+        </label>
+        <label class="filter-control">
+          <span>类型</span>
+          <select v-model="kind" aria-label="筛选类型" data-cuelume-toggle="toggle">
+            <option value="all">全部</option>
+            <option value="bookmark">书签</option>
+            <option value="folder">文件夹</option>
+          </select>
         </label>
         <label class="filter-control">
           <span>可见性</span>
@@ -63,15 +76,17 @@ function hashPreviewKey(photo: Photo) {
           </select>
         </label>
         <label class="filter-control">
-          <span>类型</span>
-          <select v-model="mediaType" aria-label="筛选媒体类型" data-cuelume-toggle="toggle">
+          <span>目录</span>
+          <select v-model="parentId" aria-label="筛选目录" data-cuelume-toggle="toggle">
             <option value="all">全部</option>
-            <option value="image">图片</option>
-            <option value="video">视频</option>
+            <option value="root">根目录</option>
+            <option v-for="folder in props.folders" :key="folder.id" :value="folder.id">
+              {{ folder.title }}
+            </option>
           </select>
         </label>
         <button
-          v-if="search || visibility !== 'all' || mediaType !== 'all'"
+          v-if="search || kind !== 'all' || visibility !== 'all' || parentId !== 'all'"
           type="button"
           class="reset-filter"
           data-cuelume-toggle="droplet"
@@ -83,120 +98,112 @@ function hashPreviewKey(photo: Photo) {
     </div>
 
     <div class="table-shell">
-      <table class="asset-table">
+      <table class="bookmark-table">
         <thead>
           <tr>
-            <th scope="col">媒体</th>
-            <th scope="col">hash</th>
-            <th scope="col">文件名</th>
             <th scope="col">类型</th>
+            <th scope="col">名称 / 地址</th>
+            <th scope="col">目录</th>
+            <th scope="col">标签</th>
             <th scope="col">可见性</th>
-            <th scope="col">原文件大小</th>
-            <th scope="col">创建时间</th>
+            <th scope="col">排序</th>
+            <th scope="col">更新时间</th>
             <th scope="col"><span class="sr-only">操作</span></th>
           </tr>
         </thead>
-        <tbody v-if="loading" aria-label="正在加载媒体资源">
-          <tr v-for="index in 7" :key="index" class="skeleton-row">
-            <td><span class="skeleton-block skeleton-block--thumb" /></td>
-            <td><span class="skeleton-block skeleton-block--thumb" /></td>
-            <td><span class="skeleton-block skeleton-block--wide" /></td>
+        <tbody v-if="loading" aria-label="正在加载书签资源">
+          <tr v-for="index in 8" :key="index" class="skeleton-row">
             <td><span class="skeleton-block skeleton-block--short" /></td>
+            <td><span class="skeleton-block skeleton-block--wide" /></td>
+            <td><span class="skeleton-block skeleton-block--medium" /></td>
+            <td><span class="skeleton-block skeleton-block--medium" /></td>
             <td><span class="skeleton-block skeleton-block--short" /></td>
             <td><span class="skeleton-block skeleton-block--short" /></td>
             <td><span class="skeleton-block skeleton-block--date" /></td>
             <td><span class="skeleton-block skeleton-block--action" /></td>
           </tr>
         </tbody>
-        <tbody v-else-if="!props.photos.length">
+        <tbody v-else-if="!props.bookmarks.length">
           <tr>
             <td colspan="8" class="empty-state">
-              <i class="i-hugeicons:image-not-found-01" aria-hidden="true" />
-              <strong>没有匹配的资源</strong>
-              <span>调整查询条件，或点击右上角新增媒体。</span>
+              <i class="i-hugeicons:book-open-02" aria-hidden="true" />
+              <strong>没有匹配的书签</strong>
+              <span>调整查询条件，或点击右上角新增资源。</span>
             </td>
           </tr>
         </tbody>
         <tbody v-else>
-          <tr v-for="photo in props.photos" :key="photo.id">
+          <tr v-for="bookmark in props.bookmarks" :key="bookmark.id">
             <td>
-              <button
-                type="button"
-                class="asset-thumb-button"
-                :aria-label="`查看 ${photo.filename}`"
-                data-cuelume-toggle="page"
-                @click="emit('edit', photo)"
-              >
-                <SuperImage
-                  :resources="{
-                    arthash: photo.arthash,
-                    thumbnail: photo.thumbnail,
-                    compressed: photo.compressed,
-                    origin: photo.origin,
-                  }"
-                  :arthash-config="photo.arthashConfig"
-                  :alt="photo.filename"
-                  :aspect-ratio="photo.width / photo.height"
-                  loading="lazy"
-                  :progressive="false"
-                  mode="thumbnail"
+              <span class="kind-cell">
+                <i
+                  :class="
+                    bookmark.kind === 'folder' ? 'i-hugeicons:folder-02' : 'i-hugeicons:link-02'
+                  "
+                  aria-hidden="true"
                 />
-              </button>
-            </td>
-            <td>
-              <div
-                class="asset-hash"
-                role="img"
-                :aria-label="`${photo.filename} 的 Hash 预览`"
-                :title="`${photo.filename} 的 Hash 预览`"
-              >
-                <SuperImage
-                  :key="hashPreviewKey(photo)"
-                  :resources="{ arthash: photo.arthash }"
-                  :arthash-config="photo.arthashConfig"
-                  :aspect-ratio="photo.width / photo.height"
-                  :progressive="false"
-                  mode="arthash"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>
-              <button
-                type="button"
-                class="asset-name-button"
-                data-cuelume-toggle="pulse"
-                @click="emit('edit', photo)"
-              >
-                <strong>{{ photo.filename }}</strong>
-                <span>{{ photo.width }} × {{ photo.height }}</span>
-              </button>
-            </td>
-            <td>
-              <span class="table-tag">{{ sourceLabel(photo) }}</span>
-            </td>
-            <td>
-              <span class="visibility-tag" :class="{ 'visibility-tag--private': photo.private }">
-                <i aria-hidden="true" /> {{ photo.private ? '私密' : '公开' }}
+                {{ kindLabel(bookmark.kind) }}
               </span>
             </td>
-            <td class="numeric-cell">{{ photo.originSizeFormatted }}</td>
-            <td class="date-cell">{{ photoDate(photo) }}</td>
+            <td>
+              <div class="bookmark-name-cell">
+                <button
+                  type="button"
+                  class="asset-name-button"
+                  :aria-label="`编辑 ${bookmark.title}`"
+                  data-cuelume-toggle="pulse"
+                  @click="emit('edit', bookmark)"
+                >
+                  <strong>{{ bookmark.title }}</strong>
+                  <span v-if="bookmark.kind === 'folder'">
+                    {{ props.childCounts.get(bookmark.id) ?? 0 }} 个项目
+                  </span>
+                  <span v-else>{{ bookmarkHost(bookmark.url) || '未设置网址' }}</span>
+                </button>
+                <a
+                  v-if="bookmark.kind === 'bookmark' && bookmark.url"
+                  class="bookmark-url"
+                  :href="bookmark.url"
+                  target="_blank"
+                  rel="noreferrer"
+                  :aria-label="`在新标签页打开 ${bookmark.title}`"
+                  data-cuelume-hover="tick"
+                  data-cuelume-toggle="scan"
+                >
+                  <i class="i-hugeicons:arrow-up-right-01" aria-hidden="true" />
+                </a>
+              </div>
+            </td>
+            <td class="muted-cell">{{ parentLabel(bookmark) }}</td>
+            <td>
+              <div v-if="bookmark.tags.length" class="tag-list" aria-label="标签">
+                <span v-for="tag in bookmark.tags.slice(0, 3)" :key="tag">{{ tag }}</span>
+                <small v-if="bookmark.tags.length > 3">+{{ bookmark.tags.length - 3 }}</small>
+              </div>
+              <span v-else class="muted-cell">—</span>
+            </td>
+            <td>
+              <span class="visibility-tag" :class="{ 'visibility-tag--private': bookmark.private }">
+                <i aria-hidden="true" /> {{ bookmark.private ? '私密' : '公开' }}
+              </span>
+            </td>
+            <td class="numeric-cell">{{ bookmark.sortOrder }}</td>
+            <td class="date-cell">{{ bookmarkDate(bookmark.modifiedAt) }}</td>
             <td>
               <div class="row-actions">
                 <button
                   type="button"
-                  :aria-label="`编辑 ${photo.filename}`"
+                  :aria-label="`编辑 ${bookmark.title}`"
                   data-cuelume-toggle="pulse"
-                  @click="emit('edit', photo)"
+                  @click="emit('edit', bookmark)"
                 >
                   <i class="i-hugeicons:edit-02" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
-                  :aria-label="`删除 ${photo.filename}`"
+                  :aria-label="`删除 ${bookmark.title}`"
                   data-cuelume-toggle="droplet"
-                  @click="emit('delete', photo)"
+                  @click="emit('delete', bookmark)"
                 >
                   <i class="i-hugeicons:delete-02" aria-hidden="true" />
                 </button>
@@ -207,7 +214,7 @@ function hashPreviewKey(photo: Photo) {
       </table>
     </div>
 
-    <nav v-if="totalPages > 1" class="pagination" aria-label="媒体资源分页">
+    <nav v-if="totalPages > 1" class="pagination" aria-label="书签资源分页">
       <span>第 {{ page }} / {{ totalPages }} 页</span>
       <div>
         <button
@@ -232,7 +239,7 @@ function hashPreviewKey(photo: Photo) {
 </template>
 
 <style scoped>
-.library {
+.bookmark-library {
   padding-top: 2.25rem;
 }
 .library-toolbar {
@@ -313,13 +320,16 @@ function hashPreviewKey(photo: Photo) {
 }
 .filter-control select {
   min-width: 3.4rem;
+  max-width: 8rem;
   padding: 0 0.7rem 0 0;
+  overflow: hidden;
   border: 0;
   outline: 0;
   background: transparent;
   color: inherit;
   font: inherit;
   font-size: 0.62rem;
+  text-overflow: ellipsis;
 }
 .reset-filter {
   min-height: 2.15rem;
@@ -338,13 +348,13 @@ function hashPreviewKey(photo: Photo) {
   border-radius: 0.7rem;
   background: color-mix(in srgb, currentColor 2.5%, transparent);
 }
-.asset-table {
+.bookmark-table {
   width: 100%;
-  min-width: 52rem;
+  min-width: 70rem;
   border-collapse: collapse;
   text-align: left;
 }
-.asset-table th {
+.bookmark-table th {
   padding: 0.75rem 0.85rem;
   border-bottom: 1px solid color-mix(in srgb, currentColor 11%, transparent);
   color: currentColor;
@@ -353,7 +363,7 @@ function hashPreviewKey(photo: Photo) {
   opacity: 0.46;
   white-space: nowrap;
 }
-.asset-table td {
+.bookmark-table td {
   height: 4.4rem;
   padding: 0.55rem 0.85rem;
   border-bottom: 1px solid color-mix(in srgb, currentColor 9%, transparent);
@@ -361,40 +371,31 @@ function hashPreviewKey(photo: Photo) {
   font-size: 0.64rem;
   vertical-align: middle;
 }
-.asset-table tbody tr:last-child td {
+.bookmark-table tbody tr:last-child td {
   border-bottom: 0;
 }
-.asset-thumb-button {
-  position: relative;
-  display: block;
-  width: 3.1rem;
-  height: 3.1rem;
-  overflow: hidden;
-  padding: 0;
-  border: 0;
-  border-radius: 0.42rem;
-  background: color-mix(in srgb, currentColor 8%, transparent);
-  cursor: pointer;
+.kind-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: color-mix(in srgb, currentColor 68%, transparent);
+  font-size: 0.58rem;
+  white-space: nowrap;
 }
-.asset-thumb-button :deep(.super-image) {
-  width: 100%;
-  height: 100%;
+.kind-cell i {
+  font-size: 0.85rem;
 }
-.asset-hash {
-  width: 3.1rem;
-  height: 3.1rem;
-  overflow: hidden;
-  border-radius: 0.42rem;
-  background: color-mix(in srgb, currentColor 8%, transparent);
-}
-.asset-hash :deep(.super-image) {
-  width: 100%;
-  height: 100%;
+.bookmark-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 22rem;
 }
 .asset-name-button {
   display: grid;
+  min-width: 0;
+  flex: 1;
   gap: 0.28rem;
-  max-width: 19rem;
   padding: 0;
   border: 0;
   background: transparent;
@@ -402,32 +403,64 @@ function hashPreviewKey(photo: Photo) {
   cursor: pointer;
   text-align: left;
 }
-.asset-name-button strong {
+.asset-name-button strong,
+.asset-name-button span {
   overflow: hidden;
-  font-size: 0.68rem;
-  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.asset-name-button strong {
+  font-size: 0.68rem;
+  font-weight: 500;
+}
 .asset-name-button span,
-.date-cell {
+.date-cell,
+.muted-cell {
   font-size: 0.57rem;
   opacity: 0.42;
 }
-.table-tag,
+.bookmark-url {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  place-items: center;
+  border-radius: 0.35rem;
+  color: inherit;
+  opacity: 0.42;
+}
+.tag-list {
+  display: flex;
+  max-width: 15rem;
+  align-items: center;
+  gap: 0.25rem;
+}
+.tag-list span,
+.tag-list small {
+  max-width: 5.5rem;
+  overflow: hidden;
+  padding: 0.26rem 0.35rem;
+  border-radius: 0.28rem;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  font-size: 0.53rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tag-list small {
+  padding-inline: 0.25rem;
+  background: transparent;
+  opacity: 0.5;
+}
 .visibility-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.32rem;
   padding: 0.3rem 0.42rem;
   border-radius: 0.35rem;
-  background: color-mix(in srgb, currentColor 7%, transparent);
-  font-size: 0.56rem;
-  white-space: nowrap;
-}
-.visibility-tag {
   background: color-mix(in srgb, #568c68 11%, transparent);
   color: #46775a;
+  font-size: 0.56rem;
+  white-space: nowrap;
 }
 .dark .visibility-tag {
   color: #8ac19a;
@@ -448,7 +481,6 @@ function hashPreviewKey(photo: Photo) {
 .numeric-cell {
   font-variant-numeric: tabular-nums;
   opacity: 0.58;
-  white-space: nowrap;
 }
 .row-actions {
   display: flex;
@@ -478,12 +510,11 @@ function hashPreviewKey(photo: Photo) {
   background: color-mix(in srgb, currentColor 8%, transparent);
   animation: table-pulse 1.2s ease-in-out infinite alternate;
 }
-.skeleton-block--thumb {
-  width: 3.1rem;
-  height: 3.1rem;
-}
 .skeleton-block--wide {
   width: min(14rem, 70%);
+}
+.skeleton-block--medium {
+  width: 5rem;
 }
 .skeleton-block--short {
   width: 3.5rem;
@@ -553,10 +584,10 @@ function hashPreviewKey(photo: Photo) {
 }
 @media (hover: hover) and (pointer: fine) {
   .reset-filter:hover,
-  .row-actions button:hover {
+  .row-actions button:hover,
+  .bookmark-url:hover {
     opacity: 1;
   }
-  .asset-thumb-button:hover,
   .asset-name-button:hover strong {
     color: #a13d32;
   }
@@ -566,7 +597,7 @@ function hashPreviewKey(photo: Photo) {
     opacity: 0.42;
   }
 }
-@media (max-width: 899.9px) {
+@media (max-width: 1120px) {
   .library-toolbar {
     align-items: stretch;
     flex-direction: column;

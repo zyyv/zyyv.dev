@@ -139,7 +139,14 @@ onBeforeUnmount(() => {
     <button
       v-for="item in photos"
       :key="item.id"
-      v-memo="[item.id, item.thumbnail, item.arthash, item.mediaType, item.id === activePhotoId]"
+      v-memo="[
+        item.id,
+        item.thumbnail,
+        item.arthash,
+        item.arthashConfig,
+        item.mediaType,
+        item.id === activePhotoId,
+      ]"
       :ref="(element) => setThumbnailRef(element, item.id)"
       type="button"
       class="photo-dialog__filmstrip-item"
@@ -154,6 +161,7 @@ onBeforeUnmount(() => {
           arthash: item.arthash,
           thumbnail: item.thumbnail,
         }"
+        :arthash-config="item.arthashConfig"
         mode="thumbnail"
         :progressive="false"
         :alt="item.filename"

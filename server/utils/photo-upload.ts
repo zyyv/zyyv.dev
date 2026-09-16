@@ -1,4 +1,5 @@
 import type { PhotoExif } from '~/types'
+import { serializeArthashConfig } from '#shared/constants/arthash'
 import type { R2BucketBinding } from '../types/cloudflare'
 
 export type PhotoUploadVariant = 'origin' | 'compressed' | 'thumbnail'
@@ -13,8 +14,17 @@ export interface FinalizePhotoUploadBody {
   width?: number
   height?: number
   arthash?: string
+  arthashConfig?: unknown
   private?: boolean
   exif?: PhotoExif
+}
+
+export function serializePhotoArthashConfig(value: unknown) {
+  const serialized = serializeArthashConfig(value)
+  if (value !== undefined && value !== null && !serialized) {
+    throw createError({ statusCode: 400, statusMessage: 'Arthash 配置格式不正确' })
+  }
+  return serialized
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -25,10 +35,10 @@ export const PHOTO_UPLOAD_LIMITS: Record<PhotoUploadVariant, number> = {
   thumbnail: 10 * 1024 * 1024,
 }
 
-// The current rect(n=64) codec produces up to 400 Base64 characters.
-// Keep a little headroom for codec/aspect variations without accepting
-// unbounded metadata in the upload endpoints.
-export const MAX_ARTHASH_LENGTH = 512
+// The admin panel supports up to n=128. Triangle hashes with rgb888 are the
+// largest supported payloads, so leave room for their Base64 representation
+// without accepting unbounded metadata in the upload endpoints.
+export const MAX_ARTHASH_LENGTH = 2048
 
 export const PHOTO_UPLOAD_CONTENT_TYPES: Record<PhotoUploadVariant, ReadonlySet<string>> = {
   origin: new Set(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm']),

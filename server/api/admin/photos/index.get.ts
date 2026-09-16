@@ -6,6 +6,7 @@ import { rowToPhoto } from '../../../utils/photos'
 
 export default defineEventHandler(async (event): Promise<PhotoListResponse> => {
   await requireAdmin(event)
+  setResponseHeader(event, 'Cache-Control', 'private, no-store')
   const { DB } = useCloudflareBindings(event)
   const query = getQuery(event)
   const page = Math.max(1, Number(query.page) || 1)
@@ -13,6 +14,8 @@ export default defineEventHandler(async (event): Promise<PhotoListResponse> => {
   const search = String(query.search || '').trim()
   const visibility =
     query.visibility === 'public' || query.visibility === 'private' ? query.visibility : 'all'
+  const mediaType =
+    query.mediaType === 'image' || query.mediaType === 'video' ? query.mediaType : 'all'
   const conditions: string[] = []
   const values: unknown[] = []
 
@@ -25,6 +28,10 @@ export default defineEventHandler(async (event): Promise<PhotoListResponse> => {
   if (visibility !== 'all') {
     conditions.push('is_private = ?')
     values.push(visibility === 'private' ? 1 : 0)
+  }
+  if (mediaType !== 'all') {
+    conditions.push('media_type = ?')
+    values.push(mediaType)
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''

@@ -5,9 +5,6 @@ import { isPhotoReactionType } from '../../../utils/photo-reactions'
 import { rowToPhoto } from '../../../utils/photos'
 import type { PhotoRow } from '../../../utils/photos'
 
-const BROWSER_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300'
-const EDGE_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=86400'
-
 export default defineEventHandler(async (event): Promise<Photo> => {
   const photoId = getRouterParam(event, 'id')
   if (!photoId) throw createError({ statusCode: 400, statusMessage: '缺少图片 ID' })
@@ -36,8 +33,8 @@ export default defineEventHandler(async (event): Promise<Photo> => {
   }
 
   setResponseHeaders(event, {
-    'Cache-Control': BROWSER_CACHE_CONTROL,
-    'Cloudflare-CDN-Cache-Control': EDGE_CACHE_CONTROL,
+    'Cache-Control': 'no-store',
+    'Cloudflare-CDN-Cache-Control': 'no-store',
     Vary: 'Accept-Encoding',
   })
 

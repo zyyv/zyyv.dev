@@ -115,6 +115,7 @@ watch(
               compressed: orbitPhotos[index].compressed,
               origin: orbitPhotos[index].origin,
             }"
+            :arthash-config="orbitPhotos[index].arthashConfig"
             :aspect-ratio="orbitPhotos[index].width / orbitPhotos[index].height"
             alt=""
             decoding="async"
@@ -136,6 +137,7 @@ watch(
               compressed: activePhoto.compressed,
               origin: activePhoto.origin,
             }"
+            :arthash-config="activePhoto.arthashConfig"
             :aspect-ratio="activePhoto.width / activePhoto.height"
             alt=""
             decoding="async"

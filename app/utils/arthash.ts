@@ -2,8 +2,11 @@ import { codec, decode, encodeRgba, init, toImageData, toSvgSync } from 'arthash
 import type { Codec, DecodeOptions, SvgRenderOptions } from 'arthash'
 import arthashWasmUrl from 'arthash/wasm/pkg/arthash_wasm_bg.wasm?url'
 import { shallowRef } from 'vue'
+import type { ArthashConfig } from '#shared/constants/arthash'
+import { DEFAULT_ARTHASH_CONFIG } from '#shared/constants/arthash'
 
 export type { Codec, DecodeOptions, SvgRenderOptions } from 'arthash'
+export type { ArthashConfig } from '#shared/constants/arthash'
 
 // New hashes use the same codec as Liora. The old codec remains available so
 // photos generated before this migration keep rendering correctly.
@@ -16,6 +19,63 @@ const LEGACY_HASH_MAX_BYTES = 160
 // keeps cornerRadius visually identical to the reference implementation.
 const SVG_BASE_SIZE = 512
 const SVG_STYLE = { cornerRadius: 4 } as const
+
+export function createArthashCodec(config?: ArthashConfig): Codec {
+  const settings = config ?? DEFAULT_ARTHASH_CONFIG
+  const color =
+    settings.color === 'rgb888' ? { type: 'rgb888' as const } : { type: 'rgb565' as const }
+
+  switch (settings.shape) {
+    case 'dct':
+      return codec.dct()
+    case 'circle':
+      return codec.circle({ n: settings.n, color })
+    case 'triangle':
+      return codec.triangle({ n: settings.n, color })
+    case 'square':
+      return codec.square({ n: settings.n, color })
+    case 'pixel':
+      return codec.pixel({ n: settings.n, color })
+    case 'rect':
+    default:
+      return codec.rect({ n: settings.n, color })
+  }
+}
+
+export function getArthashEncodeOptions(config?: ArthashConfig) {
+  const settings = config ?? DEFAULT_ARTHASH_CONFIG
+  return {
+    seed: settings.seed,
+    search: settings.searchEnabled
+      ? {
+          strategy: settings.searchStrategy,
+          nRandom: settings.nRandom,
+          nTopk: settings.nTopk,
+          hillClimbSteps: settings.hillClimbSteps,
+          hillClimbMaxAge: settings.hillClimbMaxAge,
+          nAttempts: settings.nAttempts,
+        }
+      : undefined,
+  }
+}
+
+export type ArthashPreviewOptions = ArthashSvgOptions & Pick<DecodeOptions, 'aa' | 'pixelSmooth'>
+
+export function getArthashRenderOptions(config?: ArthashConfig): ArthashPreviewOptions {
+  const settings = config ?? DEFAULT_ARTHASH_CONFIG
+  const style: NonNullable<ArthashSvgOptions['style']> = { blur: settings.blur }
+  if (settings.shape === 'rect' || settings.shape === 'square') {
+    style.cornerRadius = settings.cornerRadius
+  }
+
+  return {
+    baseSize: settings.baseSize,
+    overrideAspect: settings.overrideAspect ?? undefined,
+    aa: settings.aa,
+    pixelSmooth: settings.pixelSmooth,
+    style,
+  }
+}
 
 export interface ArthashSvgOptions extends Omit<SvgRenderOptions, 'style'> {
   codec?: Codec
@@ -94,8 +154,15 @@ export async function encodeArthash(
   rgba: Uint8Array,
   width: number,
   height: number,
+  config?: ArthashConfig,
 ): Promise<string> {
-  const hash = await encodeRgba(rgba, width, height, ARTHASH_CODEC)
+  const hash = await encodeRgba(
+    rgba,
+    width,
+    height,
+    createArthashCodec(config),
+    getArthashEncodeOptions(config),
+  )
   return bytesToBase64(hash)
 }
 

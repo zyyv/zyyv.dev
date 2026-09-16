@@ -514,6 +514,7 @@ onBeforeUnmount(() => {
             compressed: displayedPhoto.compressed,
             origin: displayedPhoto.origin,
           }"
+          :arthash-config="displayedPhoto.arthashConfig"
           :alt="displayedPhoto.filename"
           decoding="async"
           draggable="false"

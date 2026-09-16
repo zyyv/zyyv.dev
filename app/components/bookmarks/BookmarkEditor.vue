@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { play } from 'cuelume'
 import type { Bookmark, BookmarkInput, BookmarkKind } from '~/types'
 
 const props = defineProps<{
@@ -7,6 +8,7 @@ const props = defineProps<{
   initialParentId: string | null
   folders: readonly Bookmark[]
   busy: boolean
+  error?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -47,7 +49,18 @@ watch(
 )
 
 const title = computed(() =>
-  props.bookmark ? '编辑项目' : form.kind === 'folder' ? '新建文件夹' : '添加书签',
+  props.bookmark
+    ? form.kind === 'folder'
+      ? '编辑文件夹'
+      : '编辑书签'
+    : form.kind === 'folder'
+      ? '新增文件夹'
+      : '新增书签',
+)
+const description = computed(() =>
+  props.bookmark
+    ? '调整资源信息，保存后立即同步到书签目录。'
+    : '填写资源信息，保存后才会写入书签目录。',
 )
 
 function submit() {
@@ -66,19 +79,30 @@ function submit() {
     sortOrder: Number(form.sortOrder) || 0,
   })
 }
+
+function dismiss() {
+  play('droplet')
+  emit('close')
+}
 </script>
 
 <template>
-  <div class="editor-backdrop" role="presentation" @click.self="emit('close')">
+  <div
+    class="editor-backdrop"
+    role="presentation"
+    tabindex="-1"
+    @click.self="dismiss"
+    @keydown.esc="dismiss"
+  >
     <section class="editor" role="dialog" aria-modal="true" aria-labelledby="bookmark-editor-title">
       <header class="editor__header">
         <div>
-          <span>{{ bookmark ? 'UPDATE' : 'CREATE' }}</span>
           <h2 id="bookmark-editor-title">{{ title }}</h2>
+          <p>{{ description }}</p>
         </div>
         <button
           type="button"
-          aria-label="关闭"
+          :aria-label="`关闭${title}`"
           data-cuelume-toggle="droplet"
           @click="emit('close')"
         >
@@ -95,6 +119,7 @@ function submit() {
               type="radio"
               value="bookmark"
               :disabled="Boolean(bookmark?.kind === 'folder' && bookmark)"
+              data-cuelume-toggle="toggle"
             />
             <span><i class="i-hugeicons:link-02" aria-hidden="true" /> 书签</span>
           </label>
@@ -104,6 +129,7 @@ function submit() {
               type="radio"
               value="folder"
               :disabled="Boolean(bookmark?.kind === 'bookmark' && bookmark)"
+              data-cuelume-toggle="toggle"
             />
             <span><i class="i-hugeicons:folder-02" aria-hidden="true" /> 文件夹</span>
           </label>
@@ -122,7 +148,7 @@ function submit() {
           </label>
           <label class="editor__field">
             <span>所在文件夹</span>
-            <select v-model="form.parentId">
+            <select v-model="form.parentId" data-cuelume-toggle="toggle">
               <option value="">书签栏根目录</option>
               <option v-for="folder in folders" :key="folder.id" :value="folder.id">
                 {{ folder.title }}
@@ -167,13 +193,17 @@ function submit() {
             <input v-model.number="form.sortOrder" type="number" min="0" step="1" />
           </label>
           <label class="editor__visibility">
-            <input v-model="form.private" type="checkbox" />
+            <input v-model="form.private" type="checkbox" data-cuelume-toggle="toggle" />
             <span>
               <strong>仅维护者可见</strong>
               <small>访客看不到此项目；私密文件夹也会隐藏其内容。</small>
             </span>
           </label>
         </div>
+
+        <p v-if="props.error" class="editor__error" role="alert">
+          <i class="i-hugeicons:alert-02" aria-hidden="true" /> {{ props.error }}
+        </p>
 
         <footer>
           <button type="button" data-cuelume-toggle="droplet" @click="emit('close')">取消</button>
@@ -182,7 +212,7 @@ function submit() {
             :disabled="busy || !form.title || (form.kind === 'bookmark' && !form.url)"
             data-cuelume-toggle="pulse"
           >
-            {{ busy ? '保存中' : '保存' }}
+            {{ busy ? '保存中' : bookmark ? '保存修改' : '创建资源' }}
           </button>
         </footer>
       </form>
@@ -222,16 +252,17 @@ function submit() {
   justify-content: space-between;
   margin-bottom: 1.5rem;
 }
-.editor__header span {
-  font-size: 0.55rem;
-  letter-spacing: 0.1em;
-  opacity: 0.4;
-}
 .editor__header h2 {
-  margin: 0.35rem 0 0;
+  margin: 0;
   font-size: 1.55rem;
   font-weight: 550;
   letter-spacing: -0.045em;
+}
+.editor__header p {
+  margin: 0.45rem 0 0;
+  font-size: 0.63rem;
+  line-height: 1.5;
+  opacity: 0.48;
 }
 .editor__header button {
   display: grid;
@@ -350,6 +381,21 @@ function submit() {
   margin-bottom: 0.2rem;
   font-size: 0.68rem;
   font-weight: 550;
+}
+.editor__error {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 1rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid color-mix(in srgb, #c8342d 32%, transparent);
+  border-radius: 0.45rem;
+  color: #a13d32;
+  font-size: 0.62rem;
+  line-height: 1.5;
+}
+.dark .editor__error {
+  color: #ef6259;
 }
 .editor footer {
   display: grid;
