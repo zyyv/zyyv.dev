@@ -40,13 +40,30 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Arthash 配置格式不正确' })
   }
 
-  await DB.prepare(
-    `UPDATE photos SET
-      filename = ?, is_private = ?, exif_json = ?, arthash = ?, arthash_config_json = ?,
-      modified_at = ? WHERE id = ?`,
+  const modifiedAt = new Date().toISOString()
+  const hasArthashConfigColumn = Object.prototype.hasOwnProperty.call(
+    current,
+    'arthash_config_json',
   )
-    .bind(filename, isPrivate, exifJson, arthash, arthashConfigJson, new Date().toISOString(), id)
-    .run()
+
+  if (hasArthashConfigColumn) {
+    await DB.prepare(
+      `UPDATE photos SET
+        filename = ?, is_private = ?, exif_json = ?, arthash = ?, arthash_config_json = ?,
+        modified_at = ? WHERE id = ?`,
+    )
+      .bind(filename, isPrivate, exifJson, arthash, arthashConfigJson, modifiedAt, id)
+      .run()
+  } else {
+    // Keep edits working while an existing deployment catches up with 0009.
+    // The Arthash config is skipped only when this older schema has no column.
+    await DB.prepare(
+      `UPDATE photos SET
+        filename = ?, is_private = ?, exif_json = ?, arthash = ?, modified_at = ? WHERE id = ?`,
+    )
+      .bind(filename, isPrivate, exifJson, arthash, modifiedAt, id)
+      .run()
+  }
 
   const updated = await getPhotoRow(DB, id)
   if (!updated) throw createError({ statusCode: 500, statusMessage: '更新后读取失败' })
