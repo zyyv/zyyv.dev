@@ -17,7 +17,7 @@ export interface PhotoUploadPayload {
 export interface PhotoUpdatePayload {
   filename: string
   arthash: string
-  arthashConfig?: ArthashConfig
+  arthashConfig: ArthashConfig
   exif?: PhotoExif
   private: boolean
 }
