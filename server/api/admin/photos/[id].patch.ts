@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
       .run()
   } else {
     // Keep edits working while an existing deployment catches up with 0009.
-    // The hash itself remains compatible because decoding can infer its codec.
+    // The Arthash config is skipped only when this older schema has no column.
     await DB.prepare(
       `UPDATE photos SET
         filename = ?, is_private = ?, exif_json = ?, arthash = ?, modified_at = ? WHERE id = ?`,
