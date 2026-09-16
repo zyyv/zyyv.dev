@@ -12,8 +12,8 @@ const destinations = [
   {
     index: '02',
     title: 'Bookmarks',
-    description: '在公开页面直接维护书签与文件夹。',
-    to: '/bookmarks',
+    description: '在表格中维护书签、文件夹与访问范围。',
+    to: '/admin/bookmarks',
     icon: 'i-hugeicons:book-open-02',
   },
 ] as const

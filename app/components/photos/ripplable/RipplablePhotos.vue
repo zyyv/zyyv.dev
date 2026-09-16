@@ -56,6 +56,7 @@ function getPhotoResources(item: RipplableListItem | null) {
 
   return {
     arthash: photo.arthash,
+    arthashConfig: photo.arthashConfig,
     thumbnail: photo.thumbnail,
     compressed: photo.compressed,
     origin: photo.origin,
@@ -105,6 +106,7 @@ function openPreview(item: RipplableListItem | null, event: Event) {
               <SuperImage
                 class="ripplable-photo__image"
                 :resources="getPhotoResources(item)"
+                :arthash-config="getPhoto(item)?.arthashConfig"
                 :alt="alt"
                 :aspect-ratio="getPhotoAspectRatio(item)"
                 decoding="async"

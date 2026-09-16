@@ -1,4 +1,5 @@
 import type { Codec, ArthashBitmapOptions, ArthashSvgOptions } from '~/utils/arthash'
+import type { ArthashConfig } from '#shared/constants/arthash'
 import type { CSSProperties } from 'vue'
 
 export const SUPER_IMAGE_MODES = ['arthash', 'thumbnail', 'compressed', 'origin'] as const
@@ -20,6 +21,7 @@ export interface SuperImageProps {
   assetStyle?: CSSProperties
   viewTransitionName?: string
   arthashCodec?: Codec
+  arthashConfig?: ArthashConfig
   arthashOptions?: SuperImageArthashOptions
   loading?: 'lazy' | 'eager'
   alt?: string

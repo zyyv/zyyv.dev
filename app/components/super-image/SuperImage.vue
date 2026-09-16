@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, shallowRef, watch } from 'vue'
 import { useSuperImage } from './useSuperImage'
 import type { SuperImageMode, SuperImageProps } from './types'
+import { createArthashCodec, getArthashRenderOptions } from '~/utils/arthash'
 
 defineOptions({ inheritAttrs: false })
 
@@ -12,6 +13,17 @@ const props = withDefaults(defineProps<SuperImageProps>(), {
   progressive: true,
   objectFit: 'cover',
 })
+
+const effectiveArthashCodec = computed(
+  () =>
+    props.arthashCodec ??
+    (props.arthashConfig ? createArthashCodec(props.arthashConfig) : undefined),
+)
+const effectiveArthashOptions = computed(
+  () =>
+    props.arthashOptions ??
+    (props.arthashConfig ? getArthashRenderOptions(props.arthashConfig) : undefined),
+)
 
 const mode = defineModel<SuperImageMode>('mode', { default: 'arthash' })
 const emit = defineEmits<{
@@ -278,8 +290,8 @@ onBeforeUnmount(() => {
   >
     <SuperImageArthash
       :arthash="resources.arthash"
-      :arthash-codec="props.arthashCodec"
-      :arthash-options="props.arthashOptions"
+      :arthash-codec="effectiveArthashCodec"
+      :arthash-options="effectiveArthashOptions"
       :asset-style="props.assetStyle"
       :revealed="arthashRevealed"
       :animate-reveal="false"

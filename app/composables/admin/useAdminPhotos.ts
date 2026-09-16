@@ -1,13 +1,23 @@
-import type { Photo, PhotoExif, PhotoListResponse } from '~/types'
+import type { ArthashConfig, Photo, PhotoExif, PhotoListResponse } from '~/types'
 
 export interface PhotoUploadPayload {
   file: File
+  filename: string
   mediaType: 'image' | 'video'
   compressed: File
   thumbnail: File
   width: number
   height: number
   arthash: string
+  arthashConfig: ArthashConfig
+  exif?: PhotoExif
+  private: boolean
+}
+
+export interface PhotoUpdatePayload {
+  filename: string
+  arthash: string
+  arthashConfig: ArthashConfig
   exif?: PhotoExif
   private: boolean
 }
@@ -32,27 +42,34 @@ function getErrorMessage(error: unknown) {
 
 export function useAdminPhotos() {
   const photos = ref<Photo[]>([])
-  const loading = ref(false)
-  const mutating = ref(false)
-  const error = ref<string | null>(null)
-  const page = ref(1)
-  const limit = ref(24)
-  const total = ref(0)
-  const totalPages = ref(0)
-  const search = ref('')
-  const visibility = ref<'all' | 'public' | 'private'>('all')
+  const loading = shallowRef(false)
+  const mutating = shallowRef(false)
+  const error = shallowRef<string | null>(null)
+  const page = shallowRef(1)
+  const limit = shallowRef(24)
+  const total = shallowRef(0)
+  const totalPages = shallowRef(0)
+  const search = shallowRef('')
+  const visibility = shallowRef<'all' | 'public' | 'private'>('all')
+  const mediaType = shallowRef<'all' | 'image' | 'video'>('all')
 
   async function loadPhotos(nextPage = page.value) {
     loading.value = true
     error.value = null
     try {
       const response = await $fetch<PhotoListResponse>('/api/admin/photos', {
+        cache: 'no-store',
         query: {
           page: nextPage,
           limit: limit.value,
           search: search.value || undefined,
           visibility: visibility.value,
+          mediaType: mediaType.value,
+          // Admin records are mutable. Keep a refresh from reusing a stale
+          // browser/proxy response after an Arthash update.
+          _ts: Date.now(),
         },
+        headers: { 'Cache-Control': 'no-cache' },
       })
       photos.value = response.photos
       page.value = response.pagination.page
@@ -78,7 +95,7 @@ export function useAdminPhotos() {
       const upload = await $fetch<{ id: string }>('/api/admin/photo-uploads', {
         method: 'POST',
         body: {
-          filename: payload.file.name,
+          filename: payload.filename,
           mediaType: payload.mediaType,
           originContentType: payload.file.type,
           ...variantContentTypes,
@@ -86,9 +103,9 @@ export function useAdminPhotos() {
       })
       uploadId = upload.id
       const uploads = await Promise.allSettled([
-        uploadVariant(uploadId, 'origin', payload.file, payload.file.name),
-        uploadVariant(uploadId, 'compressed', payload.compressed, payload.file.name),
-        uploadVariant(uploadId, 'thumbnail', payload.thumbnail, payload.file.name),
+        uploadVariant(uploadId, 'origin', payload.file, payload.filename),
+        uploadVariant(uploadId, 'compressed', payload.compressed, payload.filename),
+        uploadVariant(uploadId, 'thumbnail', payload.thumbnail, payload.filename),
       ])
       const failedUpload = uploads.find(
         (result): result is PromiseRejectedResult => result.status === 'rejected',
@@ -97,13 +114,14 @@ export function useAdminPhotos() {
       const photo = await $fetch<Photo>(`/api/admin/photo-uploads/${uploadId}/finalize`, {
         method: 'POST',
         body: {
-          filename: payload.file.name,
+          filename: payload.filename,
           mediaType: payload.mediaType,
           originContentType: payload.file.type,
           ...variantContentTypes,
           width: payload.width,
           height: payload.height,
           arthash: payload.arthash,
+          arthashConfig: payload.arthashConfig,
           private: payload.private,
           exif: payload.exif,
         },
@@ -114,7 +132,7 @@ export function useAdminPhotos() {
       if (uploadId) {
         await $fetch(`/api/admin/photo-uploads/${uploadId}`, {
           method: 'DELETE',
-          query: { filename: payload.file.name, ...variantContentTypes },
+          query: { filename: payload.filename, ...variantContentTypes },
         }).catch(() => undefined)
       }
       error.value = getErrorMessage(cause)
@@ -138,7 +156,7 @@ export function useAdminPhotos() {
     })
   }
 
-  async function updatePhoto(id: string, update: Pick<Photo, 'filename' | 'private' | 'exif'>) {
+  async function updatePhoto(id: string, update: PhotoUpdatePayload) {
     mutating.value = true
     error.value = null
     try {
@@ -146,8 +164,15 @@ export function useAdminPhotos() {
         method: 'PATCH',
         body: update,
       })
-      const index = photos.value.findIndex((item) => item.id === id)
-      if (index >= 0) photos.value[index] = photo
+      if (photo.arthash !== update.arthash.trim()) {
+        throw new Error('服务端没有返回新的 Arthash，请部署最新管理接口并执行 0009 数据库迁移')
+      }
+      const currentPage = page.value
+      photos.value = photos.value.map((item) => (item.id === id ? photo : item))
+      await loadPhotos(currentPage)
+      // Keep the PATCH response authoritative in case an intermediate proxy
+      // still returns the previous list during cache propagation.
+      photos.value = photos.value.map((item) => (item.id === id ? photo : item))
       return photo
     } catch (cause) {
       error.value = getErrorMessage(cause)
@@ -181,6 +206,7 @@ export function useAdminPhotos() {
     totalPages: readonly(totalPages),
     search,
     visibility,
+    mediaType,
     loadPhotos,
     uploadPhoto,
     updatePhoto,

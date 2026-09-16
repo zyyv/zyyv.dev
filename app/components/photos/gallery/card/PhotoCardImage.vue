@@ -17,6 +17,7 @@ const props = defineProps<Props>()
       compressed: props.photo.compressed,
       origin: props.photo.origin,
     }"
+    :arthash-config="props.photo.arthashConfig"
     class="photo-card-media__visual"
     :alt="props.photo.filename"
     :loading="props.loading"

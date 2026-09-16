@@ -1,4 +1,5 @@
 import type { PhotoExif } from '~/types'
+import type { ArthashConfig } from '#shared/constants/arthash'
 import { encodeArthash } from '~/utils/arthash'
 import exifr from 'exifr'
 
@@ -21,7 +22,7 @@ async function loadBitmap(file: File): Promise<LoadedImage> {
   }
 }
 
-async function createArthash(image: LoadedImage) {
+async function createArthash(image: LoadedImage, config?: ArthashConfig) {
   const width = image.width
   const height = image.height
   const sampleWidth = Math.min(32, width)
@@ -37,10 +38,11 @@ async function createArthash(image: LoadedImage) {
     new Uint8Array(pixels.buffer, pixels.byteOffset, pixels.byteLength),
     sampleWidth,
     sampleHeight,
+    config,
   )
 }
 
-async function createVideoArthash(video: HTMLVideoElement) {
+async function createVideoArthash(video: HTMLVideoElement, config?: ArthashConfig) {
   const sampleWidth = Math.min(32, video.videoWidth)
   const sampleHeight = Math.max(1, Math.round(sampleWidth * (video.videoHeight / video.videoWidth)))
   const canvas = document.createElement('canvas')
@@ -54,6 +56,7 @@ async function createVideoArthash(video: HTMLVideoElement) {
     new Uint8Array(pixels.buffer, pixels.byteOffset, pixels.byteLength),
     sampleWidth,
     sampleHeight,
+    config,
   )
 }
 
@@ -124,7 +127,7 @@ function waitForVideoEvent(video: HTMLVideoElement, eventName: 'loadeddata' | 's
   })
 }
 
-async function prepareVideoUpload(file: File) {
+async function prepareVideoUpload(file: File, config?: ArthashConfig) {
   const url = URL.createObjectURL(file)
   const video = document.createElement('video')
   video.muted = true
@@ -146,11 +149,12 @@ async function prepareVideoUpload(file: File) {
     const [compressed, thumbnail, arthash] = await Promise.all([
       createVideoPoster(video, file, 2560, 'poster'),
       createVideoPoster(video, file, 600, 'thumbnail'),
-      createVideoArthash(video),
+      createVideoArthash(video, config),
     ])
     return {
       mediaType: 'video' as const,
       arthash,
+      exif: undefined,
       width: video.videoWidth,
       height: video.videoHeight,
       compressed,
@@ -202,13 +206,13 @@ async function readExif(file: File): Promise<PhotoExif | undefined> {
   return exif
 }
 
-async function prepareImageUpload(file: File) {
+async function prepareImageUpload(file: File, config?: ArthashConfig) {
   const [image, exif] = await Promise.all([loadBitmap(file), readExif(file)])
   try {
     const [compressed, thumbnail, arthash] = await Promise.all([
       createVariant(image, file, 2560, 'compressed'),
       createVariant(image, file, 600, 'thumbnail'),
-      createArthash(image),
+      createArthash(image, config),
     ])
     return {
       mediaType: 'image' as const,
@@ -230,9 +234,57 @@ export function getMediaType(file: File): MediaType | null {
   return null
 }
 
-export async function prepareMediaUpload(file: File) {
+export interface PreparedMediaUpload {
+  mediaType: MediaType
+  arthash: string
+  width: number
+  height: number
+  compressed: File
+  thumbnail: File
+  exif?: PhotoExif
+}
+
+export async function prepareMediaUpload(file: File, config?: ArthashConfig) {
   const mediaType = getMediaType(file)
-  if (mediaType === 'video') return prepareVideoUpload(file)
-  if (mediaType === 'image') return prepareImageUpload(file)
+  if (mediaType === 'video') return prepareVideoUpload(file, config)
+  if (mediaType === 'image') return prepareImageUpload(file, config)
+  throw new Error('仅支持 JPEG、PNG、WebP 图片，以及 MP4、WebM 视频')
+}
+
+export async function regenerateMediaArthash(file: File, config?: ArthashConfig) {
+  const mediaType = getMediaType(file)
+  if (mediaType === 'image') {
+    const image = await loadBitmap(file)
+    try {
+      return await createArthash(image, config)
+    } finally {
+      if ('close' in image && typeof image.close === 'function') image.close()
+    }
+  }
+
+  if (mediaType === 'video') {
+    const url = URL.createObjectURL(file)
+    const video = document.createElement('video')
+    video.muted = true
+    video.preload = 'auto'
+    video.playsInline = true
+    video.src = url
+    try {
+      await waitForVideoEvent(video, 'loadeddata')
+      if (!video.videoWidth || !video.videoHeight) throw new Error('无法读取视频尺寸')
+      const posterTime = Number.isFinite(video.duration) ? Math.min(0.25, video.duration / 2) : 0
+      if (posterTime > 0) {
+        const seeked = waitForVideoEvent(video, 'seeked')
+        video.currentTime = posterTime
+        await seeked
+      }
+      return createVideoArthash(video, config)
+    } finally {
+      video.removeAttribute('src')
+      video.load()
+      URL.revokeObjectURL(url)
+    }
+  }
+
   throw new Error('仅支持 JPEG、PNG、WebP 图片，以及 MP4、WebM 视频')
 }

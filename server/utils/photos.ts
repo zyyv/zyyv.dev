@@ -2,6 +2,7 @@ import type { Photo, PhotoExif, PhotoReactionCounts } from '~/types'
 import { createEmptyPhotoReactionCounts } from '#shared/constants/photo-reactions'
 import { imageCdnUrl } from '#shared/constants/images'
 import type { D1DatabaseBinding } from '../types/cloudflare'
+import { parseArthashConfig } from '#shared/constants/arthash'
 
 export interface PhotoRow {
   id: string
@@ -16,6 +17,7 @@ export interface PhotoRow {
   width: number
   height: number
   arthash: string
+  arthash_config_json: string | null
   is_private: number
   exif_json: string | null
   created_at: string
@@ -58,6 +60,7 @@ export function rowToPhoto(
     width: row.width,
     height: row.height,
     arthash: row.arthash,
+    arthashConfig: parseArthashConfig(row.arthash_config_json),
     private: Boolean(row.is_private),
     createdAt: row.created_at,
     modifiedAt: row.modified_at,

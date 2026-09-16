@@ -1,7 +1,9 @@
 import type { Endpoints } from '@octokit/types'
 import type { PhotoReactionType } from '#shared/constants/photo-reactions'
+import type { ArthashConfig } from '#shared/constants/arthash'
 
 export type { PhotoReactionType } from '#shared/constants/photo-reactions'
+export type { ArthashConfig } from '#shared/constants/arthash'
 
 export * from './article'
 export * from './bookmark'
@@ -97,6 +99,7 @@ export interface Photo {
   width: number
   height: number
   arthash: string
+  arthashConfig?: ArthashConfig
   createdAt: Date | string
   modifiedAt: Date | string
 
