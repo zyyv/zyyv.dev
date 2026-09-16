@@ -128,7 +128,8 @@ function handleClick(event: MouseEvent) {
   text-decoration: none;
   transition:
     background 180ms ease,
-    color 180ms ease;
+    color 180ms ease,
+    transform 120ms ease;
 }
 
 .photo-detail-control-button--value {
@@ -197,6 +198,21 @@ function handleClick(event: MouseEvent) {
       --photo-detail-control-hover-background,
       var(--media-control-hover-background, var(--dialog-checker, rgb(244 244 240 / 8%)))
     );
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .photo-detail-control-button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .photo-detail-control-button:active:not(:disabled) {
+    background: var(
+      --photo-detail-control-hover-background,
+      var(--media-control-hover-background, var(--dialog-checker, rgb(244 244 240 / 8%)))
+    );
+    transform: scale(0.92);
   }
 }
 

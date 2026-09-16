@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import { usePhotoDetailContext } from '~/composables/photos/detail/usePhotoDetailContext'
 import PhotoDetailBackgroundControl from './PhotoDetailBackgroundControl.vue'
 import PhotoDetailControlButton from './PhotoDetailControlButton.vue'
 import PhotoDetailReactionControl from './PhotoDetailReactionControl.vue'
 
 const { detailPhoto, isVideo } = usePhotoDetailContext()
+const isHoverMode = useMediaQuery('(hover: hover) and (pointer: fine)')
 const isExpanded = shallowRef(false)
 const isHovering = shallowRef(false)
 const isClickExpanded = shallowRef(false)
@@ -24,13 +26,14 @@ function collapse() {
 }
 
 function handleMouseEnter() {
+  if (!isHoverMode.value) return
   isHovering.value = true
   isClickExpanded.value = false
   expand()
 }
 
 function handleMouseLeave() {
-  if (!isHovering.value) return
+  if (!isHoverMode.value || !isHovering.value) return
   isHovering.value = false
   clearTimeout(collapseTimer)
   collapseTimer = setTimeout(() => {
