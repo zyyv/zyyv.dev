@@ -13,13 +13,6 @@ export type { ArthashConfig } from '#shared/constants/arthash'
 export const ARTHASH_CODEC = codec.rect({ n: 64 })
 const LEGACY_ARTHASH_CODEC = codec.triangle({ n: 12 })
 const LEGACY_HASH_MAX_BYTES = 160
-const CODEC_LENGTH_TOLERANCE = 1
-
-export const LEGACY_ARTHASH_CONFIG: ArthashConfig = {
-  ...DEFAULT_ARTHASH_CONFIG,
-  shape: 'triangle',
-  n: 12,
-}
 
 // Match the playground's default Gallery pipeline. The hash bytes are
 // independent from render size; this only controls the SVG viewBox scale and
@@ -140,29 +133,9 @@ function isLegacyHash(bytes: Uint8Array): boolean {
   return bytes.length <= LEGACY_HASH_MAX_BYTES
 }
 
-function codecMatchesHash(bytes: Uint8Array, customCodec: Codec): boolean {
-  try {
-    return Math.abs(codec.bytesTotal(customCodec) - bytes.length) <= CODEC_LENGTH_TOLERANCE
-  } catch {
-    return false
-  }
-}
-
 function resolveCodec(bytes: Uint8Array, customCodec?: Codec): Codec {
-  if (customCodec && codecMatchesHash(bytes, customCodec)) return customCodec
+  if (customCodec) return customCodec
   return isLegacyHash(bytes) ? LEGACY_ARTHASH_CODEC : ARTHASH_CODEC
-}
-
-export function inferArthashConfig(value: string | null | undefined): ArthashConfig | undefined {
-  if (!value) return undefined
-
-  try {
-    return isLegacyHash(base64ToBytes(value))
-      ? { ...LEGACY_ARTHASH_CONFIG }
-      : { ...DEFAULT_ARTHASH_CONFIG }
-  } catch {
-    return undefined
-  }
 }
 
 function renderSvg(bytes: Uint8Array, options: ArthashSvgOptions = {}): string {
