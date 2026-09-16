@@ -92,7 +92,7 @@ const controlsClasses = computed(() => [
 }
 
 .photo-detail-controls--dialog {
-  --photo-detail-control-size: 2.7rem;
+  --photo-detail-control-size: 2.2rem;
 
   width: max-content;
   min-height: 0;
