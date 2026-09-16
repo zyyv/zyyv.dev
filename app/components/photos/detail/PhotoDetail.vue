@@ -4,6 +4,7 @@ import type { CSSProperties } from 'vue'
 import type { Photo } from '~/types'
 import { providePhotoDetailContext } from '~/composables/usePhotoDetailContext'
 import { providePhotoImageLoadState } from '~/composables/usePhotoImageLoadState'
+import { usePhotoDetailResize } from '~/composables/usePhotoDetailResize'
 import PhotoDetailCanvas from './media/PhotoDetailCanvas.vue'
 import PhotoDetailControls from './controls/PhotoDetailControls.vue'
 import PhotoDetailFilmstrip from './PhotoDetailFilmstrip.vue'
@@ -35,6 +36,20 @@ const detailsTouchStart = shallowRef<number | null>(null)
 const detailsTouchOffset = shallowRef(0)
 const detailsTouchDragging = shallowRef(false)
 let detailsTouchResetTimer: ReturnType<typeof setTimeout> | undefined
+const dialogBodyRef = useTemplateRef<HTMLElement>('dialogBody')
+const {
+  isDesktop,
+  isResizing: isDetailsResizing,
+  detailsRatio,
+  ratioPercent,
+  minRatioPercent,
+  maxRatioPercent,
+  beginResize,
+  handleKeydown: handleDetailsResizeKeydown,
+} = usePhotoDetailResize({
+  body: dialogBodyRef,
+  enabled: () => detailsOpen.value,
+})
 const detailsLayerStyle = computed<CSSProperties | undefined>(() =>
   detailsTouchOffset.value > 0
     ? { transform: `translateY(${detailsTouchOffset.value}px)` }
@@ -49,6 +64,9 @@ const detailContext = providePhotoDetailContext({
   onNext: () => emit('next'),
   onSelect: (photo) => emit('select', photo),
 })
+const dialogStyle = computed(() => ({
+  '--dialog-details-ratio': detailsRatio.value,
+}))
 const {
   photo: selectedPhoto,
   detailPhoto,
@@ -248,7 +266,11 @@ onUnmounted(() => {
         <section
           ref="dialog"
           class="photo-dialog"
-          :class="{ 'is-details-open': detailsOpen }"
+          :class="{
+            'is-details-open': detailsOpen,
+            'is-details-resizing': isDetailsResizing,
+          }"
+          :style="dialogStyle"
           role="dialog"
           aria-modal="true"
           aria-label="Photo details"
@@ -258,7 +280,7 @@ onUnmounted(() => {
           @pointerup="handleDialogPointerEnd"
           @pointercancel="handleDialogPointerCancel"
         >
-          <div class="photo-dialog__body">
+          <div ref="dialogBody" class="photo-dialog__body">
             <div class="photo-dialog__stage">
               <button
                 v-if="hasPrev"
@@ -312,6 +334,21 @@ onUnmounted(() => {
                 @details-touch-cancel="handleDetailsTouchCancel"
               />
             </div>
+
+            <div
+              v-if="detailPhoto && detailsOpen && isDesktop"
+              class="photo-dialog__resize-handle"
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Resize photo details panel"
+              :aria-valuemin="minRatioPercent"
+              :aria-valuemax="maxRatioPercent"
+              :aria-valuenow="ratioPercent"
+              :aria-valuetext="`${ratioPercent}% of dialog width`"
+              tabindex="0"
+              @pointerdown.stop="beginResize"
+              @keydown.stop="handleDetailsResizeKeydown"
+            />
           </div>
 
           <PhotoDetailFilmstrip />
@@ -365,7 +402,8 @@ onUnmounted(() => {
   color: var(--dialog-text);
   font-family: 'DM Sans', sans-serif;
   --dialog-filmstrip-height: 5.25rem;
-  --dialog-details-width: clamp(16rem, 19vw, 24rem);
+  --dialog-details-ratio: 0.19;
+  --dialog-details-width: clamp(16rem, calc(100% * var(--dialog-details-ratio)), 32rem);
 }
 
 .photo-dialog__nav {
@@ -378,6 +416,7 @@ onUnmounted(() => {
 }
 
 .photo-dialog__body {
+  position: relative;
   display: grid;
   grid-column: 1;
   grid-row: 1;
@@ -475,6 +514,36 @@ onUnmounted(() => {
   transition: none;
 }
 
+.photo-dialog__resize-handle {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  right: var(--dialog-details-width);
+  bottom: 0;
+  width: 0.9rem;
+  cursor: col-resize;
+  touch-action: none;
+  transform: translateX(50%);
+}
+
+.photo-dialog__resize-handle::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: var(--dialog-line);
+  content: '';
+  opacity: 0;
+  transform: translateX(-50%);
+}
+
+.photo-dialog.is-details-resizing .photo-dialog__body,
+.photo-dialog.is-details-resizing .photo-dialog__details-layer,
+.photo-dialog.is-details-resizing .photo-dialog__resize-handle {
+  transition: none !important;
+}
+
 :deep(.photo-dialog__details) {
   position: relative;
   width: 100%;
@@ -505,6 +574,12 @@ onUnmounted(() => {
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .photo-dialog__resize-handle:hover::before,
+  .photo-dialog__resize-handle:focus-visible::before,
+  .photo-dialog.is-details-resizing .photo-dialog__resize-handle::before {
+    opacity: 1;
+  }
+
   .photo-dialog__nav:hover {
     color: var(--dialog-text);
   }
@@ -521,6 +596,11 @@ onUnmounted(() => {
 .photo-dialog__nav:focus-visible {
   outline: 1px dashed var(--dialog-text);
   outline-offset: 0.35rem;
+}
+
+.photo-dialog__resize-handle:focus-visible {
+  outline: 1px dashed var(--dialog-text);
+  outline-offset: -0.05rem;
 }
 
 .photo-dialog-enter-active,

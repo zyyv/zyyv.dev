@@ -14,10 +14,10 @@ const chart = shallowRef<ChartInstance<'line'> | null>(null)
 let renderToken = 0
 
 const channelStyles: Record<HistogramChannel, { label: string; color: string; fill: string }> = {
-  red: { label: 'Red', color: '#ee7777', fill: 'rgba(238, 119, 119, 0.16)' },
-  green: { label: 'Green', color: '#70c992', fill: 'rgba(112, 201, 146, 0.16)' },
-  blue: { label: 'Blue', color: '#79aee8', fill: 'rgba(121, 174, 232, 0.16)' },
-  luminance: { label: 'Luminance', color: '#aaa99f', fill: 'rgba(170, 169, 159, 0.14)' },
+  red: { label: 'Red', color: '#ee7777cc', fill: 'rgba(238, 119, 119, 0.24)' },
+  green: { label: 'Green', color: '#70c992cc', fill: 'rgba(112, 201, 146, 0.24)' },
+  blue: { label: 'Blue', color: '#79aee8cc', fill: 'rgba(121, 174, 232, 0.24)' },
+  luminance: { label: 'Luminance', color: '#aaa99fcc', fill: 'rgba(170, 169, 159, 0.14)' },
 }
 
 async function renderChart() {
@@ -105,13 +105,13 @@ function createChartConfiguration(): ChartConfiguration<'line'> {
         tooltip: {
           displayColors: true,
           usePointStyle: true,
-          boxWidth: 8,
-          boxHeight: 8,
+          boxWidth: 4,
+          boxHeight: 4,
           boxPadding: 4,
           intersect: false,
           mode: 'index',
-          titleFont: { family: 'DM Sans, sans-serif', size: 10 },
-          bodyFont: { family: 'DM Sans, sans-serif', size: 10 },
+          titleFont: { family: 'DM Sans, sans-serif', size: 11 },
+          bodyFont: { family: 'DM Sans, sans-serif', size: 11 },
           callbacks: {
             title: (items) => `Level ${items[0]?.label ?? '—'}`,
             label: (item) => `${item.dataset.label}: ${item.formattedValue} px`,
