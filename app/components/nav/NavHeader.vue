@@ -22,11 +22,20 @@ const visibleNavigation = computed(() =>
 )
 const homeNavigation = computed(() => visibleNavigation.value.filter((item) => item.to !== '/'))
 const { mode: photosViewMode, togglePhotosView } = usePhotosViewMode()
+const nextPhotosMode = computed(() => getNextPhotosViewMode(photosViewMode.value))
+
+const photosModeIcon = computed(() => {
+  if (photosViewMode.value === 'map') return 'i-hugeicons:globe-02'
+  if (photosViewMode.value === 'ripplable') return 'i-hugeicons:ai-magic'
+  return 'i-hugeicons:image-03'
+})
 
 const photosToggleLabel = computed(() =>
-  photosViewMode.value === 'waterfall'
-    ? 'Switch photos to Ripplable view'
-    : 'Switch photos to waterfall view',
+  nextPhotosMode.value === 'waterfall'
+    ? 'Switch photos to waterfall view'
+    : nextPhotosMode.value === 'ripplable'
+      ? 'Switch photos to Ripplable view'
+      : 'Switch photos to map view',
 )
 
 function isActive(path: string) {
@@ -94,7 +103,7 @@ function isActive(path: string) {
             data-cuelume-toggle="toggle"
             @click="togglePhotosView"
           >
-            <i class="i-hugeicons:image-03 color-inherit" aria-hidden="true" />
+            <i class="color-inherit" :class="photosModeIcon" aria-hidden="true" />
             <span class="side-menu__label">Photos</span>
           </button>
 

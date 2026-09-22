@@ -44,6 +44,7 @@
     "chart.js": "^4.5.1",
     "cuelume": "^0.2.2",
     "magic-color": "^2.2.5",
+    "mapbox-gl": "^3.30.0",
     "media-chrome": "^4.19.2",
     "nuxt": "^4.5.2",
     "octokit": "^5.0.5",

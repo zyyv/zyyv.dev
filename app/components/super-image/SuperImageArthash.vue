@@ -103,7 +103,8 @@ onBeforeUnmount(() => {
 .super-image__arthash {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  /* Keep SVG shapes above the real image until their staggered exit finishes. */
+  z-index: 3;
   display: block;
   max-width: 100%;
   max-height: 100%;
@@ -114,6 +115,7 @@ onBeforeUnmount(() => {
 }
 
 .super-image__arthash--bitmap {
+  z-index: 1;
   object-fit: fill;
   opacity: 1;
   transition: opacity 320ms ease;

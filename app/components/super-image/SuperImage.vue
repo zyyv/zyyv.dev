@@ -294,7 +294,6 @@ onBeforeUnmount(() => {
       :arthash-options="effectiveArthashOptions"
       :asset-style="props.assetStyle"
       :revealed="arthashRevealed"
-      :animate-reveal="false"
     />
 
     <span class="super-image__asset-stack">

@@ -3,6 +3,7 @@ import { onBeforeRouteLeave } from 'vue-router'
 import type { Photo } from '~/types'
 import PhotoDetail from '~/components/photos/detail/PhotoDetail.vue'
 import PhotoGallery from '~/components/photos/gallery/PhotoGallery.vue'
+import PhotoMap from '~/components/photos/map/PhotoMap.vue'
 import RipplablePhotos from '~/components/photos/ripplable/RipplablePhotos.vue'
 
 const route = useRoute()
@@ -149,6 +150,7 @@ useHead(() => ({
         :photos="photos"
         @open="openPreview"
       />
+      <PhotoMap v-else-if="mode === 'map'" key="map" :photos="photos" @open="openPreview" />
       <RipplablePhotos
         v-else
         key="ripplable"

@@ -22,6 +22,13 @@ variants and sends the original, compressed image, thumbnail, and metadata to D1
 loads the photo list through `/api/photos`; generated photo files are not committed under
 `public/`.
 
+The full-screen photo map uses Mapbox GL JS. Set a public token with URL restrictions before
+opening `/photos?mode=map`:
+
+```bash
+NUXT_PUBLIC_MAPBOX_TOKEN=pk.your-public-token
+```
+
 ## Checks
 
 ```bash

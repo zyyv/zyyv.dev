@@ -65,6 +65,7 @@ export default defineNuxtConfig({
 
     public: {
       buildCommit: getBuildCommit(),
+      mapboxToken: process.env.NUXT_PUBLIC_MAPBOX_TOKEN || process.env.MAPBOX_ACCESS_TOKEN || '',
     },
   },
 

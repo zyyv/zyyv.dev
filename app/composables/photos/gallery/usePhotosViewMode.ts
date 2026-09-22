@@ -1,7 +1,16 @@
-export type PhotosViewMode = 'waterfall' | 'ripplable'
+export type PhotosViewMode = 'waterfall' | 'ripplable' | 'map'
+
+const PHOTOS_VIEW_MODES: PhotosViewMode[] = ['waterfall', 'ripplable', 'map']
 
 function getPhotosViewMode(value: unknown): PhotosViewMode {
-  return value === 'ripplable' ? 'ripplable' : 'waterfall'
+  return PHOTOS_VIEW_MODES.includes(value as PhotosViewMode)
+    ? (value as PhotosViewMode)
+    : 'waterfall'
+}
+
+export function getNextPhotosViewMode(mode: PhotosViewMode): PhotosViewMode {
+  const currentIndex = PHOTOS_VIEW_MODES.indexOf(mode)
+  return PHOTOS_VIEW_MODES[(currentIndex + 1) % PHOTOS_VIEW_MODES.length] || 'waterfall'
 }
 
 export function usePhotosViewMode() {
@@ -12,7 +21,7 @@ export function usePhotosViewMode() {
   const mode = computed(() => getPhotosViewMode(route.query.mode))
 
   async function togglePhotosView() {
-    const nextMode = mode.value === 'waterfall' ? 'ripplable' : 'waterfall'
+    const nextMode = getNextPhotosViewMode(mode.value)
     const navigate = () =>
       router.push({
         query: {

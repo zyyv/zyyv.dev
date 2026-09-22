@@ -200,5 +200,9 @@ onBeforeUnmount(clearRemovalTimer)
   .arthash-placeholder {
     transition-duration: 1ms;
   }
+
+  .arthash-placeholder :deep(svg *) {
+    transition: none !important;
+  }
 }
 </style>
