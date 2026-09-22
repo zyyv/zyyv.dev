@@ -1,15 +1,32 @@
 <script setup lang="ts">
 import { onBeforeRouteLeave } from 'vue-router'
+import { play } from 'cuelume'
 import type { Photo } from '~/types'
 import PhotoDetail from '~/components/photos/detail/PhotoDetail.vue'
 import PhotoGallery from '~/components/photos/gallery/PhotoGallery.vue'
-import PhotoMap from '~/components/photos/map/PhotoMap.vue'
-import RipplablePhotos from '~/components/photos/ripplable/RipplablePhotos.vue'
+import PhotoViewLoading from '~/components/photos/PhotoViewLoading.vue'
+
+const PhotoMap = defineAsyncComponent({
+  loader: () => import('~/components/photos/map/PhotoMap.vue'),
+  loadingComponent: PhotoViewLoading,
+  suspensible: false,
+})
+const RipplablePhotos = defineAsyncComponent({
+  loader: () => import('~/components/photos/ripplable/RipplablePhotos.vue'),
+  loadingComponent: PhotoViewLoading,
+  suspensible: false,
+})
 
 const route = useRoute()
 const router = useRouter()
 const photosPageRef = useTemplateRef<HTMLElement>('photosPage')
-const { data: photoResponse } = await usePublicPhotos()
+const { data: photoResponse, status, error, refresh } = usePublicPhotos({ lazy: true })
+
+async function retryPhotos() {
+  await refresh()
+  play(error.value ? 'error' : 'success')
+}
+
 const photos = computed(() => photoResponse.value.photos)
 const currentPhoto = shallowRef<Photo | null>(null)
 const syncingPhotoQuery = shallowRef(false)
@@ -86,7 +103,7 @@ function openSharedPhoto(photoId: string | null) {
   if (photo) void openPreview(photo)
 }
 
-watch(sharedPhotoId, (photoId) => {
+watch([sharedPhotoId, photos], ([photoId]) => {
   if (syncingPhotoQuery.value) return
   openSharedPhoto(photoId)
 })
@@ -139,7 +156,21 @@ useHead(() => ({
 
 <template>
   <div ref="photosPage" class="photos-page">
+    <div
+      v-if="!photos.length && (status === 'idle' || status === 'pending' || error)"
+      class="flex h-full flex-col items-center justify-center gap-3 px-6 text-center"
+      role="status"
+    >
+      <template v-if="error && status !== 'pending'">
+        <p>Photos could not be loaded.</p>
+        <button type="button" class="underline" data-cuelume-toggle="pulse" @click="retryPhotos">
+          Try again
+        </button>
+      </template>
+      <p v-else>Loading photos…</p>
+    </div>
     <Transition
+      v-else
       name="photos-view"
       :mode="isTransitioning ? undefined : 'out-in'"
       :css="!isTransitioning"

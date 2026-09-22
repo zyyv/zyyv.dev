@@ -6,11 +6,13 @@ const showPhotos = shallowRef(false)
 const { stop } = useIntersectionObserver(
   photoSection,
   ([entry]) => {
-    if (!entry?.isIntersecting) return
+    if (!entry?.isIntersecting || entry.intersectionRatio < 0.01) return
     showPhotos.value = true
     stop()
   },
-  { rootMargin: '400px' },
+  // The section begins just below the hero; a positive margin starts its GPU
+  // renderer and photo downloads during the initial viewport's hydration.
+  { threshold: 0.01 },
 )
 </script>
 

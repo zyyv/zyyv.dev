@@ -56,7 +56,9 @@ export default defineNuxtConfig({
 
   experimental: {
     defaults: { nuxtLink: { prefetchOn: { interaction: true, visibility: false } } },
-    viewTransition: true,
+    // Route snapshots freeze rendering while async pages resolve. Keep photo
+    // dialog/view transitions local so network waits cannot freeze navigation.
+    viewTransition: false,
   },
 
   runtimeConfig: {

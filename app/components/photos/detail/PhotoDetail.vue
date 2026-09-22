@@ -8,7 +8,8 @@ import { usePhotoDetailResize } from '~/composables/photos/detail/usePhotoDetail
 import PhotoDetailCanvas from './media/PhotoDetailCanvas.vue'
 import PhotoDetailControls from './controls/PhotoDetailControls.vue'
 import PhotoDetailFilmstrip from './PhotoDetailFilmstrip.vue'
-import PhotoDetailMetadata from './metadata/PhotoDetailMetadata.vue'
+
+const PhotoDetailMetadata = defineAsyncComponent(() => import('./metadata/PhotoDetailMetadata.vue'))
 
 interface Props {
   photo: Photo | null
@@ -328,6 +329,7 @@ onUnmounted(() => {
               :aria-hidden="!detailsOpen"
             >
               <PhotoDetailMetadata
+                v-if="detailsOpen"
                 @details-touch-start="handleDetailsTouchStart"
                 @details-touch-move="handleDetailsTouchMove"
                 @details-touch-end="handleDetailsTouchEnd"
