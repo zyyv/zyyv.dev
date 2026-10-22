@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import { socialLinks } from '~/utils/socialLinks'
 
 const config = useRuntimeConfig()
@@ -26,15 +27,15 @@ function backToTop() {
 
 <template>
   <footer class="site-footer" :class="{ 'site-footer--home': isHome }">
-    <p class="site-footer__statement">
-      <span>You found the edge</span>
-      <span>of the page. Nothing fell off.</span>
-    </p>
+    <MotionRevealGroup as="p" class="site-footer__statement">
+      <span data-motion-reveal>You found the edge</span>
+      <span data-motion-reveal>of the page. Nothing fell off.</span>
+    </MotionRevealGroup>
 
-    <div class="site-footer__base">
+    <MotionRevealGroup as="div" :delay="0.3" class="site-footer__base">
       <div class="site-footer__identity">
-        <p>© {{ year }} Chris</p>
-        <dl class="site-footer__stats" aria-label="Site activity">
+        <p data-motion-reveal>© {{ year }} Chris</p>
+        <dl data-motion-reveal class="site-footer__stats" aria-label="Site activity">
           <div>
             <dt class="site-footer__online-label">
               <StatusDot :active="isPresenceConnected" pulse />
@@ -50,6 +51,7 @@ function backToTop() {
           <a
             v-for="link in socialLinks"
             :key="link.label"
+            data-motion-reveal
             :href="link.href"
             :target="link.external ? '_blank' : undefined"
             :rel="link.external ? 'noreferrer' : undefined"
@@ -62,6 +64,7 @@ function backToTop() {
 
       <div class="site-footer__actions">
         <a
+          data-motion-reveal
           :href="commitUrl"
           target="_blank"
           rel="noreferrer"
@@ -73,6 +76,7 @@ function backToTop() {
         </a>
 
         <button
+          data-motion-reveal
           type="button"
           aria-label="Back to top"
           data-cuelume-hover="tick"
@@ -83,7 +87,7 @@ function backToTop() {
           <i class="i-hugeicons:arrow-up-01" aria-hidden="true" />
         </button>
       </div>
-    </div>
+    </MotionRevealGroup>
   </footer>
 </template>
 

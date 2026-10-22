@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import type { Repo } from '~/types'
 
 const props = defineProps<{
@@ -47,14 +48,19 @@ function resetTilt(event: PointerEvent) {
 </script>
 
 <template>
-  <article
+  <MotionRevealGroup
+    as="article"
+    :delay="Math.min(index ?? 0, 3) * 0.1"
     class="project-card"
-    :style="{ '--project-index': index ?? 0 }"
     @pointermove="updateTilt"
     @pointerleave="resetTilt"
   >
     <div class="project-card__surface">
-      <div class="project-card__preview" :class="{ 'is-repository': !previewUrl }">
+      <div
+        data-motion-reveal
+        class="project-card__preview"
+        :class="{ 'is-repository': !previewUrl }"
+      >
         <template v-if="previewUrl">
           <div v-if="!previewLoaded" class="project-card__loading" aria-hidden="true" />
           <iframe
@@ -79,23 +85,26 @@ function resetTilt(event: PointerEvent) {
       </div>
 
       <div class="project-card__content">
-        <h3>{{ repo.name }}</h3>
-        <p>{{ repo.description || 'Source code and project notes on GitHub.' }}</p>
+        <h3 data-motion-reveal>{{ repo.name }}</h3>
+        <p data-motion-reveal>
+          {{ repo.description || 'Source code and project notes on GitHub.' }}
+        </p>
 
         <div class="project-card__meta">
-          <span v-if="repo.language" class="project-card__language">
+          <span v-if="repo.language" data-motion-reveal class="project-card__language">
             <StatusDot :color="getLanguageColor(repo.language)" />
             {{ repo.language }}
           </span>
-          <span v-if="repo.stargazers_count" title="GitHub stars">
+          <span v-if="repo.stargazers_count" data-motion-reveal title="GitHub stars">
             <i i-hugeicons:star />
             {{ repo.stargazers_count }}
           </span>
-          <span v-if="repo.forks_count" title="GitHub forks">
+          <span v-if="repo.forks_count" data-motion-reveal title="GitHub forks">
             <i i-hugeicons:git-fork />
             {{ repo.forks_count }}
           </span>
           <a
+            data-motion-reveal
             class="project-card__source"
             :href="repo.html_url"
             target="_blank"
@@ -121,7 +130,7 @@ function resetTilt(event: PointerEvent) {
         data-cuelume-toggle="scan"
       />
     </div>
-  </article>
+  </MotionRevealGroup>
 </template>
 
 <style scoped>
@@ -143,8 +152,6 @@ function resetTilt(event: PointerEvent) {
   position: relative;
   min-width: 0;
   perspective: 70rem;
-  animation: project-card-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--project-index) * 45ms);
 }
 
 :global(.dark) .project-card {
@@ -400,13 +407,6 @@ function resetTilt(event: PointerEvent) {
   inset: 0;
   z-index: 4;
   border-radius: 0.45rem;
-}
-
-@keyframes project-card-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.8rem);
-  }
 }
 
 @keyframes project-loading {

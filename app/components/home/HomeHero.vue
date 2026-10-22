@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import { socialLinks } from '~/utils/socialLinks'
 
 const { user, loadUser } = useUser()
@@ -7,14 +8,15 @@ onMounted(loadUser)
 </script>
 
 <template>
-  <section
+  <MotionRevealGroup
+    as="section"
     class="home-hero relative flex min-h-dvh overflow-hidden px-4 py-20 md:px-16 md:py-24"
     aria-labelledby="home-hero-title"
   >
     <div
       class="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center gap-8 md:gap-12"
     >
-      <div class="home-hero__avatar relative z-1 size-28 flex-none md:size-36">
+      <div data-motion-reveal class="home-hero__avatar relative z-1 size-28 flex-none md:size-36">
         <span class="home-hero__avatar-aura" aria-hidden="true" />
         <span class="home-hero__avatar-orbit" aria-hidden="true" />
         <img
@@ -30,14 +32,14 @@ onMounted(loadUser)
       <div class="relative z-2 w-full max-w-6xl">
         <h1 id="home-hero-title" class="home-hero__title">
           <span class="flex flex-col items-center justify-center gap-1 sm:flex-row sm:gap-3">
-            <span class="inline-flex items-center">
+            <span data-motion-reveal class="inline-flex items-center">
               <i
                 class="home-hero__title-icon i-hugeicons:ai-programming text-green-500"
                 aria-hidden="true"
               />
               code
             </span>
-            <span class="inline-flex items-center sm:ml-2">
+            <span data-motion-reveal class="inline-flex items-center sm:ml-2">
               <i
                 class="home-hero__title-icon i-hugeicons:camera-02 text-violet-500"
                 aria-hidden="true"
@@ -47,7 +49,7 @@ onMounted(loadUser)
           </span>
 
           <span class="mt-1 flex flex-col items-center sm:mt-2 sm:flex-row sm:gap-3">
-            <span class="inline-flex items-center">
+            <span data-motion-reveal class="inline-flex items-center">
               <span aria-hidden="true">&amp;</span>
               <i
                 class="home-hero__title-icon home-hero__title-icon--idea i-hugeicons:ai-idea text-rose-300"
@@ -55,7 +57,9 @@ onMounted(loadUser)
               />
               curious
             </span>
-            <em class="border-b-2 border-rose-300 pb-1 font-serif font-normal text-rose-300 italic"
+            <em
+              data-motion-reveal
+              class="border-b-2 border-rose-300 pb-1 font-serif font-normal text-rose-300 italic"
               >things.</em
             >
           </span>
@@ -64,12 +68,13 @@ onMounted(loadUser)
     </div>
 
     <div class="home-hero__signature">
-      <p>「{{ user.bio }}」</p>
+      <p data-motion-reveal>「{{ user.bio }}」</p>
 
       <nav class="home-hero__socials" aria-label="Social links">
         <a
           v-for="link in socialLinks"
           :key="link.label"
+          data-motion-reveal
           :href="link.href"
           :aria-label="link.label"
           :title="link.label"
@@ -81,7 +86,7 @@ onMounted(loadUser)
         </a>
       </nav>
     </div>
-  </section>
+  </MotionRevealGroup>
 </template>
 
 <style scoped>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import type { Map as MapboxMap, Marker as MapboxMarker } from 'mapbox-gl'
 import type { Photo } from '~/types'
 import { hashFraction } from '~/utils/shuffle'
@@ -501,36 +502,44 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div
+    <MotionRevealGroup
       v-if="mapStatus !== 'ready'"
+      as="div"
       class="photo-map__state panel-surface"
       role="status"
       aria-live="polite"
     >
-      <div class="photo-map__state-icon">
+      <div class="photo-map__state-icon" data-motion-reveal>
         <i
           :class="mapStatus === 'error' ? 'i-hugeicons:globe-off' : 'i-hugeicons:globe-02'"
           aria-hidden="true"
         />
       </div>
-      <h2>{{ mapStateCopy.title }}</h2>
-      <p>{{ mapStateCopy.description }}</p>
-      <code v-if="!mapboxToken">NUXT_PUBLIC_MAPBOX_TOKEN</code>
-    </div>
+      <h2 data-motion-reveal>{{ mapStateCopy.title }}</h2>
+      <p data-motion-reveal>{{ mapStateCopy.description }}</p>
+      <code v-if="!mapboxToken" data-motion-reveal>NUXT_PUBLIC_MAPBOX_TOKEN</code>
+    </MotionRevealGroup>
 
-    <div v-else-if="!locatedPhotos.length" class="photo-map__state panel-surface" role="status">
-      <div class="photo-map__state-icon">
+    <MotionRevealGroup
+      v-else-if="!locatedPhotos.length"
+      as="div"
+      class="photo-map__state panel-surface"
+      role="status"
+    >
+      <div class="photo-map__state-icon" data-motion-reveal>
         <i class="i-hugeicons:location-offline-01" aria-hidden="true" />
       </div>
-      <h2>{{ props.photos.length ? 'No geotagged photos yet' : 'No photos yet' }}</h2>
-      <p>
+      <h2 data-motion-reveal>
+        {{ props.photos.length ? 'No geotagged photos yet' : 'No photos yet' }}
+      </h2>
+      <p data-motion-reveal>
         {{
           props.photos.length
             ? 'Photos with GPS coordinates will appear here automatically.'
             : 'Add photographs with GPS metadata to start building this atlas.'
         }}
       </p>
-    </div>
+    </MotionRevealGroup>
 
     <Transition name="photo-map-card">
       <article v-if="selectedPhoto && selectedLocation" class="photo-map__selected panel-surface">

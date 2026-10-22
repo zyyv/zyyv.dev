@@ -25,7 +25,7 @@ export function useAdminSession() {
   const checking = useState('admin-session:checking', () => false)
   const mutating = useState('admin-session:mutating', () => false)
   const error = useState<string | null>('admin-session:error', () => null)
-  const requestFetch = import.meta.server ? useRequestFetch() : $fetch
+  const requestFetch = useRequestFetch()
 
   async function refreshSession(force = false) {
     if (!force && authenticated.value !== null) return authenticated.value

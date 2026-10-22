@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
+</script>
+
 <template>
   <section class="photo-empty" aria-labelledby="photo-empty-title">
     <div class="photo-empty__visual" aria-hidden="true">
@@ -14,21 +18,22 @@
       </div>
     </div>
 
-    <div class="photo-empty__copy">
-      <h1 id="photo-empty-title">No photos yet.</h1>
-      <p class="photo-empty__description">
+    <MotionRevealGroup as="div" class="photo-empty__copy">
+      <h1 id="photo-empty-title" data-motion-reveal>No photos yet.</h1>
+      <p class="photo-empty__description" data-motion-reveal>
         New work will appear here after it is added to the collection.
       </p>
       <NuxtLink
         class="photo-empty__link"
         to="/"
+        data-motion-reveal
         data-cuelume-hover="tick"
         data-cuelume-toggle="page"
       >
         <span>Back Home</span>
         <i class="i-hugeicons:arrow-up-right-02" aria-hidden="true" />
       </NuxtLink>
-    </div>
+    </MotionRevealGroup>
   </section>
 </template>
 
@@ -191,10 +196,6 @@ html.dark .photo-empty__visual {
   .photo-empty__frame--front {
     animation-delay: 140ms;
   }
-
-  .photo-empty__copy {
-    animation: photo-empty-copy-in 680ms 150ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
 }
 
 @keyframes photo-empty-frame-in {
@@ -202,13 +203,6 @@ html.dark .photo-empty__visual {
     opacity: 0;
     scale: 0.94;
     translate: 0 1.25rem;
-  }
-}
-
-@keyframes photo-empty-copy-in {
-  from {
-    opacity: 0;
-    transform: translateY(1rem);
   }
 }
 

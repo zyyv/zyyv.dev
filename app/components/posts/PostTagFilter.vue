@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
+
 interface Props {
   tags: string[]
   selectedTags: string[]
@@ -23,9 +25,9 @@ const tagOptions = computed(() => props.tags.map((tag) => ({ name: tag, tone: ge
 </script>
 
 <template>
-  <section class="tag-filter" aria-label="Search and filter posts">
+  <MotionRevealGroup as="section" class="tag-filter" aria-label="Search and filter posts">
     <div class="tag-filter__controls">
-      <label class="tag-filter__search">
+      <label class="tag-filter__search" data-motion-reveal>
         <span class="sr-only">Search posts</span>
         <input
           v-model="searchQuery"
@@ -45,6 +47,7 @@ const tagOptions = computed(() => props.tags.map((tag) => ({ name: tag, tone: ge
           { 'tag-filter__tag--active': selectedTagSet.has(tag.name) },
         ]"
         :aria-pressed="selectedTagSet.has(tag.name)"
+        data-motion-reveal
         data-cuelume-toggle="toggle"
         @click="emit('toggle', tag.name)"
       >
@@ -52,7 +55,7 @@ const tagOptions = computed(() => props.tags.map((tag) => ({ name: tag, tone: ge
         <span>{{ tag.name }}</span>
       </button>
     </div>
-  </section>
+  </MotionRevealGroup>
 </template>
 
 <style scoped>

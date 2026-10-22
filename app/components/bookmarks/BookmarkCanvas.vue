@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { play } from 'cuelume'
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import type { BookmarkNode } from '~/utils/bookmarks'
 import { createBookmarkCanvasLayout, ROOT_ID } from '~/utils/bookmarkCanvas'
 import BookmarkInspector from './BookmarkInspector.vue'
@@ -126,16 +127,16 @@ watch(layout, () => {
 
 <template>
   <section class="bookmark-canvas" aria-label="书签关系画布">
-    <header data-canvas-ui class="canvas-header">
-      <h1 class="canvas-title">Bookmarks</h1>
+    <MotionRevealGroup as="header" data-canvas-ui class="canvas-header">
+      <h1 class="canvas-title" data-motion-reveal>Bookmarks</h1>
 
-      <label class="canvas-search">
+      <label class="canvas-search" data-motion-reveal>
         <i class="i-hugeicons:search-01" aria-hidden="true" text-xs />
         <input ref="searchInput" v-model="query" type="search" placeholder="Search" />
         <kbd>/</kbd>
       </label>
 
-      <div class="canvas-controls" aria-label="画布缩放控制">
+      <div class="canvas-controls" aria-label="画布缩放控制" data-motion-reveal>
         <button
           type="button"
           aria-label="缩小"
@@ -174,7 +175,7 @@ watch(layout, () => {
           <i class="i-hugeicons:center-focus" />
         </button>
       </div>
-    </header>
+    </MotionRevealGroup>
 
     <div
       ref="viewport"
@@ -221,14 +222,20 @@ watch(layout, () => {
         :y="previewY"
       />
 
-      <div v-if="!items.length" class="canvas-empty">
-        <i class="i-hugeicons:route-02" aria-hidden="true" />
-        <h2>No bookmarks found</h2>
-        <p>Try another search.</p>
-        <button v-if="query" type="button" data-cuelume-toggle="droplet" @click="query = ''">
+      <MotionRevealGroup v-if="!items.length" as="div" class="canvas-empty">
+        <i class="i-hugeicons:route-02" aria-hidden="true" data-motion-reveal />
+        <h2 data-motion-reveal>No bookmarks found</h2>
+        <p data-motion-reveal>Try another search.</p>
+        <button
+          v-if="query"
+          type="button"
+          data-motion-reveal
+          data-cuelume-toggle="droplet"
+          @click="query = ''"
+        >
           Reset view
         </button>
-      </div>
+      </MotionRevealGroup>
     </div>
   </section>
 </template>

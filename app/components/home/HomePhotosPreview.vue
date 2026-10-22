@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import type { Photo } from '~/types'
 import { useVgpuPhotoTunnel } from '~/composables/visual/useVgpuPhotoTunnel'
 import { hashFraction } from '~/utils/shuffle'
@@ -50,11 +51,11 @@ function itemStyle(photo: Photo): CSSProperties {
 
 <template>
   <section class="photo-stream" aria-label="Photography">
-    <header class="photo-stream__header">
+    <MotionRevealGroup as="header" class="photo-stream__header">
       <div class="photo-stream__intro">
-        <p>Light, weather, and ordinary moments worth keeping.</p>
+        <p data-motion-reveal>Light, weather, and ordinary moments worth keeping.</p>
       </div>
-    </header>
+    </MotionRevealGroup>
 
     <div
       v-if="photos.length"
@@ -70,11 +71,11 @@ function itemStyle(photo: Photo): CSSProperties {
           aria-hidden="true"
         />
 
-        <div class="photo-stream__tunnel-caption">
-          <p class="photo-stream__tunnel-copy">
+        <MotionRevealGroup as="div" class="photo-stream__tunnel-caption">
+          <p class="photo-stream__tunnel-copy" data-motion-reveal>
             More light, places, and accidental frames live in the full archive.
           </p>
-        </div>
+        </MotionRevealGroup>
 
         <div v-if="!isReady" class="photo-stream__fallback">
           <figure

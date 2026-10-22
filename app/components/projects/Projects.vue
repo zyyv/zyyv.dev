@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import type { Repo } from '~/types'
 
 const data = ref<Record<string, Repo[]> | null>(null)
@@ -40,10 +41,10 @@ onMounted(async () => {
 
     <template v-else-if="status === 'success'">
       <section v-for="(repos, key) in data" :key="key" class="projects__group">
-        <header class="projects__group-heading">
-          <h2>{{ key }}</h2>
-          <span>{{ String(repos.length).padStart(2, '0') }}</span>
-        </header>
+        <MotionRevealGroup as="header" class="projects__group-heading">
+          <h2 data-motion-reveal>{{ key }}</h2>
+          <span data-motion-reveal>{{ String(repos.length).padStart(2, '0') }}</span>
+        </MotionRevealGroup>
         <div class="projects__grid">
           <ProjectsRepoCard
             v-for="(repo, index) in repos"
@@ -55,21 +56,22 @@ onMounted(async () => {
       </section>
     </template>
 
-    <div v-else class="projects__error" role="status">
-      <i i-hugeicons:cloud-server aria-hidden="true" />
+    <MotionRevealGroup v-else as="div" class="projects__error" role="status">
+      <i i-hugeicons:cloud-server aria-hidden="true" data-motion-reveal />
       <div>
-        <h2>Repositories unavailable</h2>
-        <p>{{ errorMessage }} You can still find the latest work on GitHub.</p>
+        <h2 data-motion-reveal>Repositories unavailable</h2>
+        <p data-motion-reveal>{{ errorMessage }} You can still find the latest work on GitHub.</p>
         <a
           href="https://github.com/zyyv"
           target="_blank"
           rel="noreferrer"
+          data-motion-reveal
           data-cuelume-hover="tick"
           data-cuelume-toggle="scan"
           >Open GitHub</a
         >
       </div>
-    </div>
+    </MotionRevealGroup>
   </section>
 </template>
 

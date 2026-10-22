@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
+
 const props = defineProps<{
   ready: boolean
 }>()
@@ -55,15 +57,21 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="bookmark-loading" aria-label="Loading bookmarks">
+  <MotionRevealGroup as="section" class="bookmark-loading" aria-label="Loading bookmarks">
     <div class="bookmark-loading__content">
-      <i class="i-hugeicons:book-open-02 bookmark-loading__icon" aria-hidden="true" />
+      <i
+        class="i-hugeicons:book-open-02 bookmark-loading__icon"
+        aria-hidden="true"
+        data-motion-reveal
+      />
 
       <div class="bookmark-loading__copy">
-        <h1 class="bookmark-loading__title">Turn your bookmarks into a map you can explore.</h1>
+        <h1 class="bookmark-loading__title" data-motion-reveal>
+          Turn your bookmarks into a map you can explore.
+        </h1>
       </div>
 
-      <div class="bookmark-loading__status">
+      <div class="bookmark-loading__status" data-motion-reveal>
         <div
           class="bookmark-loading__track"
           role="progressbar"
@@ -80,7 +88,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
-  </section>
+  </MotionRevealGroup>
 </template>
 
 <style scoped>

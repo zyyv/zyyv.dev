@@ -19,6 +19,7 @@ defineProps<{
     <li v-for="link in links" :key="link.id" :class="`pl-${link.depth * 4}`">
       <a
         :href="`#${link.id}`"
+        data-motion-reveal
         class="text op-50 trans"
         :class="highlights.includes(link.id) ? 'op-100!' : ''"
         hover="underline op-100"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import { buildBookmarkTree, filterBookmarkTree } from '~/utils/bookmarks'
 import BookmarkCanvas from './BookmarkCanvas.vue'
 import BookmarkLoading from './BookmarkLoading.vue'
@@ -20,9 +21,10 @@ onMounted(loadBookmarks)
       <BookmarkCanvas v-if="!showLoading" v-model:query="query" :items="filteredTree" />
     </Transition>
 
-    <p v-if="error" class="bookmarks-error" role="alert">
-      <i class="i-hugeicons:alert-02" aria-hidden="true" /> {{ error }}
-    </p>
+    <MotionRevealGroup v-if="error" as="p" class="bookmarks-error" role="alert">
+      <i class="i-hugeicons:alert-02" aria-hidden="true" data-motion-reveal />
+      <span data-motion-reveal>{{ error }}</span>
+    </MotionRevealGroup>
   </div>
 </template>
 

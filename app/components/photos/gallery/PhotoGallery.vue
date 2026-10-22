@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { Photo } from '~/types'
 import { VirtualWaterfall } from '@lhlyu/vue-virtual-waterfall'
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import PhotoCard from './card/PhotoCard.vue'
 import PhotoEmptyState from './PhotoEmptyState.vue'
 
@@ -38,18 +39,23 @@ function openPreview(photo: Photo, source: HTMLElement) {
 <template>
   <div class="photos-gallery flex h-full min-h-0 w-full flex-col" :class="{ 'h-auto': pageScroll }">
     <!-- 错误状态 -->
-    <div v-if="error" class="flex flex-col justify-center items-center h-64 p-4">
-      <div class="text-red-500 text-lg mb-4">
+    <MotionRevealGroup
+      v-if="error"
+      as="div"
+      class="flex flex-col justify-center items-center h-64 p-4"
+    >
+      <div class="text-red-500 text-lg mb-4" data-motion-reveal>
         {{ error }}
       </div>
       <button
         class="px-4 py-2 bg-blue-500 text-white rounded @hover:bg-blue-600 transition-colors"
+        data-motion-reveal
         data-cuelume-toggle="pulse"
         @click="refreshPhotos"
       >
         Reload
       </button>
-    </div>
+    </MotionRevealGroup>
 
     <!-- 初始加载状态 -->
     <div v-else-if="!allPhotos.length && loading" class="flex justify-center items-center h-64">

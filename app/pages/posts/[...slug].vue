@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import { calculateReadingTime } from '~/utils/posts'
 
 const route = useRoute()
@@ -45,34 +46,39 @@ useHead(() => ({
 <template>
   <div v-if="post" class="post-page interior-shell">
     <article>
-      <header class="post-header">
+      <MotionRevealGroup as="header" class="post-header">
         <Back label="All posts" />
 
         <div class="post-header__meta">
-          <time :datetime="new Date(post.date).toISOString()">
+          <time data-motion-reveal :datetime="new Date(post.date).toISOString()">
             {{ useDateFormat(post.date, 'MMMM DD, YYYY', { locales: 'en-US' }) }}
           </time>
-          <span>{{ readingMinutes }} min read</span>
-          <span>{{ post.lang }}</span>
+          <span data-motion-reveal>{{ readingMinutes }} min read</span>
+          <span data-motion-reveal>{{ post.lang }}</span>
         </div>
 
-        <h1>{{ post.title }}</h1>
-        <p class="post-header__description">{{ post.description }}</p>
+        <h1 data-motion-reveal>{{ post.title }}</h1>
+        <p data-motion-reveal class="post-header__description">{{ post.description }}</p>
 
         <ul class="post-header__tags" aria-label="Article tags">
-          <li v-for="tag in post.tags" :key="tag">{{ tag }}</li>
+          <li v-for="tag in post.tags" :key="tag" data-motion-reveal>{{ tag }}</li>
         </ul>
-      </header>
+      </MotionRevealGroup>
 
       <div class="post-layout">
         <div class="post-body prose dark:prose-invert">
           <ContentRenderer :value="post" />
         </div>
 
-        <aside v-if="tocLinks.length" class="post-toc" aria-label="Table of contents">
-          <p>On this page</p>
+        <MotionRevealGroup
+          v-if="tocLinks.length"
+          as="aside"
+          class="post-toc"
+          aria-label="Table of contents"
+        >
+          <p data-motion-reveal>On this page</p>
           <Toc :links="tocLinks" :highlights="[]" />
-        </aside>
+        </MotionRevealGroup>
       </div>
     </article>
   </div>

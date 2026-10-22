@@ -46,6 +46,7 @@
     "magic-color": "^2.2.5",
     "mapbox-gl": "^3.31.0",
     "media-chrome": "^4.19.2",
+    "motion-v": "^2.4.4",
     "nuxt": "^4.5.2",
     "octokit": "^5.0.5",
     "ripplable": "^0.3.0",

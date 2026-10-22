@@ -2,6 +2,7 @@
 import { onBeforeRouteLeave } from 'vue-router'
 import { play } from 'cuelume'
 import type { Photo } from '~/types'
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import PhotoDetail from '~/components/photos/detail/PhotoDetail.vue'
 import PhotoGallery from '~/components/photos/gallery/PhotoGallery.vue'
 import PhotoViewLoading from '~/components/photos/PhotoViewLoading.vue'
@@ -156,19 +157,26 @@ useHead(() => ({
 
 <template>
   <div ref="photosPage" class="photos-page">
-    <div
+    <MotionRevealGroup
       v-if="!photos.length && (status === 'idle' || status === 'pending' || error)"
+      as="div"
       class="flex h-full flex-col items-center justify-center gap-3 px-6 text-center"
       role="status"
     >
       <template v-if="error && status !== 'pending'">
-        <p>Photos could not be loaded.</p>
-        <button type="button" class="underline" data-cuelume-toggle="pulse" @click="retryPhotos">
+        <p data-motion-reveal>Photos could not be loaded.</p>
+        <button
+          type="button"
+          class="underline"
+          data-motion-reveal
+          data-cuelume-toggle="pulse"
+          @click="retryPhotos"
+        >
           Try again
         </button>
       </template>
-      <p v-else>Loading photos…</p>
-    </div>
+      <p v-else data-motion-reveal>Loading photos…</p>
+    </MotionRevealGroup>
     <Transition
       v-else
       name="photos-view"

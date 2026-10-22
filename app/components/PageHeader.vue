@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
+
 defineProps<{
   title: string
   description: string
@@ -7,11 +9,11 @@ defineProps<{
 </script>
 
 <template>
-  <header class="page-header">
-    <p v-if="eyebrow" class="page-header__eyebrow">{{ eyebrow }}</p>
-    <h1>{{ title }}</h1>
-    <p class="page-header__description">{{ description }}</p>
-  </header>
+  <MotionRevealGroup as="header" class="page-header">
+    <p v-if="eyebrow" data-motion-reveal class="page-header__eyebrow">{{ eyebrow }}</p>
+    <h1 data-motion-reveal>{{ title }}</h1>
+    <p data-motion-reveal class="page-header__description">{{ description }}</p>
+  </MotionRevealGroup>
 </template>
 
 <style scoped>

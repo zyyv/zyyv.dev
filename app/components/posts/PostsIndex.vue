@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import MotionRevealGroup from '~/components/motion/MotionRevealGroup.vue'
 import type { PostPreview } from '~/types'
 import PostTagFilter from './PostTagFilter.vue'
 
@@ -70,13 +71,16 @@ const sortedPosts = computed(() => {
       v-if="sortedPosts.length"
       class="m-0 grid grid-cols-1 gap-y-[clamp(2.5rem,5vw,4rem)] p-0 rule-1 rule-solid rule-current/10 rule-break-intersection rule-visibility-between mb-[clamp(2.75rem,6vw,4.5rem)]"
     >
-      <li
+      <MotionRevealGroup
+        as="li"
         v-for="(post, index) in sortedPosts"
         :key="post.id"
+        :delay="Math.min(index, 3) * 0.1"
         class="grid grid-cols-[1.4rem_minmax(0,1fr)] gap-[clamp(0.75rem,2vw,1.5rem)] py-[clamp(0.25rem,1vw,0.75rem)] transition-opacity duration-240 ease md:grid-cols-[2rem_minmax(0,1fr)] motion-reduce:transition-none"
         :class="{ 'op-28': isDimmed(post) }"
       >
         <span
+          data-motion-reveal
           class="pt-[0.38rem] text-[0.62rem] op-38 [font-variant-numeric:tabular-nums]"
           aria-hidden="true"
         >
@@ -90,6 +94,7 @@ const sortedPosts = computed(() => {
             data-cuelume-hover="tick"
           >
             <h2
+              data-motion-reveal
               class="m-0 max-w-23ch text-[clamp(1.35rem,3vw,2rem)] font-500 leading-[1.08] tracking-[-0.04em] [text-wrap:balance]"
             >
               {{ post.title }}
@@ -99,7 +104,10 @@ const sortedPosts = computed(() => {
               aria-hidden="true"
             />
           </NuxtLink>
-          <p class="mb-0 mt-3.5 max-w-55ch text-[0.84rem] leading-[1.65] op-55 [text-wrap:pretty]">
+          <p
+            data-motion-reveal
+            class="mb-0 mt-3.5 max-w-55ch text-[0.84rem] leading-[1.65] op-55 [text-wrap:pretty]"
+          >
             {{ post.description }}
           </p>
 
@@ -108,6 +116,7 @@ const sortedPosts = computed(() => {
               <span
                 v-for="tag in post.tags"
                 :key="tag"
+                data-motion-reveal
                 class="inline-block border rounded-full bg-transparent px-[0.48rem] py-[0.22rem] color-inherit text-0.62rem leading-normal op-56 border-color-[color-mix(in_srgb,currentColor_16%,transparent)] font-inherit"
               >
                 {{ tag }}
@@ -115,6 +124,7 @@ const sortedPosts = computed(() => {
             </div>
 
             <p
+              data-motion-reveal
               class="order-[-1] m-0 flex flex-none gap-[0.45rem] text-[0.64rem] op-42 [font-variant-numeric:tabular-nums] sm:order-none"
             >
               <time :datetime="new Date(post.date).toISOString()">
@@ -125,7 +135,7 @@ const sortedPosts = computed(() => {
             </p>
           </div>
         </div>
-      </li>
+      </MotionRevealGroup>
     </ul>
 
     <p v-else class="m-0 text-sm op-48">No matching posts.</p>
