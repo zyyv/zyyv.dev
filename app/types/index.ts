@@ -6,7 +6,6 @@ export type { PhotoReactionType } from '#shared/constants/photo-reactions'
 export type { ArthashConfig } from '#shared/constants/arthash'
 
 export * from './article'
-export * from './bookmark'
 
 export interface PostPreview {
   id: string

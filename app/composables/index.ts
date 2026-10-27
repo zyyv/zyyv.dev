@@ -1,9 +1,6 @@
 // Keep Nuxt's auto-import surface stable while implementation files live by module.
 export * from './admin/useAdminPhotos'
-export * from './admin/useAdminBookmarks'
 export * from './admin/useAdminSession'
-export * from './bookmarks/useBookmarks'
-export * from './bookmarks/useCanvasViewport'
 export * from './command/useCommandTerminal'
 export * from './photos/detail/useImageCanvas'
 export * from './photos/detail/useImageColors'

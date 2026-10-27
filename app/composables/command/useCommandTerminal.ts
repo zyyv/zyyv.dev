@@ -13,7 +13,6 @@ const PAGE_PATHS = {
   posts: '/posts',
   photos: '/photos',
   projects: '/projects',
-  bookmarks: '/bookmarks',
 } as const
 
 interface UseCommandTerminalOptions {
@@ -171,8 +170,7 @@ export function useCommandTerminal({ close }: UseCommandTerminalOptions) {
         case 'home':
         case 'posts':
         case 'photos':
-        case 'projects':
-        case 'bookmarks': {
+        case 'projects': {
           const path = PAGE_PATHS[command.name]
           lines = [{ text: `navigating to ${path}`, tone: 'success' }]
           await navigateTo(path)

@@ -6,10 +6,7 @@ import NavHeader from '~/components/nav/NavHeader.vue'
 const route = useRoute()
 const { refreshSession } = useAdminSession()
 const showFooter = computed(
-  () =>
-    !route.path.startsWith('/photos') &&
-    !route.path.startsWith('/bookmarks') &&
-    !route.path.startsWith('/admin'),
+  () => !route.path.startsWith('/photos') && !route.path.startsWith('/admin'),
 )
 
 if (route.path.startsWith('/admin')) await refreshSession()

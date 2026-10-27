@@ -97,7 +97,6 @@ onMounted(() => loadPhotos(1))
       </div>
       <nav class="workspace-nav" aria-label="后台模块">
         <NuxtLink to="/admin/photos" class="is-active" data-cuelume-hover="tick">图片库</NuxtLink>
-        <NuxtLink to="/admin/bookmarks" data-cuelume-hover="tick">书签管理</NuxtLink>
       </nav>
       <div class="workspace-status">
         <span><i aria-hidden="true" /> D1 + R2 已连接</span>

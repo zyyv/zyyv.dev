@@ -9,13 +9,6 @@ const destinations = [
     to: '/admin/photos',
     icon: 'i-hugeicons:image-03',
   },
-  {
-    index: '02',
-    title: 'Bookmarks',
-    description: '在表格中维护书签、文件夹与访问范围。',
-    to: '/admin/bookmarks',
-    icon: 'i-hugeicons:book-open-02',
-  },
 ] as const
 
 async function handleLogout() {
@@ -130,7 +123,7 @@ async function handleLogout() {
 }
 .portal-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
   margin-top: clamp(4rem, 8vw, 7rem);
 }
@@ -223,7 +216,6 @@ async function handleLogout() {
     font-size: clamp(4.2rem, 23vw, 6.5rem);
   }
   .portal-grid {
-    grid-template-columns: 1fr;
     margin-top: 3.5rem;
   }
   .portal-card {
